@@ -312,6 +312,23 @@
       ctx.stroke();
     }
 
+    function drawRoundRect(ctx, scalefactor, color, size, radius) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      x = size[0] * -0.5 * scalefactor;
+      y = size[1] * -0.5 * scalefactor;
+      width = size[0] * scalefactor;
+      height = size[1] * scalefactor;
+      radius = radius * scalefactor;
+      ctx.moveTo(x, 0);
+      ctx.arcTo(x, y + height, x + width, y + height, radius);
+      ctx.arcTo(x + width, y + height, x + width, y, radius);
+      ctx.arcTo(x + width, y, x, y, radius);
+      ctx.arcTo(x, y, x, y + height, radius);
+      ctx.closePath();
+      ctx.fill();
+    }
+
     function drawModule(ctx, layer, scalefactor, module, highlight) {
       var padcolor = "#808080";
       if (highlight) {
@@ -351,6 +368,8 @@
             ctx.beginPath();
             ctx.arc(0, 0, pad.size[0] * scalefactor / 2, 0, 2 * Math.PI);
             ctx.fill();
+          } else if (pad.shape == "roundrect") {
+            drawRoundRect(ctx, scalefactor, padcolor, pad.size, pad.radius)
           }
           if (pad.type == "th") {
             if (pad.drillshape == "oblong") {

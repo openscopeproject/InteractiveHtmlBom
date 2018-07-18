@@ -234,6 +234,8 @@ def parse_modules(pcb):
                 "angle": angle,
                 "shape": shape
             }
+            if shape == "roundrect":
+                pad_dict["radius"] = p.GetRoundRectCornerRadius() * 1e-6
             if (p.GetAttribute() == pcbnew.PAD_ATTRIB_STANDARD or
                     p.GetAttribute() == pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED):
                 pad_dict["type"] = "th"
