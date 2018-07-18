@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive BOM for KiCAD</title>
+  <style type="text/css">
+    html,
+    body {
+      margin: 0px;
+      height: 100%;
+      font-family: "Helvetica Neue", Helvetica, Verdana, sans-serif;
+    }
+
+    button {
+      /* Gray */
+      background-color: #eee;
+      border: 1px solid #888;
+      color: black;
+      height: 44px;
+      width: 44px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: bolder;
+    }
+
+    button.depressed {
+      background-color: #0a0;
+      color: white;
+    }
+
+    button:focus {
+      outline: 0;
+    }
+
+    button#tb-btn {
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAwBQTFRFAAAABQUFCAgICQkJCgoKEBAQFhYWFxcXGxsbHBwcISEhIyMjJCQkKSkpLS0tLi4uMTExNzc3PDw8QEBAQkJCRERERkZGSEhIT09PWlpaW1tbXFxcYGBgaWlpd3d3eXl5enp6f39/gICAgYGBgoKCi4uLjIyMkpKSk5OTlJSUlpaWl5eXmZmZnJycn5+foqKipqamr6+vtLS0uLi4v7+/w8PDyMjIy8vLz8/P1dXV19fX3Nzc5ubm6urq7+/v8fHx9fX1+Pj4////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdkhsDgAAAQB0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AFP3ByUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTnU1rJkAAAA/klEQVQ4T9WT21bCMBBFB0UQRAWrVEmtDYgtXlC03m8l//9PwyQZSRfSLF/dLzmr2WtyHjqAKIJKBCJgI80rSRsIIlUeUgFBTud0LS9K5YEVorXMnFDJnwWeuULpCW61QqlkJf+mQ8wDLdmYgyUmIeRKloMOB0v464lpxMHCHYozy5yF1yRJ5O23Ez5hb6ApWJhBf3BUb32UhKGep2GBPt7DtV94hgePcPN01T6ltBQ2tohHJ+zub3ZpgBMi/ZN/OSFXxTlc+DuoXssvzDs7HuHw5Hi7drcUCqlHGozwJqUcXb5TIkFMzMUPRnBMBGAzM3vKxCEHQ9ak7fauP+ICTGDKoEYZFYYAAAAASUVORK5CYII=');
+      background-position: 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    button#lr-btn {
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAMAUExURQAAABYWFhcXFzIyMjc3Nzw8PD09PUBAQE9PT1ZWVldXV1paWlxcXGFhYWNjY2dnZ2xsbG5ubnFxcXNzc3V1dXZ2dnl5eYCAgIaGhpKSkpOTk5SUlJycnKKioqampqysrLGxsbe3t7+/v8XFxcnJydTU1NbW1tnZ2ebm5u/v7/z8/P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJTAHzkAAAEAdFJOU////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wBT9wclAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQBwYWludC5uZXQgNC4wLjE51NayZAAAAO5JREFUOE+tk9kSgjAMRatRcakbrogL4q7//30xobFUpOiD56XJ9ExzpzNRiDrwohEV1qLUAeQ0RDVUOno4JJBIZYi0ClKpM4pCGpQKYY/h3giJRYRB90jkAlheQsiXjGfEd6FJEbbcV2W45YIEIP6XoSBIAMIjSABChJySEaE8ZigRCnxmKHtBZOKXDCyEw9k8vnDvEeirz2vYU2UEmUe8BP6HxcgKEoBwhf7GCg4itMZzmHDvz3A6wI6qqgwpWEECEK5whrt/BAnXaYcqnwDQaC/pARZ0nN0IRsiJtcL6SjY14315V3Xa7sr1R3wC/SGCp4FJdscAAAAASUVORK5CYII=');
+      background-position: 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    button#bom-btn {
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAwBQTFRFAAAAFhYWFxcXQEBAXFxcYGBgkpKSk5OTlJSUn5+fr6+vv7+/z8/P////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQtWgtgAAAQB0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AFP3ByUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTnU1rJkAAAAaElEQVQ4T+3T0QqAIAwF0JlrWub/f+5NcpCIk16Fzosv4+6CjAD2JgYITpJJHIglTwiTT+U9hq6ck68D+9D5Dpg+D2hmp1mhrTpNSdNSHTSz8/9FtVAHjk+WITJhC3qpA2Er1z09f+AGC2MyfYdXtvQAAAAASUVORK5CYII=');
+      background-position: 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    .left-most-button {
+      border-right: 0;
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+    }
+
+    .middle-button {
+      border-right: 0;
+    }
+
+    .right-most-button {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+
+    .button-container {
+      font-size: 0;
+    }
+
+    @media print {
+      .hideonprint {
+        display: none;
+      }
+    }
+
+    canvas {
+      margin: 1px;
+    }
+
+    .bom {
+      border-collapse: collapse;
+      font-family: Consolas, monospace;
+      font-size: 10pt;
+      table-layout: fixed;
+      width: 100%;
+      margin-top: 1px;
+    }
+
+    .bom th,
+    .bom td {
+      border: 1px solid black;
+      padding: 5px;
+      word-wrap: break-word;
+      text-align: center;
+    }
+
+    .bom th {
+      background-color: #CCCCCC;
+    }
+
+    .bom tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .bom tr {
+      transition: background-color 0.2s;
+    }
+
+    .bom tr:hover {
+      background-color: #cfc;
+    }
+
+    .bom .numCol {
+      width: 25px;
+    }
+
+    .bom .Description {
+      width: 10%;
+    }
+
+    .bom .Part {
+      width: 10%;
+    }
+
+    .bom .Value {
+      width: 15%;
+    }
+
+    .bom .Quantity-Per-PCB {
+      width: 65px;
+    }
+
+    .split {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .split.split-horizontal,
+    .gutter.gutter-horizontal {
+      height: 100%;
+      float: left;
+    }
+
+    .gutter {
+      background-color: #eee;
+      background-repeat: no-repeat;
+      background-position: 50%;
+    }
+
+    .gutter.gutter-horizontal {
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+      cursor: ew-resize;
+      width: 5px;
+    }
+
+    .gutter.gutter-vertical {
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+      cursor: ns-resize;
+      height: 5px;
+    }
+
+    .filter {
+      float: left;
+      width: calc(100% - 10px);
+      height: 40px;
+      margin: 10px 5px;
+      padding: 12px 32px;
+      font-family: "Lucida Console", Monaco, monospace;
+      font-size: 18px;
+      box-sizing: border-box;
+      border: 1px solid #888;
+      border-radius: 6px;
+      outline: none;
+      background-color: #eee;
+      transition: background-color 0.2s, border 0.2s;
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABNklEQVQ4T8XSMUvDQBQH8P/LElFa/AIZHcTBQSz0I/gFstTBRR2KUC4ldDxw7h0Bl3RRUATxi4iiODgoiLNrbQYp5J6cpJJqomkX33Z37/14d/dIa33MzDuYI4johOI4XhyNRteO46zNYjDzAxE1yBZprVeZ+QbAUhXEGJMA2Ox2u4+fQIa0mPmsCgCgJYQ4t7lfgF0opQYAdv9ABkKI/UnOFCClXKjX61cA1osQY8x9kiRNKeV7IWA3oyhaSdP0FkAtjxhj3hzH2RBCPOf3pzqYHCilfAAX+URm9oMguPzeWSGQvUcMYC8rOBJCHBRdqxTo9/vbRHRqi8bj8XKv1xvODbiuW2u32/bvf0SlDv4XYOY7z/Mavu+nM1+BmQ+NMc0wDF/LprP0DbTWW0T00ul0nn4b7Q87+X4Qmfiq2wAAAABJRU5ErkJggg==');
+      background-position: 10px 10px;
+      background-repeat: no-repeat;
+    }
+
+    .filter::placeholder {
+      color: #ccc;
+    }
+
+    input[type=text]:focus {
+      background-color: white;
+      border: 1px solid #333;
+    }
+
+    mark.highlight {
+      background-color: #5050ff;
+      color: #fff;
+      padding: 2px;
+      border-radius: 6px;
+    }
+  </style>
+  <script type="text/javascript" src="https://unpkg.com/split.js/split.js"></script>
+  <script type="text/javascript" src="pcbdata.js"></script>
+  <script type="text/javascript">
+    var frontscale = 12;
+    var backscale = 12;
+    var canvaslayout = "default";
+    var bomlayout = "default";
+
+    function deg2rad(deg) {
+      return deg * Math.PI / 180;
+    }
+
+    function dbg(str) {
+      dbgdiv.textContent = str;
+    }
+
+    function getEdgesBoundaries(edges) {
+      var minx = edges.reduce((min, edge) => {
+        return Math.min(min, edge.start[0]);
+      }, Infinity);
+      var maxx = edges.reduce((min, edge) => {
+        return Math.max(min, edge.start[0]);
+      }, -Infinity);
+      var miny = edges.reduce((min, edge) => {
+        return Math.min(min, edge.start[1]);
+      }, Infinity);
+      var maxy = edges.reduce((min, edge) => {
+        return Math.max(min, edge.start[1]);
+      }, -Infinity);
+      return [minx, maxx, miny, maxy];
+    }
+
+    function drawtext(ctx, scalefactor, text, color, flip) {
+      ctx.save();
+      ctx.translate(...text.pos.map(c => c * scalefactor));
+      angle = -text.angle;
+      ctx.scale(text.width, text.height);
+      if (flip) {
+        ctx.scale(-1, 1);
+        angle = -angle;
+      }
+      txt = text.text.split("\n")
+      ctx.rotate(deg2rad(angle));
+      ctx.fillStyle = color;
+      switch (text.horiz_justify) {
+        case -1:
+          ctx.textAlign = "left";
+          break;
+        case 0:
+          ctx.textAlign = "center";
+          break;
+        case 1:
+          ctx.textAlign = "right";
+          break;
+      }
+      spacing = 1.6 * scalefactor;
+      for (i = 0; i < txt.length; i++) {
+        offset = -(txt.length - 1) * spacing / 2 + i * spacing;
+        ctx.fillText(txt[i], 0, offset);
+      }
+      ctx.restore();
+    }
+
+    function drawedge(ctx, scalefactor, edge, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(1.5, edge.width);
+      if (edge.type == "segment") {
+        ctx.beginPath();
+        ctx.moveTo(...edge.start.map(c => c * scalefactor));
+        ctx.lineTo(...edge.end.map(c => c * scalefactor));
+        ctx.stroke();
+      }
+      if (edge.type == "arc") {
+        ctx.beginPath();
+        ctx.arc(
+          ...edge.start.map(c => c * scalefactor),
+          edge.radius * scalefactor,
+          deg2rad(edge.startangle),
+          deg2rad(edge.endangle));
+        ctx.stroke();
+      }
+      if (edge.type == "circle") {
+        ctx.beginPath();
+        ctx.arc(
+          ...edge.start.map(c => c * scalefactor),
+          edge.radius * scalefactor,
+          0, 2 * Math.PI);
+        ctx.stroke();
+      }
+    }
+
+    function drawOblong(ctx, scalefactor, color, size) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineCap = "round";
+      if (size[0] > size[1]) {
+        ctx.lineWidth = size[1] * scalefactor;
+        var from = [-size[0] * scalefactor / 2 + size[1] * scalefactor / 2, 0];
+        var to = [-from[0], 0];
+      } else {
+        ctx.lineWidth = size[0] * scalefactor;
+        var from = [0, -size[1] * scalefactor / 2 + size[0] * scalefactor / 2];
+        var to = [0, -from[1]];
+      }
+      ctx.moveTo(...from);
+      ctx.lineTo(...to);
+      ctx.stroke();
+    }
+
+    function drawModule(ctx, layer, scalefactor, module, highlight) {
+      var padcolor = "#808080";
+      if (highlight) {
+        padcolor = "#D04040";
+        // draw bounding box
+        if (module.layer == layer) {
+          ctx.save();
+          ctx.globalAlpha = 0.2;
+          ctx.translate(...module.bbox.pos.map(c => c * scalefactor));
+          ctx.fillStyle = "#D04040";
+          ctx.fillRect(
+            0, 0,
+            ...module.bbox.size.map(c => c * scalefactor));
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = "#D04040";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(
+            0, 0,
+            ...module.bbox.size.map(c => c * scalefactor));
+          ctx.restore();
+        }
+      }
+      // draw pads
+      for (pad of module.pads) {
+        if (pad.layers.includes(layer)) {
+          ctx.save();
+          ctx.translate(...pad.pos.map(c => c * scalefactor));
+          ctx.rotate(deg2rad(pad.angle));
+          ctx.fillStyle = padcolor;
+          if (pad.shape == "rect") {
+            ctx.fillRect(
+              ...pad.size.map(c => -c * scalefactor * 0.5),
+              ...pad.size.map(c => c * scalefactor));
+          } else if (pad.shape == "oval") {
+            drawOblong(ctx, scalefactor, padcolor, pad.size)
+          } else if (pad.shape == "circle") {
+            ctx.beginPath();
+            ctx.arc(0, 0, pad.size[0] * scalefactor / 2, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+          if (pad.type == "th") {
+            if (pad.drillshape == "oblong") {
+              drawOblong(ctx, scalefactor, "#CCCCCC", pad.drillsize)
+            } else {
+              ctx.fillStyle = "#CCCCCC"
+              ctx.beginPath();
+              ctx.arc(0, 0, pad.drillsize[0] * scalefactor / 2, 0, 2 * Math.PI);
+              ctx.fill();
+            }
+          }
+          ctx.restore();
+        }
+      }
+    }
+
+    function drawModules(canvas, layer, scalefactor, highlightRefs) {
+      var ctx = canvas.getContext("2d");
+      for (edge of pcbdata.edges) {
+        drawedge(ctx, scalefactor, edge, "black");
+      }
+      for (i in pcbdata.modules) {
+        var mod = pcbdata.modules[i];
+        var highlight = highlightRefs.includes(mod.ref);
+        drawModule(ctx, layer, scalefactor, mod, highlight);
+      }
+    }
+
+    function drawSilkscreen(canvas, layer, scalefactor) {
+      var ctx = canvas.getContext("2d");
+      for (d of pcbdata.silkscreen[layer]) {
+        if (["segment", "arc", "circle"].includes(d.type)) {
+          drawedge(ctx, scalefactor, d, "#aa4");
+        } else {
+          drawtext(ctx, scalefactor, d, "#4aa", layer == "B");
+        }
+      }
+    }
+
+    function clearCanvas(canvas) {
+      var ctx = canvas.getContext("2d");
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
+
+    function drawHighlights(highlightRefs) {
+      clearCanvas(allcanvas.front.highlight);
+      clearCanvas(allcanvas.back.highlight);
+      drawModules(allcanvas.front.highlight, "F", frontscale, highlightRefs);
+      drawModules(allcanvas.back.highlight, "B", backscale, highlightRefs);
+    }
+
+    function drawBackground() {
+      clearCanvas(allcanvas.front.bg);
+      clearCanvas(allcanvas.back.bg);
+      clearCanvas(allcanvas.front.silk);
+      clearCanvas(allcanvas.back.silk);
+      drawModules(allcanvas.front.highlight, "F", frontscale, []);
+      drawModules(allcanvas.back.highlight, "B", backscale, []);
+      drawSilkscreen(allcanvas.front.silk, "F", frontscale);
+      drawSilkscreen(allcanvas.back.silk, "B", backscale);
+    }
+
+    function prepareCanvas(canvas, layer, scalefactor, tx, ty) {
+      var ctx = canvas.getContext("2d");
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      fontsize = 1.5 * scalefactor;
+      ctx.font = "bold " + fontsize + "px Monospace";
+      ctx.textBaseline = "middle";
+      if (layer == "F") {
+        ctx.translate(tx, ty);
+      } else {
+        ctx.scale(-1, 1);
+        ctx.translate(tx, ty);
+      }
+    }
+
+    function resizeLayerCanvas(canvaslist, canvasdivid, layer) {
+      var width = document.getElementById(canvasdivid).clientWidth * 2 - 10;
+      var height = document.getElementById(canvasdivid).clientHeight * 2 - 10;
+      var [minx, maxx, miny, maxy] = getEdgesBoundaries(pcbdata.edges);
+      var scalefactor = Math.min(
+        width * 0.98 / (maxx - minx),
+        height * 0.98 / (maxy - miny)
+      );
+      if (scalefactor < 0) {
+        scalefactor = 0.1;
+      }
+      console.log("Scale factor " + canvasdivid + ": " + scalefactor)
+      if (layer == "B") {
+        var tx = -((maxx + minx) * scalefactor + width) * 0.5;
+      } else {
+        var tx = -((maxx + minx) * scalefactor - width) * 0.5;
+      }
+      var ty = -((maxy + miny) * scalefactor - height) * 0.5;
+      for (c in canvaslist) {
+        canvas = canvaslist[c];
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = (width / 2) + "px";
+        canvas.style.height = (height / 2) + "px";
+        prepareCanvas(canvas, layer, scalefactor, tx, ty);
+      }
+      return scalefactor;
+    }
+
+    function resizeCanvas() {
+      frontscale = resizeLayerCanvas(allcanvas.front, "frontcanvas", "F")
+      backscale = resizeLayerCanvas(allcanvas.back, "backcanvas", "B")
+      drawBackground();
+      drawHighlights([]);
+    }
+
+    function createRowMouseEnterHandler(refs) {
+      return function() {
+        drawHighlights(refs);
+      }
+    }
+
+    function entryMatches(entry) {
+      // check refs
+      for (ref of entry[3]) {
+        if (ref.toLowerCase().indexOf(filter) >= 0) {
+          return true;
+        }
+      }
+      // check value
+      if (entry[1].toLowerCase().indexOf(filter) >= 0) {
+        return true;
+      }
+      // check footprint
+      if (entry[2].toLowerCase().indexOf(filter) >= 0) {
+        return true;
+      }
+      return false;
+    }
+
+    function highlightFilter(s) {
+      if (!filter) {
+        return s;
+      }
+      var parts = s.toLowerCase().split(filter);
+      if (parts.length == 1) {
+        return s;
+      }
+      var r = "";
+      var pos = 0;
+      for (i in parts) {
+        if (i > 0) {
+          r += '<mark class="highlight">' +
+            s.substring(pos, pos + filter.length) +
+            '</mark>';
+          pos += filter.length;
+        }
+        r += s.substring(pos, pos + parts[i].length);
+        pos += parts[i].length;
+      }
+      return r;
+    }
+
+    function populateBomTable() {
+      while (bom.firstChild) {
+        bom.removeChild(bom.firstChild);
+      }
+      var first = true;
+      for (i in pcbdata.bom.both) {
+        var bomentry = pcbdata.bom.both[i];
+        if (filter && !entryMatches(bomentry)) {
+          continue;
+        }
+        var tr = document.createElement("TR");
+        // number
+        var td = document.createElement("TD");
+        var rownum = +i + 1;
+        tr.id = "bomrow" + rownum;
+        td.textContent = rownum;
+        tr.appendChild(td);
+        // Description
+        td = document.createElement("TD");
+        tr.appendChild(td);
+        // Part
+        td = document.createElement("TD");
+        tr.appendChild(td);
+        // References
+        td = document.createElement("TD");
+        td.innerHTML = highlightFilter(bomentry[3].join(", "));
+        tr.appendChild(td);
+        // Value
+        td = document.createElement("TD");
+        td.innerHTML = highlightFilter(bomentry[1]);
+        tr.appendChild(td);
+        // Footprint
+        td = document.createElement("TD");
+        td.innerHTML = highlightFilter(bomentry[2]);
+        tr.appendChild(td);
+        // Quantity
+        td = document.createElement("TD");
+        td.textContent = bomentry[3].length;
+        tr.appendChild(td);
+        bom.appendChild(tr);
+        tr.onmouseenter = createRowMouseEnterHandler(bomentry[3]);
+        if (filter && first) {
+          drawHighlights(bomentry[3]);
+          first = false;
+        }
+      }
+    }
+
+    function updateFilter(input) {
+      filter = input.toLowerCase();
+      populateBomTable();
+    }
+
+    function silkscreenVisible(visible) {
+      if (visible) {
+        allcanvas.front.silk.style.display = "";
+        allcanvas.back.silk.style.display = "";
+      } else {
+        allcanvas.front.silk.style.display = "none";
+        allcanvas.back.silk.style.display = "none";
+      }
+    }
+
+    function changeCanvasLayout(layout) {
+      document.getElementById("fl-btn").classList.remove("depressed");
+      document.getElementById("fb-btn").classList.remove("depressed");
+      document.getElementById("bl-btn").classList.remove("depressed");
+      switch (layout) {
+        case 'F':
+          document.getElementById("fl-btn").classList.add("depressed");
+          canvassplit.collapse(1);
+          break;
+        case 'B':
+          document.getElementById("bl-btn").classList.add("depressed");
+          canvassplit.collapse(0);
+          break;
+        default:
+          document.getElementById("fb-btn").classList.add("depressed");
+          canvassplit.setSizes([50, 50]);
+      }
+      canvaslayout = layout;
+      resizeCanvas();
+    }
+
+    function changeBomLayout(layout) {
+      document.getElementById("bom-btn").classList.remove("depressed");
+      document.getElementById("lr-btn").classList.remove("depressed");
+      document.getElementById("tb-btn").classList.remove("depressed");
+      switch (layout) {
+        case 'BOM':
+          document.getElementById("bom-btn").classList.add("depressed");
+          if (["LR", "TB"].includes(bomlayout)) {
+            bomsplit.destroy();
+            canvassplit.destroy();
+          }
+          document.getElementById("frontcanvas").style.display = "none";
+          document.getElementById("backcanvas").style.display = "none";
+          document.getElementById("bot").style.height = "";
+          break;
+        case 'TB':
+          document.getElementById("tb-btn").classList.add("depressed");
+          document.getElementById("frontcanvas").style.display = "";
+          document.getElementById("backcanvas").style.display = "";
+          document.getElementById("bot").style.height = "calc(100% - 80px)";
+          document.getElementById("bomdiv").classList.remove("split-horizontal");
+          document.getElementById("canvasdiv").classList.remove("split-horizontal");
+          document.getElementById("frontcanvas").classList.add("split-horizontal");
+          document.getElementById("backcanvas").classList.add("split-horizontal");
+          if (["LR", "TB"].includes(bomlayout)) {
+            bomsplit.destroy();
+            canvassplit.destroy();
+          }
+          bomsplit = Split(['#bomdiv', '#canvasdiv'], {
+            sizes: [50, 50],
+            onDragEnd: resizeCanvas,
+            direction: "vertical",
+            gutterSize: 5
+          });
+          canvassplit = Split(['#frontcanvas', '#backcanvas'], {
+            sizes: [50, 50],
+            gutterSize: 5,
+            onDragEnd: resizeCanvas
+          });
+          break;
+        case 'LR':
+          document.getElementById("lr-btn").classList.add("depressed");
+          document.getElementById("frontcanvas").style.display = "";
+          document.getElementById("backcanvas").style.display = "";
+          document.getElementById("bot").style.height = "calc(100% - 80px)";
+          document.getElementById("bomdiv").classList.add("split-horizontal");
+          document.getElementById("canvasdiv").classList.add("split-horizontal");
+          document.getElementById("frontcanvas").classList.remove("split-horizontal");
+          document.getElementById("backcanvas").classList.remove("split-horizontal");
+          if (["LR", "TB"].includes(bomlayout)) {
+            bomsplit.destroy();
+            canvassplit.destroy();
+          }
+          bomsplit = Split(['#bomdiv', '#canvasdiv'], {
+            sizes: [50, 50],
+            onDragEnd: resizeCanvas,
+            gutterSize: 5
+          });
+          canvassplit = Split(['#frontcanvas', '#backcanvas'], {
+            sizes: [50, 50],
+            gutterSize: 5,
+            direction: "vertical",
+            onDragEnd: resizeCanvas
+          });
+      }
+      bomlayout = layout;
+      if (bomlayout != "BOM") {
+        changeCanvasLayout(canvaslayout);
+      }
+    }
+
+    window.onload = function(e) {
+      allcanvas = {};
+      allcanvas.front = {};
+      allcanvas.back = {};
+      allcanvas.front.bg = document.getElementById("F_bg");
+      allcanvas.front.silk = document.getElementById("F_slk");
+      allcanvas.front.highlight = document.getElementById("F_hl");
+      allcanvas.back.bg = document.getElementById("B_bg");
+      allcanvas.back.silk = document.getElementById("B_slk");
+      allcanvas.back.highlight = document.getElementById("B_hl");
+      dbgdiv = document.getElementById("dbg");
+      bom = document.getElementById("bombody");
+      bomlayout = "none";
+      changeBomLayout('LR');
+      changeCanvasLayout("FB");
+      console.log("document.onload", e, Date.now());
+      resizeCanvas();
+      filter = "";
+      populateBomTable();
+    }
+
+    window.onresize = resizeCanvas;
+    window.matchMedia("print").addListener(resizeCanvas);
+
+  </script>
+</head>
+
+<body>
+<div id="topmostdiv" style="width: 100%; height: 100%">
+  <div id="top" class="split" style="height: 80px; border-bottom: 2px solid black;">
+    <div class="hideonprint" style="float: right; margin: 10px; position: relative; top: 20px">
+      <input type="checkbox" name="silkscreen" value="silkscreen" checked
+             onchange="silkscreenVisible(this.checked)">Silkscreen
+    </div>
+    <div class="button-container hideonprint"
+         style="float: right; margin: 10px; position: relative; top: 8px">
+      <button id="fl-btn" class="left-most-button" onclick="changeCanvasLayout('F')"
+              title="Front only">F
+      </button>
+      <button id="fb-btn" class="middle-button" onclick="changeCanvasLayout('FB')"
+              title="Front and Back">FB
+      </button>
+      <button id="bl-btn" class="right-most-button" onclick="changeCanvasLayout('B')"
+              title="Back only">B
+      </button>
+    </div>
+    <div class="button-container hideonprint"
+         style="float: right; margin: 10px; position: relative; top: 8px">
+      <button id="bom-btn" class="left-most-button" onclick="changeBomLayout('BOM')"
+              title="BOM only"></button>
+      <button id="lr-btn" class="middle-button" onclick="changeBomLayout('LR')"
+              title="BOM left, drawings right"></button>
+      <button id="tb-btn" class="right-most-button" onclick="changeBomLayout('TB')"
+              title="BOM top, drawings bot"></button>
+    </div>
+  </div>
+  <div id="bot" class="split" style="height: calc(100% - 80px)">
+    <div id="bomdiv" class="split split-horizontal">
+      <input class="filter hideonprint" type="text" placeholder="Filter"
+             oninput="updateFilter(this.value)">
+      <div id="dbg"></div>
+      <table class="bom">
+        <thead>
+        <tr>
+          <th class="numCol"></th>
+          <th class="Description">Description</th>
+          <th class="Part">Part</th>
+          <th class="References">References</th>
+          <th class="Value">Value</th>
+          <th class="Footprint">Footprint</th>
+          <th class="Quantity-Per-PCB">Quantity Per PCB</th>
+        </tr>
+        </thead>
+        <tbody id="bombody">
+        </tbody>
+      </table>
+    </div>
+    <div id="canvasdiv" class="split split-horizontal">
+      <div id="frontcanvas" class="split" style="overflow: hidden">
+        <div style="position: relative; width: 100%; height: 100%;">
+          <canvas id="F_bg" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+          <canvas id="F_slk" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+          <canvas id="F_hl" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+        </div>
+      </div>
+      <div id="backcanvas" class="split" style="overflow: hidden">
+        <div style="position: relative; width: 100%; height: 100%;">
+          <canvas id="B_bg" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+          <canvas id="B_slk" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+          <canvas id="B_hl" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+
+</html>
