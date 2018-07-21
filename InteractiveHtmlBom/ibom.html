@@ -602,15 +602,21 @@
       switch (layout) {
         case 'F':
           document.getElementById("fl-btn").classList.add("depressed");
-          canvassplit.collapse(1);
+          if (bomlayout != "BOM") {
+            canvassplit.collapse(1);
+          }
           break;
         case 'B':
           document.getElementById("bl-btn").classList.add("depressed");
-          canvassplit.collapse(0);
+          if (bomlayout != "BOM") {
+            canvassplit.collapse(0);
+          }
           break;
         default:
           document.getElementById("fb-btn").classList.add("depressed");
-          canvassplit.setSizes([50, 50]);
+          if (bomlayout != "BOM") {
+            canvassplit.setSizes([50, 50]);
+          }
       }
       canvaslayout = layout;
       resizeCanvas();

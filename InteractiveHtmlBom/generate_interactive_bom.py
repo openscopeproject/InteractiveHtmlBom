@@ -264,12 +264,23 @@ def parse_modules(pcb):
 
 
 def main(pcb):
+    pcb_file_name = pcb.GetFileName()
+    if not pcb_file_name:
+        wx.MessageBox('Please save the board file before generating BOM.')
+        return
+
+    bom_file_dir = os.path.dirname(pcb_file_name) + "/bom/"
+
     pcbdata = {
         "edges": parse_edges(pcb),
         "silkscreen": parse_silkscreen(pcb),
         "modules": parse_modules(pcb),
         "bom": {}
     }
+    if len(pcbdata["edges"]) == 0:
+        wx.MessageBox('Please draw pcb outline on the edges '
+                      'layer before generating BOM.')
+        return
     pcbdata["bom"]["both"] = generate_bom(pcb)
 
     # build BOM
@@ -278,16 +289,15 @@ def main(pcb):
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     print "Dumping pcb json data"
-    picknplace_dir = os.path.dirname(pcb.GetFileName()) + "/picknplace/"
-    jsonfilename = picknplace_dir + "pcbdata.js"
-    if not os.path.isdir(os.path.dirname(jsonfilename)):
-        os.makedirs(os.path.dirname(jsonfilename))
-    copy(os.path.dirname(__file__) + "/ibom.html", picknplace_dir)
-    with open(jsonfilename, "wt") as js:
+    json_file_name = bom_file_dir + "pcbdata.js"
+    if not os.path.isdir(os.path.dirname(json_file_name)):
+        os.makedirs(os.path.dirname(json_file_name))
+    copy(os.path.dirname(__file__) + "/ibom.html", bom_file_dir)
+    with open(json_file_name, "wt") as js:
         js.write("var pcbdata = ")
         js.write(json.dumps(pcbdata))
 
-    os.system("start " + picknplace_dir + "/ibom.html")
+    os.system("start " + bom_file_dir + "/ibom.html")
 
 
 class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
