@@ -330,7 +330,7 @@
     }
 
     function drawPolygons(ctx, scalefactor, color, polygons) {
-      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
       for (polygon of polygons) {
         ctx.beginPath();
         for (vertex of polygon) {
@@ -339,6 +339,14 @@
         ctx.closePath();
         ctx.fill();
       }
+    }
+
+    function drawPolygonShape(ctx, scalefactor, shape, color) {
+      ctx.save();
+      ctx.translate(...shape.pos.map(c => c * scalefactor));
+      ctx.rotate(deg2rad(-shape.angle));
+      drawPolygons(ctx, scalefactor, color, shape.polygons);
+      ctx.restore();
     }
 
     function drawModule(ctx, layer, scalefactor, module, highlight) {
@@ -417,6 +425,8 @@
       for (d of pcbdata.silkscreen[layer]) {
         if (["segment", "arc", "circle"].includes(d.type)) {
           drawedge(ctx, scalefactor, d, "#aa4");
+        } else if (d.type == "polygon") {
+          drawPolygonShape(ctx, scalefactor, d, "#4aa");
         } else {
           drawtext(ctx, scalefactor, d, "#4aa", layer == "B");
         }

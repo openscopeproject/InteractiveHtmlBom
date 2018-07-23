@@ -89,7 +89,8 @@ def parse_draw_segment(d):
     shape = {
         pcbnew.S_SEGMENT: "segment",
         pcbnew.S_CIRCLE: "circle",
-        pcbnew.S_ARC: "arc"
+        pcbnew.S_ARC: "arc",
+        pcbnew.S_POLYGON: "polygon",
     }.get(d.GetShape(), "")
     if shape == "":
         print "Unsupported shape", d.GetShape()
@@ -123,6 +124,13 @@ def parse_draw_segment(d):
             "startangle": a1,
             "endangle": a2,
             "width": d.GetWidth() * 1e-6
+        }
+    if shape == "polygon":
+        return {
+            "type": shape,
+            "pos": start,
+            "angle": d.GetParentModule().GetOrientation() * 0.1,
+            "polygons": parse_poly_set(d.GetPolyShape())
         }
 
 
@@ -179,9 +187,7 @@ def parse_edges(pcb):
 def parse_silkscreen(pcb):
     front = []
     back = []
-    drawings = []
-    for d in pcb.GetDrawings():
-        drawings.append(d)
+    drawings = list(pcb.GetDrawings())
     for m in pcb.GetModules():
         drawings.append(m.Reference())
         drawings.append(m.Value())
