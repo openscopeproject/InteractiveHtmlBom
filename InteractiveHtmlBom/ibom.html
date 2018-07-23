@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
@@ -81,6 +81,26 @@
 
     canvas {
       margin: 1px;
+    }
+
+    .fileinfo {
+      width: 100%;
+      max-width: 1000px;
+      border: none;
+      padding: 5px;
+    }
+
+    .fileinfo .title {
+      font-size: 20pt;
+      font-weight: bold;
+    }
+
+    .fileinfo td {
+      overflow: hidden;
+      white-space: nowrap;
+      max-width: 1px;
+      width: 50%;
+      text-overflow: ellipsis;
     }
 
     .bom {
@@ -663,6 +683,16 @@
       resizeCanvas();
     }
 
+    function populateMetadata() {
+      document.getElementById("title").innerHTML = pcbdata.metadata.title;
+      document.getElementById("revision").innerHTML = "Rev: " + pcbdata.metadata.revision;
+      document.getElementById("company").innerHTML = pcbdata.metadata.company;
+      document.getElementById("filedate").innerHTML = pcbdata.metadata.date;
+      if (pcbdata.metadata.title != "") {
+        document.title = pcbdata.metadata.title + " BOM";
+      }
+    }
+
     function changeBomLayout(layout) {
       document.getElementById("bom-btn").classList.remove("depressed");
       document.getElementById("lr-btn").classList.remove("depressed");
@@ -752,6 +782,7 @@
       console.log("document.onload", e, Date.now());
       resizeCanvas();
       filter = "";
+      populateMetadata();
       populateBomTable();
     }
 
@@ -764,30 +795,54 @@
 <body>
 <div id="topmostdiv" style="width: 100%; height: 100%">
   <div id="top" class="split" style="height: 80px; border-bottom: 2px solid black;">
-    <div class="hideonprint" style="float: right; margin: 10px; position: relative; top: 20px">
-      <input type="checkbox" name="silkscreen" value="silkscreen" checked
-             onchange="silkscreenVisible(this.checked)">Silkscreen
+    <div style="float: right;">
+      <div class="hideonprint" style="float: right; margin: 10px; position: relative; top: 20px">
+        <input type="checkbox" name="silkscreen" value="silkscreen" checked
+               onchange="silkscreenVisible(this.checked)">Silkscreen
+      </div>
+      <div class="button-container hideonprint"
+           style="float: right; margin: 10px; position: relative; top: 8px">
+        <button id="fl-btn" class="left-most-button" onclick="changeCanvasLayout('F')"
+                title="Front only">F
+        </button>
+        <button id="fb-btn" class="middle-button" onclick="changeCanvasLayout('FB')"
+                title="Front and Back">FB
+        </button>
+        <button id="bl-btn" class="right-most-button" onclick="changeCanvasLayout('B')"
+                title="Back only">B
+        </button>
+      </div>
+      <div class="button-container hideonprint"
+           style="float: right; margin: 10px; position: relative; top: 8px">
+        <button id="bom-btn" class="left-most-button" onclick="changeBomLayout('BOM')"
+                title="BOM only"></button>
+        <button id="lr-btn" class="middle-button" onclick="changeBomLayout('LR')"
+                title="BOM left, drawings right"></button>
+        <button id="tb-btn" class="right-most-button" onclick="changeBomLayout('TB')"
+                title="BOM top, drawings bot"></button>
+      </div>
     </div>
-    <div class="button-container hideonprint"
-         style="float: right; margin: 10px; position: relative; top: 8px">
-      <button id="fl-btn" class="left-most-button" onclick="changeCanvasLayout('F')"
-              title="Front only">F
-      </button>
-      <button id="fb-btn" class="middle-button" onclick="changeCanvasLayout('FB')"
-              title="Front and Back">FB
-      </button>
-      <button id="bl-btn" class="right-most-button" onclick="changeCanvasLayout('B')"
-              title="Back only">B
-      </button>
-    </div>
-    <div class="button-container hideonprint"
-         style="float: right; margin: 10px; position: relative; top: 8px">
-      <button id="bom-btn" class="left-most-button" onclick="changeBomLayout('BOM')"
-              title="BOM only"></button>
-      <button id="lr-btn" class="middle-button" onclick="changeBomLayout('LR')"
-              title="BOM left, drawings right"></button>
-      <button id="tb-btn" class="right-most-button" onclick="changeBomLayout('TB')"
-              title="BOM top, drawings bot"></button>
+    <div id="fileinfodiv" style="overflow: auto;">
+      <table class="fileinfo">
+        <tbody>
+          <tr>
+            <td id="title" class="title" style="width: 70%">
+              Title
+            </td>
+            <td id="revision" class="title" style="width: 30%">
+              Revision
+            </td>
+          </tr>
+          <tr>
+            <td id="company">
+              Kicad version
+            </td>
+            <td id="filedate">
+              Date
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
   <div id="bot" class="split" style="height: calc(100% - 80px)">

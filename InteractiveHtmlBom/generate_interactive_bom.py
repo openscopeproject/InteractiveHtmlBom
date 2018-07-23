@@ -1,5 +1,6 @@
 #!/usr/bin/python2
 from shutil import copy
+from datetime import datetime
 import pcbnew
 import wx
 import os
@@ -314,11 +315,23 @@ def main(pcb):
 
     bom_file_dir = os.path.dirname(pcb_file_name) + "/bom/"
 
+    title_block = pcb.GetTitleBlock()
+    file_date = title_block.GetDate()
+    if not file_date:
+        file_mtime = os.path.getmtime(pcb_file_name)
+        file_date = datetime.fromtimestamp(file_mtime).strftime(
+            '%Y-%m-%d %H:%M:%S')
     pcbdata = {
         "edges": parse_edges(pcb),
         "silkscreen": parse_silkscreen(pcb),
         "modules": parse_modules(pcb),
-        "bom": {}
+        "metadata": {
+            "title": title_block.GetTitle(),
+            "revision": title_block.GetRevision(),
+            "company": title_block.GetCompany(),
+            "date": file_date,
+        },
+        "bom": {},
     }
     if len(pcbdata["edges"]) == 0:
         wx.MessageBox('Please draw pcb outline on the edges '
