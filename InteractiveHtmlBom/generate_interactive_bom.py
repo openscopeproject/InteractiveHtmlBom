@@ -126,6 +126,19 @@ def parse_draw_segment(d):
         }
 
 
+def parse_poly_set(polygon_set):
+    result = []
+    for polygon_index in xrange(polygon_set.OutlineCount()):
+        outline = polygon_set.Outline(polygon_index)
+        parsed_outline = []
+        for point_index in xrange(outline.PointCount()):
+            point = outline.Point(point_index)
+            parsed_outline.append(normalize([point.x, point.y]))
+        result.append(parsed_outline)
+
+    return result
+
+
 def parse_text(d):
     pos = normalize(d.GetPosition())
     if not d.IsVisible():
@@ -223,6 +236,7 @@ def parse_modules(pcb):
                 pcbnew.PAD_SHAPE_OVAL: "oval",
                 pcbnew.PAD_SHAPE_CIRCLE: "circle",
                 pcbnew.PAD_SHAPE_ROUNDRECT: "roundrect",
+                pcbnew.PAD_SHAPE_CUSTOM: "custom",
             }.get(p.GetShape(), "unsupported")
             if shape == "unsupported":
                 print "Unsupported pad shape ", p.GetShape()
@@ -234,6 +248,13 @@ def parse_modules(pcb):
                 "angle": angle,
                 "shape": shape
             }
+            if shape == "custom":
+                polygon_set = p.GetCustomShapeAsPolygon()
+                if polygon_set.HasHoles():
+                    print 'Detected holes in custom pad polygons'
+                if polygon_set.IsSelfIntersecting():
+                    print 'Detected self intersecting polygons in custom pad'
+                pad_dict["polygons"] = parse_poly_set(polygon_set)
             if shape == "roundrect":
                 pad_dict["radius"] = p.GetRoundRectCornerRadius() * 1e-6
             if (p.GetAttribute() == pcbnew.PAD_ATTRIB_STANDARD or

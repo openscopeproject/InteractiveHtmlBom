@@ -329,6 +329,18 @@
       ctx.fill();
     }
 
+    function drawPolygons(ctx, scalefactor, color, polygons) {
+      ctx.strokeStyle = color;
+      for (polygon of polygons) {
+        ctx.beginPath();
+        for (vertex of polygon) {
+          ctx.lineTo(vertex[0] * scalefactor, vertex[1] * scalefactor)
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
     function drawModule(ctx, layer, scalefactor, module, highlight) {
       var padcolor = "#808080";
       if (highlight) {
@@ -370,6 +382,8 @@
             ctx.fill();
           } else if (pad.shape == "roundrect") {
             drawRoundRect(ctx, scalefactor, padcolor, pad.size, pad.radius)
+          } else if (pad.shape == "custom") {
+            drawPolygons(ctx, scalefactor, padcolor, pad.polygons)
           }
           if (pad.type == "th") {
             if (pad.drillshape == "oblong") {
