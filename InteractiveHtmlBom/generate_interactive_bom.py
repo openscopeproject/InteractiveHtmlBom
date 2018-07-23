@@ -224,6 +224,21 @@ def parse_modules(pcb):
             "pos": mrect_pos,
             "size": mrect_size
         }
+        # graphical drawings
+        drawings = []
+        for d in m.GraphicalItems():
+            # we only care about copper ones, silkscreen is taken care of
+            if d.GetLayer() not in [pcbnew.F_Cu, pcbnew.B_Cu]:
+                continue
+            drawing = parse_drawing(d)
+            if not drawing:
+                continue
+            drawings.append({
+                "layer": "F" if d.GetLayer() == pcbnew.F_Cu else "B",
+                "drawing": drawing,
+            })
+
+
         # footprint pads
         pads = []
         for p in m.Pads():
@@ -281,6 +296,7 @@ def parse_modules(pcb):
             "center": center,
             "bbox": bbox,
             "pads": pads,
+            "drawings": drawings,
             "layer": {
                 pcbnew.F_Cu: "F",
                 pcbnew.B_Cu: "B"

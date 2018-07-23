@@ -268,7 +268,8 @@
 
     function drawedge(ctx, scalefactor, edge, color) {
       ctx.strokeStyle = color;
-      ctx.lineWidth = Math.max(1.5, edge.width);
+      ctx.lineWidth = Math.max(1, edge.width * scalefactor)
+      ctx.lineCap = "round";
       if (edge.type == "segment") {
         ctx.beginPath();
         ctx.moveTo(...edge.start.map(c => c * scalefactor));
@@ -349,6 +350,16 @@
       ctx.restore();
     }
 
+    function drawDrawing(ctx, layer, scalefactor, drawing, color) {
+      if (["segment", "arc", "circle"].includes(drawing.type)) {
+        drawedge(ctx, scalefactor, drawing, color);
+      } else if (drawing.type == "polygon") {
+        drawPolygonShape(ctx, scalefactor, drawing, color);
+      } else {
+        drawtext(ctx, scalefactor, drawing, color, layer == "B");
+      }
+    }
+
     function drawModule(ctx, layer, scalefactor, module, highlight) {
       var padcolor = "#808080";
       if (highlight) {
@@ -369,6 +380,12 @@
             0, 0,
             ...module.bbox.size.map(c => c * scalefactor));
           ctx.restore();
+        }
+      }
+      // draw drawings
+      for (drawing of module.drawings) {
+        if (drawing.layer == layer) {
+          drawDrawing(ctx, layer, scalefactor, drawing.drawing, padcolor);
         }
       }
       // draw pads
