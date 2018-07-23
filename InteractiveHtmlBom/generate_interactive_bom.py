@@ -139,6 +139,10 @@ def parse_poly_set(polygon_set):
     result = []
     for polygon_index in xrange(polygon_set.OutlineCount()):
         outline = polygon_set.Outline(polygon_index)
+        if not hasattr(outline, "PointCount"):
+            print "No PointCount method on outline object. " \
+                  "Unpatched kicad version?"
+            return result
         parsed_outline = []
         for point_index in xrange(outline.PointCount()):
             point = outline.Point(point_index)
@@ -217,6 +221,7 @@ def parse_modules(pcb):
     for m in pcb.GetModules():
         ref = m.GetReference()
         center = normalize(m.GetCenter())
+
         # bounding box
         mrect = m.GetFootprintRect()
         mrect_pos = normalize(mrect.GetPosition())
@@ -225,6 +230,7 @@ def parse_modules(pcb):
             "pos": mrect_pos,
             "size": mrect_size
         }
+
         # graphical drawings
         drawings = []
         for d in m.GraphicalItems():
@@ -238,7 +244,6 @@ def parse_modules(pcb):
                 "layer": "F" if d.GetLayer() == pcbnew.F_Cu else "B",
                 "drawing": drawing,
             })
-
 
         # footprint pads
         pads = []
