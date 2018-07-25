@@ -13,6 +13,10 @@ render silkscreen, footprint pads, texts and drawings. Most of the pcbnew
 features are supported but there are some rarely used things that will not
 be rendered. For example curve type segments in drawings are not supported.
 
+## So what does it do?
+
+[Demo is worth a thousand words.](https://openscopeproject.org/InteractiveHtmlBomDemo/)
+
 ## Installation
 
 KiCad's Pcbnew plugins can be placed in following places, depending on
@@ -41,11 +45,12 @@ platform.
     -   /Applications/kicad/Kicad/Contents/SharedSupport/scripting/plugins
     -   ~/Library/Application Support/kicad/scripting/plugins
 
-I recommend downloading [latest release](http://github.com/osp/release) or
-cloning this repo in a directory of your choice and creating a symlink in one of
-KiCad's plugin directories to `InteractiveHtmlBom` folder. Linux users can do
-it with `ln -s <target> <link>`, in windows `cmd /c mklink /D <link> <target>`
-does the job.
+I recommend downloading
+[latest release](http://github.com/openscopeproject/InteractiveHtmlBom/release)
+or cloning this repo in a directory of your choice and creating a symlink in
+one of KiCad's plugin directories to `InteractiveHtmlBom` folder. Linux users
+can do it with `ln -s <target> <link>`, in windows
+`cmd /c mklink /D <link> <target>` does the job.
 
 If you want this plugin to work in all KiCad versions you install, it's
 best to put it in user folder (%APPDATA% for Windows, ~/ for Linux).
@@ -55,21 +60,30 @@ best to put it in user folder (%APPDATA% for Windows, ~/ for Linux).
 Open Pcbnew. Draw your board, make sure it has edges drawn on Edge.Cuts layer.
 
 Save the file and press the
-[iBOM](http://github.com/osp/InteractiveHtmlBom/icon.png) button.
+[iBOM](http://github.com/openscopeproject/InteractiveHtmlBom/InteractiveHtmlBom/icon.png)
+button.
 
 ## Supported versions
 
-Kicad 5.0 and later are supported.
+KiCad 5.0 is the only supported version. Pcbnew python interface is not very
+stable and tends to have backwards incompatible changes. I will try to support
+future versions but generally you can expect my plugin to be tested only on
+the latest stable build.
 
 ## Known issues
 
+-   Description and Part columns are not tested yet.
 -   Circle and Arc shape in edge cuts may lead to incorrect board boundary
     calculation in html render.
+
+    For example a board that is just one circle will not render.
 
 -   Custom shape pads and copper zone drawings in footprints are supported but
     you need patched version of KiCad python bindings.
 
-    You can get these bindings [here](http://github.com/osp/bindings).
+    Patch is sent to KiCad devs and hopefully will be integrated soon. In the
+    meantime you can get these bindings
+    [here](http://github.com/openscopeproject/InteractiveHtmlBom/bindings) (win x64 only).
 
     Overwrite corresponding files:
 
@@ -77,7 +91,49 @@ Kicad 5.0 and later are supported.
     -   {KICAD_INSTALL_PATH}/lib/python2.7/site-packages/pcbnew.py
     -   {KICAD_INSTALL_PATH}/lib/python2.7/site-packages/\_pcbnew.pyd
 
-    Patch is sent to KiCad devs and hopefully will be integrated soon.
+
+
+-   Design is complete and utter shite.
+
+    Sorry about that, not my strong suite. You are welcome to improve it and
+    send a PR.
+
+## How to report issues
+
+General software bug reporting rules apply, make sure to describe in most
+clear terms the following:
+
+1.   KiCad version used
+-   What the steps to reproduce the issue are
+-   What is the observed behavior
+-   What is expected behavior
+
+In most cases I imagine issues will be of 2 types: 1) plugin crashes and nothing
+is created and 2) board or parts of it are not rendered correctly.
+
+For the first case you should include stack trace in your bug report. You can
+get it by running plugin manually from scripting console.
+
+-   Open pcbnew, go to `Tools -> Scripting Console` or click corresponding
+    button.
+-   Type following into the console:
+
+    ```python
+    from InteractiveHtmlBom import plugin
+    plugin.Run()
+    ```
+
+    Copy full output into pastebin and add a link to it in your bug report.
+    You can skip pastebin if output is small enough (20 lines or less).
+
+For the second case best way to report it is by sharing your kicad_pcb file.
+Remove everything that is not relevant to the bug, leave only the part that
+is not rendering correctly. That will make it easier for me to debug and
+also you won't have to share what is possibly proprietary information.
+
+_Note: don't remove edge cut drawings or replace them with a simple box around
+problem area._
+
 
 ## Browser support
 
