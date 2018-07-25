@@ -23,45 +23,54 @@ KiCad's Pcbnew plugins can be placed in following places, depending on
 platform.
 
 -   Windows
-    -   {KICAD_INSTALL_PATH}/share/kicad/scripting
-    -   {KICAD_INSTALL_PATH}/share/kicad/scripting/plugins
-    -   %KICAD_PATH%/scripting
-    -   %KICAD_PATH%/scripting/plugins
-    -   %APPDATA%/Roaming/kicad/scripting
-    -   %APPDATA%/Roaming/kicad/scripting/plugins
+    -   `{KICAD_INSTALL_PATH}/share/kicad/scripting`
+    -   `{KICAD_INSTALL_PATH}/share/kicad/scripting/plugins`
+    -   `%KICAD_PATH%/scripting`
+    -   `%KICAD_PATH%/scripting/plugins`
+    -   `%APPDATA%/Roaming/kicad/scripting`
+    -   `%APPDATA%/Roaming/kicad/scripting/plugins`
 
 
 -   Linux (some distributions may install in /usr/local instead of /usr)
-    -   /usr/share/kicad/scripting
-    -   /usr/share/kicad/scripting/plugins
-    -   $KICAD_PATH/scripting
-    -   $KICAD_PATH/scripting/plugins
-    -   ~/.kicad_plugins
-    -   ~/.kicad/scripting
-    -   ~/.kicad/scripting/plugins
+    -   `/usr/share/kicad/scripting`
+    -   `/usr/share/kicad/scripting/plugins`
+    -   `$KICAD_PATH/scripting`
+    -   `$KICAD_PATH/scripting/plugins`
+    -   `~/.kicad_plugins`
+    -   `~/.kicad/scripting`
+    -   `~/.kicad/scripting/plugins`
 
 
 -   MacOS
-    -   /Applications/kicad/Kicad/Contents/SharedSupport/scripting/plugins
-    -   ~/Library/Application Support/kicad/scripting/plugins
+    -   `/Applications/kicad/Kicad/Contents/SharedSupport/scripting/plugins`
+    -   `~/Library/Application Support/kicad/scripting/plugins`
 
 I recommend downloading
-[latest release](http://github.com/openscopeproject/InteractiveHtmlBom/release)
+[latest release](http://github.com/openscopeproject/InteractiveHtmlBom/releases)
 or cloning this repo in a directory of your choice and creating a symlink in
 one of KiCad's plugin directories to `InteractiveHtmlBom` folder. Linux users
 can do it with `ln -s <target> <link>`, in windows
-`cmd /c mklink /D <link> <target>` does the job.
+`cmd /c mklink /D <link> <target>` does the job. If you don't want to bother
+with symlinks just copy InteractiveHtmlBom folder into one of plugin
+directories.
 
 If you want this plugin to work in all KiCad versions you install, it's
-best to put it in user folder (%APPDATA% for Windows, ~/ for Linux).
+best to put it in user folder (`%APPDATA%` for Windows, `~/` for Linux).
 
 ## Usage
 
 Open Pcbnew. Draw your board, make sure it has edges drawn on Edge.Cuts layer.
 
 Save the file and press the
-[iBOM](http://github.com/openscopeproject/InteractiveHtmlBom/InteractiveHtmlBom/icon.png)
-button.
+![iBOM](https://raw.githubusercontent.com/openscopeproject/InteractiveHtmlBom/master/InteractiveHtmlBom/icon.png)
+button on the top toolbar.
+
+On builds that have plugin menu enabled
+`Tools -> External Plugins... -> Generate Interactive HTML BOM` also works.
+
+`bom` folder with generated html bom will be created where the board
+file is saved. On Windows html bom page will be automatically opened in default
+browser.
 
 ## Supported versions
 
@@ -72,7 +81,7 @@ the latest stable build.
 
 ## Known issues
 
--   Description and Part columns are not tested yet.
+-   Description and Part columns are not supported/tested yet.
 -   Circle and Arc shape in edge cuts may lead to incorrect board boundary
     calculation in html render.
 
@@ -82,15 +91,15 @@ the latest stable build.
     you need patched version of KiCad python bindings.
 
     Patch is sent to KiCad devs and hopefully will be integrated soon. In the
-    meantime you can get these bindings
-    [here](http://github.com/openscopeproject/InteractiveHtmlBom/bindings) (win x64 only).
+    meantime you can get prebuilt patched bindings for 5.0
+    [here](http://github.com/openscopeproject/InteractiveHtmlBom/releases)
+    (win x64 only).
 
     Overwrite corresponding files:
 
-    -   {KICAD_INSTALL_PATH}/bin/\_pcbnew.kiface
-    -   {KICAD_INSTALL_PATH}/lib/python2.7/site-packages/pcbnew.py
-    -   {KICAD_INSTALL_PATH}/lib/python2.7/site-packages/\_pcbnew.pyd
-
+    -   `{KICAD_INSTALL_PATH}/bin/_pcbnew.kiface`
+    -   `{KICAD_INSTALL_PATH}/lib/python2.7/site-packages/pcbnew.py`
+    -   `{KICAD_INSTALL_PATH}/lib/python2.7/site-packages/_pcbnew.pyd`
 
 
 -   Design is complete and utter shite.
@@ -103,10 +112,10 @@ the latest stable build.
 General software bug reporting rules apply, make sure to describe in most
 clear terms the following:
 
-1.   KiCad version used
--   What the steps to reproduce the issue are
--   What is the observed behavior
--   What is expected behavior
+1.  KiCad version used.
+2.  What are the steps to reproduce the issue.
+3.  What is the observed behavior.
+4.  What is expected behavior.
 
 In most cases I imagine issues will be of 2 types: 1) plugin crashes and nothing
 is created and 2) board or parts of it are not rendered correctly.
@@ -131,14 +140,13 @@ Remove everything that is not relevant to the bug, leave only the part that
 is not rendering correctly. That will make it easier for me to debug and
 also you won't have to share what is possibly proprietary information.
 
-_Note: don't remove edge cut drawings or replace them with a simple box around
+_Note: don't remove edge cut drawings. You can replace them with a simple box around
 problem area._
-
 
 ## Browser support
 
 Generated html page is tested in Chrome, Firefox and Edge. IE will not be
-supported, patched for other browsers are welcome.
+supported, patches for other browsers are welcome.
 
 # License and credits
 
