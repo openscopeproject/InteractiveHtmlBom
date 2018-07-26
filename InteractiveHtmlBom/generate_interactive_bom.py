@@ -358,7 +358,7 @@ def main(pcb):
         js.write("var pcbdata = ")
         js.write(json.dumps(pcbdata))
 
-    os.system("start " + bom_file_dir + "/ibom.html")
+    os.system('start "" "' + bom_file_dir + '/ibom.html"')
 
 
 class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
