@@ -31,16 +31,6 @@ platform.
     -   `%APPDATA%/Roaming/kicad/scripting/plugins`
 
 
--   Linux (some distributions may install in /usr/local instead of /usr)
-    -   `/usr/share/kicad/scripting`
-    -   `/usr/share/kicad/scripting/plugins`
-    -   `$KICAD_PATH/scripting`
-    -   `$KICAD_PATH/scripting/plugins`
-    -   `~/.kicad_plugins`
-    -   `~/.kicad/scripting`
-    -   `~/.kicad/scripting/plugins`
-
-
 -   MacOS
     -   `/Applications/kicad/Kicad/Contents/SharedSupport/scripting/plugins`
     -   `~/Library/Application Support/kicad/scripting/plugins`
@@ -48,16 +38,26 @@ platform.
 I recommend downloading
 [latest release](http://github.com/openscopeproject/InteractiveHtmlBom/releases)
 or cloning this repo in a directory of your choice and creating a symlink in
-one of KiCad's plugin directories to `InteractiveHtmlBom` folder. Linux users
+one of KiCad's plugin directories to `InteractiveHtmlBom` folder. MacOS users
 can do it with `ln -s <target> <link>`, in windows
 `cmd /c mklink /D <link> <target>` does the job. If you don't want to bother
 with symlinks just copy InteractiveHtmlBom folder into one of plugin
 directories.
 
 If you want this plugin to work in all KiCad versions you install, it's
-best to put it in user folder (`%APPDATA%` for Windows, `~/` for Linux).
+best to put it in user folder (`%APPDATA%` for Windows, `~/` for MacOS).
+
+**Linux users can not install this plugin** at the moment because of
+wxPython/GTK3 mess. If you try to do it pcbnew will most likely crash.
+This _should_ be fixed in KiCad 5.1.
+Meanwhile read on below on how to use it as a standalone script.
 
 ## Usage
+
+You can use this plugin as installed Pcbnew Action Plugin or as a standalone
+script.
+
+### Installed plugin
 
 Open Pcbnew. Draw your board, make sure it has edges drawn on Edge.Cuts layer.
 
@@ -71,6 +71,21 @@ On builds that have plugin menu enabled
 `bom` folder with generated html bom will be created where the board
 file is saved. On Windows html bom page will be automatically opened in default
 browser.
+
+### Standalone script
+
+On Linux and MacOS Simply run this in terminal:
+
+```shell
+python2 path/to/InteractiveHtmlBom/generate_interactive_bom.py path/to/board.kicad_pcb
+```
+
+On windows the trick is to use python that is bundled with KiCad so the command
+will look like this:
+
+```shell
+path/to/kicad/bin/python.exe .../generate_interactive_bom.py .../board.kicad_pcb
+```
 
 ## Supported versions
 
