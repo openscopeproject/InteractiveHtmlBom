@@ -266,13 +266,13 @@
       ctx.save();
       ctx.translate(...text.pos.map(c => c * scalefactor));
       angle = -text.angle;
-      ctx.scale(text.width, text.height);
       if (flip) {
         ctx.scale(-1, 1);
         angle = -angle;
       }
       txt = text.text.split("\n")
       ctx.rotate(deg2rad(angle));
+      ctx.scale(text.width, text.height);
       ctx.fillStyle = color;
       switch (text.horiz_justify) {
         case -1:
