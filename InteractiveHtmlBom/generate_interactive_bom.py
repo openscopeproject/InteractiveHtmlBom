@@ -312,7 +312,17 @@ def parse_modules(pcb):
     return modules
 
 
-def main(pcb):
+def open_file(filename):
+    import subprocess
+    if sys.platform.startswith('win'):
+        os.startfile(filename)
+    elif sys.platform.startswith('darwin'):
+        subprocess.call(('open', filename))
+    elif sys.platform.startswith('linux'):
+        subprocess.call(('xdg-open', filename))
+
+
+def main(pcb, launch_browser=True):
     pcb_file_name = pcb.GetFileName()
     if not pcb_file_name:
         wx.MessageBox('Please save the board file before generating BOM.')
@@ -358,7 +368,8 @@ def main(pcb):
         js.write("var pcbdata = ")
         js.write(json.dumps(pcbdata))
 
-    os.system('start "" "' + bom_file_dir + '/ibom.html"')
+    if launch_browser:
+        open_file(os.path.join(bom_file_dir, 'ibom.html'))
 
 
 class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
@@ -385,9 +396,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
             description='KiCad PCB pick and place assistant')
     parser.add_argument('file', type=str, help="KiCad PCB file")
+    parser.add_argument('--nobrowser', help="Don't launch browser",
+                        action="store_true")
     args = parser.parse_args()
+    if not os.path.isfile(args.file):
+        print("File %s does not exist." % args.file)
+        exit(1)
     print("Loading %s" % args.file)
-    main(pcbnew.LoadBoard(args.file))
+    main(pcbnew.LoadBoard(os.path.abspath(args.file)), not args.nobrowser)
 
-else:
-    GenerateInteractiveBomPlugin().register()
