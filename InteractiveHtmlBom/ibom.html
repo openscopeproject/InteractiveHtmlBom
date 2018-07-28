@@ -771,7 +771,23 @@
       }
     }
 
+    function removeGutterNode(node) {
+      for(i = 0; i < node.childNodes.length; i++) {
+        if (node.childNodes[i].classList &&
+            node.childNodes[i].classList.contains("gutter")) {
+          node.removeChild(node.childNodes[i]);
+          break;
+        }
+      }
+    }
+
+    function cleanGutters() {
+      removeGutterNode(document.getElementById("bot"));
+      removeGutterNode(document.getElementById("canvasdiv"));
+    }
+
     window.onload = function(e) {
+      cleanGutters();
       allcanvas = {};
       allcanvas.front = {};
       allcanvas.back = {};
