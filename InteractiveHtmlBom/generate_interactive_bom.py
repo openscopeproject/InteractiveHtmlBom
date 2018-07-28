@@ -336,12 +336,17 @@ def main(pcb, launch_browser=True):
         file_mtime = os.path.getmtime(pcb_file_name)
         file_date = datetime.fromtimestamp(file_mtime).strftime(
             '%Y-%m-%d %H:%M:%S')
+    title = title_block.GetTitle()
+    if not title:
+        title = os.path.basename(pcb_file_name)
+        # remove .kicad_pcb extension
+        title = os.path.splitext(title)[0]
     pcbdata = {
         "edges": parse_edges(pcb),
         "silkscreen": parse_silkscreen(pcb),
         "modules": parse_modules(pcb),
         "metadata": {
-            "title": title_block.GetTitle(),
+            "title": title,
             "revision": title_block.GetRevision(),
             "company": title_block.GetCompany(),
             "date": file_date,
