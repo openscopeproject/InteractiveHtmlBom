@@ -152,7 +152,7 @@
       width: 15%;
     }
 
-    .bom .Quantity-Per-PCB {
+    .bom .Quantity {
       width: 65px;
     }
 
@@ -604,13 +604,25 @@
       return r;
     }
 
-    function populateBomTable() {
+    function populateBomTable(layout) {
+      console.log('populate bom called with ' + layout);
       while (bom.firstChild) {
         bom.removeChild(bom.firstChild);
       }
       var first = true;
-      for (i in pcbdata.bom.both) {
-        var bomentry = pcbdata.bom.both[i];
+      switch (layout) {
+        case 'F':
+          bomtable = pcbdata.bom.F;
+          break;
+        case 'FB':
+          bomtable = pcbdata.bom.both;
+          break;
+        case 'B':
+          bomtable = pcbdata.bom.B;
+          break;
+      }
+      for (i in bomtable) {
+        var bomentry = bomtable[i];
         if (filter && !entryMatches(bomentry)) {
           continue;
         }
@@ -654,7 +666,7 @@
 
     function updateFilter(input) {
       filter = input.toLowerCase();
-      populateBomTable();
+      populateBomTable(canvaslayout);
     }
 
     function silkscreenVisible(visible) {
@@ -692,6 +704,7 @@
       }
       canvaslayout = layout;
       resizeCanvas();
+      populateBomTable(layout);
     }
 
     function populateMetadata() {
@@ -804,13 +817,12 @@
       dbgdiv = document.getElementById("dbg");
       bom = document.getElementById("bombody");
       bomlayout = "none";
-      changeBomLayout('LR');
-      changeCanvasLayout("FB");
-      console.log("document.onload", e, Date.now());
-      resizeCanvas();
+      canvaslayout = "FB";
       filter = "";
       populateMetadata();
-      populateBomTable();
+      resizeCanvas();
+      changeBomLayout('LR');
+      console.log("document.onload", e, Date.now());
     }
 
     window.onresize = resizeCanvas;
@@ -886,7 +898,7 @@
           <th class="References">References</th>
           <th class="Value">Value</th>
           <th class="Footprint">Footprint</th>
-          <th class="Quantity-Per-PCB">Quantity Per PCB</th>
+          <th class="Quantity">Quantity</th>
         </tr>
         </thead>
         <tbody id="bombody">
