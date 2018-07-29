@@ -188,13 +188,12 @@
       height: 5px;
     }
 
-    .filter {
+    .searchbox {
       float: left;
-      width: calc(100% - 10px);
       height: 40px;
       margin: 10px 5px;
       padding: 12px 32px;
-      font-family: "Lucida Console", Monaco, monospace;
+      font-family: Consolas, "DejaVu Sans Mono", monospace;
       font-size: 18px;
       box-sizing: border-box;
       border: 1px solid #888;
@@ -207,8 +206,16 @@
       background-repeat: no-repeat;
     }
 
-    .filter::placeholder {
+    .searchbox::placeholder {
       color: #ccc;
+    }
+
+    .filter {
+      width: calc(60% - 10px);
+    }
+
+    .reflookup {
+      width: calc(40% - 10px);
     }
 
     input[type=text]:focus {
@@ -581,6 +588,15 @@
       return false;
     }
 
+    function findRefInEntry(entry) {
+      for (ref of entry[3]) {
+        if (ref.toLowerCase() == reflookup) {
+          return [ref];
+        }
+      }
+      return false;
+    }
+
     function highlightFilter(s) {
       if (!filter) {
         return s;
@@ -604,12 +620,12 @@
       return r;
     }
 
-    function populateBomTable(layout) {
+    function populateBomTable() {
       while (bom.firstChild) {
         bom.removeChild(bom.firstChild);
       }
       var first = true;
-      switch (layout) {
+      switch (canvaslayout) {
         case 'F':
           bomtable = pcbdata.bom.F;
           break;
@@ -625,6 +641,13 @@
         if (filter && !entryMatches(bomentry)) {
           continue;
         }
+        references = bomentry[3];
+        if (reflookup) {
+          references = findRefInEntry(bomentry);
+          if (!references) {
+            continue;
+          }
+        }
         var tr = document.createElement("TR");
         var td = document.createElement("TD");
         var rownum = +i + 1;
@@ -639,7 +662,7 @@
         tr.appendChild(td);
         // References
         td = document.createElement("TD");
-        td.innerHTML = highlightFilter(bomentry[3].join(", "));
+        td.innerHTML = highlightFilter(references.join(", "));
         tr.appendChild(td);
         // Value
         td = document.createElement("TD");
@@ -654,9 +677,9 @@
         td.textContent = bomentry[3].length;
         tr.appendChild(td);
         bom.appendChild(tr);
-        tr.onmouseenter = createRowMouseEnterHandler(bomentry[3]);
-        if (filter && first) {
-          drawHighlights(bomentry[3]);
+        tr.onmouseenter = createRowMouseEnterHandler(references);
+        if ((filter || reflookup) && first) {
+          drawHighlights(references);
           first = false;
         }
       }
@@ -664,7 +687,12 @@
 
     function updateFilter(input) {
       filter = input.toLowerCase();
-      populateBomTable(canvaslayout);
+      populateBomTable();
+    }
+
+    function updateRefLookup(input) {
+      reflookup = input.toLowerCase();
+      populateBomTable();
     }
 
     function silkscreenVisible(visible) {
@@ -817,6 +845,7 @@
       bomlayout = "none";
       canvaslayout = "FB";
       filter = "";
+      reflookup = "";
       populateMetadata();
       resizeCanvas();
       changeBomLayout('LR');
@@ -883,8 +912,12 @@
   </div>
   <div id="bot" class="split" style="height: calc(100% - 80px)">
     <div id="bomdiv" class="split split-horizontal">
-      <input class="filter hideonprint" type="text" placeholder="Filter"
-             oninput="updateFilter(this.value)">
+      <div style="width: 100%">
+        <input class="searchbox reflookup hideonprint" type="text" placeholder="Ref lookup"
+               oninput="updateRefLookup(this.value)">
+        <input class="searchbox filter hideonprint" type="text" placeholder="Filter"
+               oninput="updateFilter(this.value)">
+      </div>
       <div id="dbg"></div>
       <table class="bom">
         <thead>
