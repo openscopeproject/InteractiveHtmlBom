@@ -72,10 +72,20 @@ def generate_bom(pcb, filter_layer=None):
     def sort_func(row):
         qty, _, _, rf = row
         ref_ord = {
-            "R": 3, "C": 3, "L": 1, "D": 1,
-            "J": -1, "P": -1
-        }.get(rf[0][0], 0)
-        return -ref_ord, -qty
+            "C": 1,
+            "R": 2,
+            "L": 3,
+            "D": 4,
+            "Q": 5,
+            "U": 6,
+            "Y": 7,
+            "X": 8,
+            "F": 9,
+            "S": 10,
+            "J": 1001,
+            "P": 1002
+        }.get(rf[0][0], 1000)
+        return ref_ord, -qty
 
     bom_table = sorted(bom_table, key=sort_func)
 
@@ -411,4 +421,3 @@ if __name__ == "__main__":
         exit(1)
     print("Loading %s" % args.file)
     main(pcbnew.LoadBoard(os.path.abspath(args.file)), not args.nobrowser)
-
