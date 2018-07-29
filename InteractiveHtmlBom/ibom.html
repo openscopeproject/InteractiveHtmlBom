@@ -605,7 +605,6 @@
     }
 
     function populateBomTable(layout) {
-      console.log('populate bom called with ' + layout);
       while (bom.firstChild) {
         bom.removeChild(bom.firstChild);
       }
@@ -627,7 +626,6 @@
           continue;
         }
         var tr = document.createElement("TR");
-        // number
         var td = document.createElement("TD");
         var rownum = +i + 1;
         tr.id = "bomrow" + rownum;
@@ -822,7 +820,6 @@
       populateMetadata();
       resizeCanvas();
       changeBomLayout('LR');
-      console.log("document.onload", e, Date.now());
     }
 
     window.onresize = resizeCanvas;
