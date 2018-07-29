@@ -654,12 +654,6 @@
         tr.id = "bomrow" + rownum;
         td.textContent = rownum;
         tr.appendChild(td);
-        // Description
-        td = document.createElement("TD");
-        tr.appendChild(td);
-        // Part
-        td = document.createElement("TD");
-        tr.appendChild(td);
         // References
         td = document.createElement("TD");
         td.innerHTML = highlightFilter(references.join(", "));
@@ -923,8 +917,6 @@
         <thead>
         <tr>
           <th class="numCol"></th>
-          <th class="Description">Description</th>
-          <th class="Part">Part</th>
           <th class="References">References</th>
           <th class="Value">Value</th>
           <th class="Footprint">Footprint</th>
