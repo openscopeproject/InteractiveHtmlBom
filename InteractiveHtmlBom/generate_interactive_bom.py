@@ -328,7 +328,7 @@ def main(pcb, launch_browser=True):
         wx.MessageBox('Please save the board file before generating BOM.')
         return
 
-    bom_file_dir = os.path.dirname(pcb_file_name) + "/bom/"
+    bom_file_dir = os.path.join(os.path.dirname(pcb_file_name), "bom")
 
     title_block = pcb.GetTitleBlock()
     file_date = title_block.GetDate()
@@ -365,13 +365,15 @@ def main(pcb, launch_browser=True):
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     print "Dumping pcb json data"
-    json_file_name = bom_file_dir + "pcbdata.js"
-    if not os.path.isdir(os.path.dirname(json_file_name)):
-        os.makedirs(os.path.dirname(json_file_name))
-    copy(os.path.dirname(__file__) + "/ibom.html", bom_file_dir)
-    with open(json_file_name, "wt") as js:
-        js.write("var pcbdata = ")
-        js.write(json.dumps(pcbdata))
+    bom_file_name = os.path.join(bom_file_dir, "ibom.html")
+    if not os.path.isdir(os.path.dirname(bom_file_name)):
+        os.makedirs(os.path.dirname(bom_file_name))
+    pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
+    with open(os.path.join(os.path.dirname(__file__), "ibom.html"), "r") as html:
+        html_content = html.read()
+        html_content = html_content.replace('///PCBDATA///', pcbdata_js)
+    with open(bom_file_name, "wt") as bom:
+        bom.write(html_content)
 
     if launch_browser:
         open_file(os.path.join(bom_file_dir, 'ibom.html'))
