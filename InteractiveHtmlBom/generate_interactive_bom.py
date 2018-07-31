@@ -338,7 +338,8 @@ def main(pcb, launch_browser=True):
         wx.MessageBox('Please save the board file before generating BOM.')
         return
 
-    bom_file_dir = os.path.join(os.path.dirname(pcb_file_name), "bom")
+    bom_file_dir = os.path.dirname(pcb_file_name)
+    bom_file_name = os.path.join(bom_file_dir, os.path.splitext(os.path.basename(pcb_file_name))[0] + " - iBOM.html")
 
     title_block = pcb.GetTitleBlock()
     file_date = title_block.GetDate()
@@ -375,7 +376,6 @@ def main(pcb, launch_browser=True):
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     print "Dumping pcb json data"
-    bom_file_name = os.path.join(bom_file_dir, "ibom.html")
     if not os.path.isdir(os.path.dirname(bom_file_name)):
         os.makedirs(os.path.dirname(bom_file_name))
     pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
@@ -386,7 +386,7 @@ def main(pcb, launch_browser=True):
         bom.write(html_content)
 
     if launch_browser:
-        open_file(os.path.join(bom_file_dir, 'ibom.html'))
+        open_file(bom_file_name)
 
 
 class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
