@@ -338,8 +338,7 @@ def main(pcb, launch_browser=True):
         wx.MessageBox('Please save the board file before generating BOM.')
         return
 
-    bom_file_dir = os.path.dirname(pcb_file_name)
-    bom_file_name = os.path.join(bom_file_dir, os.path.splitext(os.path.basename(pcb_file_name))[0] + " - iBOM.html")
+    bom_file_name = os.path.splitext(pcb_file_name)[0] + " - iBOM.html"
 
     title_block = pcb.GetTitleBlock()
     file_date = title_block.GetDate()
@@ -399,7 +398,7 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
         self.description should be a comprehensive description
           of the plugin
         """
-        self.name = "Generate Interactive HTML BOM"
+        self.name = "Interactive HTML BOM"
         self.category = "Read PCB"
         self.description = "Generate interactive HTML page that contains BOM table and pcb drawing."
 
