@@ -244,10 +244,22 @@
     ///PCBDATA///
     ///////////////////////////////////////////////
 
+    var storagePrefix = 'KiCad_HTML_BOM__' + pcbdata.metadata.title + '__'
+                        + pcbdata.metadata.revision + '__';
+    var bomsplit;
+    var canvassplit;
     var frontscale = 12;
     var backscale = 12;
     var canvaslayout = "default";
     var bomlayout = "default";
+
+    function readStorage(key) {
+      return window.localStorage.getItem(storagePrefix + '#' + key);
+    }
+
+    function writeStorage(key, value) {
+      window.localStorage.setItem(storagePrefix + '#' + key, value);
+    }
 
     function deg2rad(deg) {
       return deg * Math.PI / 180;
@@ -693,9 +705,11 @@
       if (visible) {
         allcanvas.front.silk.style.display = "";
         allcanvas.back.silk.style.display = "";
+        writeStorage("silkscreenVisible", true);
       } else {
         allcanvas.front.silk.style.display = "none";
         allcanvas.back.silk.style.display = "none";
+        writeStorage("silkscreenVisible", false);
       }
     }
 
@@ -723,6 +737,7 @@
           }
       }
       canvaslayout = layout;
+      writeStorage("canvaslayout", layout);
       resizeCanvas();
       populateBomTable(layout);
     }
@@ -744,9 +759,11 @@
       switch (layout) {
         case 'BOM':
           document.getElementById("bom-btn").classList.add("depressed");
-          if (["LR", "TB"].includes(bomlayout)) {
+          if (bomsplit) {
             bomsplit.destroy();
+            bomsplit = null;
             canvassplit.destroy();
+            canvassplit = null;
           }
           document.getElementById("frontcanvas").style.display = "none";
           document.getElementById("backcanvas").style.display = "none";
@@ -761,9 +778,11 @@
           document.getElementById("canvasdiv").classList.remove("split-horizontal");
           document.getElementById("frontcanvas").classList.add("split-horizontal");
           document.getElementById("backcanvas").classList.add("split-horizontal");
-          if (["LR", "TB"].includes(bomlayout)) {
+          if (bomsplit) {
             bomsplit.destroy();
+            bomsplit = null;
             canvassplit.destroy();
+            canvassplit = null;
           }
           bomsplit = Split(['#bomdiv', '#canvasdiv'], {
             sizes: [50, 50],
@@ -786,9 +805,11 @@
           document.getElementById("canvasdiv").classList.add("split-horizontal");
           document.getElementById("frontcanvas").classList.remove("split-horizontal");
           document.getElementById("backcanvas").classList.remove("split-horizontal");
-          if (["LR", "TB"].includes(bomlayout)) {
+          if (bomsplit) {
             bomsplit.destroy();
+            bomsplit = null;
             canvassplit.destroy();
+            canvassplit = null;
           }
           bomsplit = Split(['#bomdiv', '#canvasdiv'], {
             sizes: [50, 50],
@@ -803,9 +824,8 @@
           });
       }
       bomlayout = layout;
-      if (bomlayout != "BOM") {
-        changeCanvasLayout(canvaslayout);
-      }
+      writeStorage("bomlayout", layout);
+      changeCanvasLayout(canvaslayout);
     }
 
     function removeGutterNode(node) {
@@ -836,18 +856,26 @@
       allcanvas.back.highlight = document.getElementById("B_hl");
       dbgdiv = document.getElementById("dbg");
       bom = document.getElementById("bombody");
-      bomlayout = "none";
-      canvaslayout = "FB";
+      bomlayout = readStorage("bomlayout");
+      if (!bomlayout) {
+        bomlayout = "LR";
+      }
+      canvaslayout = readStorage("canvaslayout");
+      if (!canvaslayout) {
+        canvaslayout = "FB";
+      }
       filter = "";
       reflookup = "";
       populateMetadata();
-      resizeCanvas();
-      changeBomLayout('LR');
+      changeBomLayout(bomlayout);
+      if (readStorage("silkscreenVisible") === "false") {
+        document.getElementById("silkscreenCheckbox").checked = false;
+        silkscreenVisible(false);
+      }
     }
 
     window.onresize = resizeCanvas;
     window.matchMedia("print").addListener(resizeCanvas);
-
   </script>
 </head>
 
@@ -856,7 +884,7 @@
   <div id="top" class="split" style="height: 80px; border-bottom: 2px solid black;">
     <div style="float: right;">
       <div class="hideonprint" style="float: right; margin: 10px; position: relative; top: 20px">
-        <input type="checkbox" name="silkscreen" value="silkscreen" checked
+        <input id="silkscreenCheckbox" type="checkbox" name="silkscreen" value="silkscreen" checked
                onchange="silkscreenVisible(this.checked)">Silkscreen
       </div>
       <div class="button-container hideonprint"
