@@ -115,7 +115,6 @@ def parse_draw_segment(d):
             "width": d.GetWidth() * 1e-6
         }
     if shape == "circle":
-        print "Circle shape", d.GetRadius() * 1e-6
         return {
             "type": shape,
             "start": start,
@@ -137,11 +136,16 @@ def parse_draw_segment(d):
             "width": d.GetWidth() * 1e-6
         }
     if shape == "polygon":
+        if hasattr(d, "GetPolyShape"):
+            polygons = parse_poly_set(d.GetPolyShape())
+        else:
+            print "Polygons not supported for KiCad 4"
+            polygons = []
         return {
             "type": shape,
             "pos": start,
             "angle": d.GetParentModule().GetOrientation() * 0.1,
-            "polygons": parse_poly_set(d.GetPolyShape())
+            "polygons": polygons
         }
 
 
@@ -169,12 +173,22 @@ def parse_text(d):
     if d.GetClass() == "MTEXT":
         angle = d.GetDrawRotation() * 0.1
     else:
-        angle = d.GetTextAngle() * 0.1
+        if hasattr(d, "GetTextAngle"):
+            angle = d.GetTextAngle() * 0.1
+        else:
+            angle = d.GetOrientation() * 0.1
+            print d, angle
+    if hasattr(d, "GetTextHeight"):
+        height = d.GetTextHeight() * 1e-6
+        width = d.GetTextWidth() * 1e-6
+    else:
+        height = d.GetHeight() * 1e-6
+        width = d.GetWidth() * 1e-6
     return {
         "pos": pos,
         "text": d.GetText(),
-        "height": d.GetTextHeight() * 1e-6,
-        "width": d.GetTextWidth() * 1e-6,
+        "height": height,
+        "width": width,
         "horiz_justify": d.GetHorizJustify(),
         "angle": angle
     }
@@ -268,13 +282,16 @@ def parse_modules(pcb):
             size = normalize(p.GetSize())
             is_pin1 = p.GetPadName() == "1" or p.GetPadName() == "A1"
             angle = p.GetOrientation() * -0.1
-            shape = {
+            shape_lookup = {
                 pcbnew.PAD_SHAPE_RECT: "rect",
                 pcbnew.PAD_SHAPE_OVAL: "oval",
                 pcbnew.PAD_SHAPE_CIRCLE: "circle",
-                pcbnew.PAD_SHAPE_ROUNDRECT: "roundrect",
-                pcbnew.PAD_SHAPE_CUSTOM: "custom",
-            }.get(p.GetShape(), "unsupported")
+            }
+            if hasattr(pcbnew, "PAD_SHAPE_ROUNDRECT"):
+                shape_lookup[pcbnew.PAD_SHAPE_ROUNDRECT] = "roundrect"
+            if hasattr(pcbnew, "PAD_SHAPE_CUSTOM"):
+                shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
+            shape = shape_lookup.get(p.GetShape(), "unsupported")
             if shape == "unsupported":
                 print "Unsupported pad shape ", p.GetShape()
             pad_dict = {
@@ -384,8 +401,10 @@ def main(pcb, launch_browser=True):
         html_content = html_content.replace('///PCBDATA///', pcbdata_js)
     with open(bom_file_name, "wt") as bom:
         bom.write(html_content)
+    print "Created file", bom_file_name
 
     if launch_browser:
+        print "Opening it in browser"
         open_file(os.path.join(bom_file_dir, 'ibom.html'))
 
 
