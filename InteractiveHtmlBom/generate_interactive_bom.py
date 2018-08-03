@@ -72,7 +72,7 @@ def generate_bom(pcb, filter_layer=None):
     # sort table by reference prefix, footprint and quantity
     def sort_func(row):
         qty, _, fp, rf = row
-        prefix = re.findall('^[A-Z]+', rf[0])[0]
+        prefix = re.findall('^[A-Z]*', rf[0])[0]
         ref_ord = {
             "C": 1,
             "R": 2,
@@ -83,10 +83,14 @@ def generate_bom(pcb, filter_layer=None):
             "Y": 7,
             "X": 8,
             "F": 9,
-            "S": 10,
+            "SW": 10,
+            "A": 11,
+            "HS": 1996,
             "CNN": 1997,
             "J": 1998,
-            "P": 1999
+            "P": 1999,
+            "NT": 2000,
+            "MH": 2001,
         }.get(prefix, 1000)
         return ref_ord, fp, -qty, alphanum_key(rf[0])
 
