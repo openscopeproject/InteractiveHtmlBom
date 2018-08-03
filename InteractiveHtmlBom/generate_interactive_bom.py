@@ -1,5 +1,4 @@
 #!/usr/bin/python2
-from shutil import copy
 from datetime import datetime
 import pcbnew
 import wx
@@ -12,25 +11,25 @@ sys.path.append(os.path.dirname(__file__))
 import units
 
 
-def natural_sort(l):
-    """
-    Natural sort for strings containing numbers
-    """
-
-    def convert(text): return int(text) if text.isdigit() else text.lower()
-
-    def alphanum_key(key): return [convert(c)
-                                   for c in re.split('([0-9]+)', key)]
-
-    return sorted(l, key=alphanum_key)
-
-
 def generate_bom(pcb, filter_layer=None):
     """
     Generate BOM from pcb layout.
     :param filter_layer: include only parts for given layer
     :return: BOM table (qty, value, footprint, refs)
     """
+    def convert(text): return int(text) if text.isdigit() else text.lower()
+
+    def alphanum_key(key): return [convert(c)
+                                   for c in re.split('([0-9]+)', key)]
+
+    def natural_sort(l):
+        """
+        Natural sort for strings containing numbers
+        """
+
+        return sorted(l, key=alphanum_key)
+
+
     attr_dict = {0: 'Normal',
                  1: 'Normal+Insert',
                  2: 'Virtual'
@@ -68,9 +67,10 @@ def generate_bom(pcb, filter_layer=None):
             len(valrefs[1]), valrefs[0], footprint, natural_sort(valrefs[1]))
         bom_table.append(line)
 
-    # sort table by reference prefix and quantity
+    # sort table by reference prefix, footprint and quantity
     def sort_func(row):
-        qty, _, _, rf = row
+        qty, _, fp, rf = row
+        prefix = re.findall('^[A-Z]+', rf[0])[0]
         ref_ord = {
             "C": 1,
             "R": 2,
@@ -82,10 +82,11 @@ def generate_bom(pcb, filter_layer=None):
             "X": 8,
             "F": 9,
             "S": 10,
-            "J": 1001,
-            "P": 1002
-        }.get(rf[0][0], 1000)
-        return ref_ord, -qty
+            "CNN": 1997,
+            "J": 1998,
+            "P": 1999
+        }.get(prefix, 1000)
+        return ref_ord, fp, -qty, alphanum_key(rf[0])
 
     bom_table = sorted(bom_table, key=sort_func)
 
