@@ -17,10 +17,13 @@ def generate_bom(pcb, filter_layer=None):
     :param filter_layer: include only parts for given layer
     :return: BOM table (qty, value, footprint, refs)
     """
-    def convert(text): return int(text) if text.isdigit() else text.lower()
 
-    def alphanum_key(key): return [convert(c)
-                                   for c in re.split('([0-9]+)', key)]
+    def convert(text):
+        return int(text) if text.isdigit() else text.lower()
+
+    def alphanum_key(key):
+        return [convert(c)
+                for c in re.split('([0-9]+)', key)]
 
     def natural_sort(l):
         """
@@ -28,7 +31,6 @@ def generate_bom(pcb, filter_layer=None):
         """
 
         return sorted(l, key=alphanum_key)
-
 
     attr_dict = {0: 'Normal',
                  1: 'Normal+Insert',
@@ -369,7 +371,7 @@ def generate_file(dir, pcbdata):
     with open(bom_file_name, "wt") as bom:
         bom.write(html)
     print "Created file", bom_file_name
-
+    return bom_file_name
 
 
 def main(pcb, launch_browser=True):
@@ -385,7 +387,7 @@ def main(pcb, launch_browser=True):
     if not file_date:
         file_mtime = os.path.getmtime(pcb_file_name)
         file_date = datetime.fromtimestamp(file_mtime).strftime(
-            '%Y-%m-%d %H:%M:%S')
+                '%Y-%m-%d %H:%M:%S')
     title = title_block.GetTitle()
     if not title:
         title = os.path.basename(pcb_file_name)
@@ -417,8 +419,8 @@ def main(pcb, launch_browser=True):
     bom_file = generate_file(bom_file_dir, pcbdata)
 
     if launch_browser:
-        print "Opening it in browser"
-        open_file(os.path.join(bom_file_dir, 'ibom.html'))
+        print "Opening file in browser"
+        open_file(bom_file)
 
 
 class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
@@ -433,7 +435,8 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
         """
         self.name = "Generate Interactive HTML BOM"
         self.category = "Read PCB"
-        self.description = "Generate interactive HTML page that contains BOM table and pcb drawing."
+        self.description = "Generate interactive HTML page that contains BOM " \
+                           "table and pcb drawing."
 
     def Run(self):
         main(pcbnew.GetBoard())
