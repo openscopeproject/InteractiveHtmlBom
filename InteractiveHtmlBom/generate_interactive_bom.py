@@ -350,6 +350,28 @@ def open_file(filename):
         subprocess.call(('xdg-open', filename))
 
 
+def generate_file(dir, pcbdata):
+    def get_file_content(file_name):
+        with open(os.path.join(os.path.dirname(__file__), file_name), "r") as f:
+            return f.read()
+
+    print "Dumping pcb json data"
+    bom_file_name = os.path.join(dir, "ibom.html")
+    if not os.path.isdir(os.path.dirname(bom_file_name)):
+        os.makedirs(os.path.dirname(bom_file_name))
+    pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
+    html = get_file_content("ibom.html")
+    html = html.replace('///CSS///', get_file_content('ibom.css'))
+    html = html.replace('///SPLITJS///', get_file_content('split.js'))
+    html = html.replace('///PCBDATA///', pcbdata_js)
+    html = html.replace('///RENDERJS///', get_file_content('render.js'))
+    html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
+    with open(bom_file_name, "wt") as bom:
+        bom.write(html)
+    print "Created file", bom_file_name
+
+
+
 def main(pcb, launch_browser=True):
     pcb_file_name = pcb.GetFileName()
     if not pcb_file_name:
@@ -392,17 +414,7 @@ def main(pcb, launch_browser=True):
         bom_table = generate_bom(pcb, filter_layer=layer)
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
-    print "Dumping pcb json data"
-    bom_file_name = os.path.join(bom_file_dir, "ibom.html")
-    if not os.path.isdir(os.path.dirname(bom_file_name)):
-        os.makedirs(os.path.dirname(bom_file_name))
-    pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
-    with open(os.path.join(os.path.dirname(__file__), "ibom.html"), "r") as html:
-        html_content = html.read()
-        html_content = html_content.replace('///PCBDATA///', pcbdata_js)
-    with open(bom_file_name, "wt") as bom:
-        bom.write(html_content)
-    print "Created file", bom_file_name
+    bom_file = generate_file(bom_file_dir, pcbdata)
 
     if launch_browser:
         print "Opening it in browser"
