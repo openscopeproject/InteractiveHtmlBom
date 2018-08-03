@@ -30,11 +30,17 @@
 
 <body>
 <div id="topmostdiv" style="width: 100%; height: 100%">
-  <div id="top" class="split" style="height: 80px; border-bottom: 2px solid black;">
+  <div id="top" style="height: 80px; border-bottom: 2px solid black;">
     <div style="float: right;">
-      <div class="hideonprint" style="float: right; margin: 10px; position: relative; top: 20px">
-        <input id="silkscreenCheckbox" type="checkbox" name="silkscreen" value="silkscreen" checked
-               onchange="silkscreenVisible(this.checked)">Silkscreen
+      <div class="hideonprint menu" style="float: right; margin: 10px; top: 8px;">
+        <button class="menubtn"></button>
+        <div class="menu-content">
+          <label class="checkbox-label">
+            <input id="silkscreenCheckbox" type="checkbox" name="silkscreen"
+                   value="silkscreen" checked onchange="silkscreenVisible(this.checked)">
+            Show silkscreen
+          </label>
+        </div>
       </div>
       <div class="button-container hideonprint"
            style="float: right; margin: 10px; position: relative; top: 8px">
