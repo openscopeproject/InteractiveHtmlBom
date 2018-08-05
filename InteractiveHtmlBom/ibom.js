@@ -7,6 +7,7 @@ var canvassplit;
 var canvaslayout = "default";
 var bomlayout = "default";
 var highlightedRefs = [];
+var bomCheckboxes = "";
 
 function readStorage(key) {
   return window.localStorage.getItem(storagePrefix + '#' + key);
@@ -81,6 +82,41 @@ function populateBomTable() {
   while (bom.firstChild) {
     bom.removeChild(bom.firstChild);
   }
+  while (bomhead.firstChild) {
+    bomhead.removeChild(bomhead.firstChild);
+  }
+  // Populate header
+  var tr = document.createElement("TR");
+  var td = document.createElement("TH");
+  td.classList.add("numCol");
+  tr.appendChild(td);
+  checkboxes = bomCheckboxes.split(",");
+  for (checkbox of checkboxes) {
+    if (checkbox) {
+      td = document.createElement("TH");
+      td.classList.add("bom-checkbox");
+      td.innerHTML = checkbox;
+      tr.appendChild(td);
+    }
+  }
+  td = document.createElement("TH");
+  td.classList.add("References");
+  td.innerHTML = "References";
+  tr.appendChild(td);
+  td = document.createElement("TH");
+  td.classList.add("Value");
+  td.innerHTML = "Value";
+  tr.appendChild(td);
+  td = document.createElement("TH");
+  td.classList.add("Footprint");
+  td.innerHTML = "Footprint";
+  tr.appendChild(td);
+  td = document.createElement("TH");
+  td.classList.add("Quantity");
+  td.innerHTML = "Quantity";
+  tr.appendChild(td);
+  bomhead.appendChild(tr);
+  // Populate table body
   var first = true;
   switch (canvaslayout) {
     case 'F':
@@ -111,6 +147,16 @@ function populateBomTable() {
     tr.id = "bomrow" + rownum;
     td.textContent = rownum;
     tr.appendChild(td);
+    // Checkboxes
+    for (checkbox of checkboxes) {
+      if (checkbox) {
+        td = document.createElement("TD");
+        input = document.createElement("input");
+        input.type = "checkbox";
+        td.appendChild(input);
+        tr.appendChild(td);
+      }
+    }
     // References
     td = document.createElement("TD");
     td.innerHTML = highlightFilter(references.join(", "));
@@ -185,7 +231,7 @@ function changeCanvasLayout(layout) {
   canvaslayout = layout;
   writeStorage("canvaslayout", layout);
   resizeAll();
-  populateBomTable(layout);
+  populateBomTable();
 }
 
 function populateMetadata() {
@@ -289,11 +335,18 @@ function cleanGutters() {
   removeGutterNode(document.getElementById("canvasdiv"));
 }
 
+function setBomCheckboxes(value) {
+  bomCheckboxes = value;
+  writeStorage("bomCheckboxes", value);
+  populateBomTable();
+}
+
 window.onload = function(e) {
   cleanGutters();
   initRender();
   dbgdiv = document.getElementById("dbg");
   bom = document.getElementById("bombody");
+  bomhead = document.getElementById("bomhead");
   bomlayout = readStorage("bomlayout");
   if (!bomlayout) {
     bomlayout = "LR";
@@ -305,6 +358,11 @@ window.onload = function(e) {
   filter = "";
   reflookup = "";
   populateMetadata();
+  bomCheckboxes = readStorage("bomCheckboxes");
+  if (bomCheckboxes === null) {
+    bomCheckboxes = "Sourced,Placed";
+  }
+  document.getElementById("bomCheckboxes").value = bomCheckboxes;
   changeBomLayout(bomlayout);
   if (readStorage("silkscreenVisible") === "false") {
     document.getElementById("silkscreenCheckbox").checked = false;

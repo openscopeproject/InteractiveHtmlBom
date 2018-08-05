@@ -43,6 +43,11 @@
             <input id="dragCheckbox" type="checkbox" checked onchange="setRedrawOnDrag(this.checked)">
             Continuous redraw on drag
           </label>
+          <label class="menu-label">
+            <div style="margin-left: 5px">Bom checkboxes</div>
+            <input id="bomCheckboxes" class="menu-textbox" type=text
+                   oninput="setBomCheckboxes(this.value)">
+          </label>
         </div>
       </div>
       <div class="button-container hideonprint"
@@ -100,14 +105,7 @@
       </div>
       <div id="dbg"></div>
       <table class="bom">
-        <thead>
-        <tr>
-          <th class="numCol"></th>
-          <th class="References">References</th>
-          <th class="Value">Value</th>
-          <th class="Footprint">Footprint</th>
-          <th class="Quantity">Quantity</th>
-        </tr>
+        <thead id="bomhead">
         </thead>
         <tbody id="bombody">
         </tbody>

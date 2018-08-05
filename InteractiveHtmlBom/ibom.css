@@ -100,7 +100,7 @@ canvas:active {
 
 .bom {
   border-collapse: collapse;
-  font-family: Consolas, monospace;
+  font-family: Consolas, "DejaVu Sans Mono", Monaco, monospace;
   font-size: 10pt;
   table-layout: fixed;
   width: 100%;
@@ -132,6 +132,10 @@ canvas:active {
 
 .bom .numCol {
   width: 25px;
+}
+
+.bom .bom-checkbox {
+  width: 30px;
 }
 
 .bom .Description {
@@ -186,7 +190,7 @@ canvas:active {
   height: 40px;
   margin: 10px 5px;
   padding: 12px 32px;
-  font-family: Consolas, "DejaVu Sans Mono", monospace;
+  font-family: Consolas, "DejaVu Sans Mono", Monaco, monospace;
   font-size: 18px;
   box-sizing: border-box;
   border: 1px solid #888;
@@ -266,6 +270,22 @@ mark.highlight {
 
 .menu-label-top {
   border-top: 1px solid #ccc;
+}
+
+.menu-textbox {
+  float: left;
+  height: 24px;
+  margin: 10px 5px;
+  padding: 5px 5px;
+  font-family: Consolas, "DejaVu Sans Mono", Monaco, monospace;
+  font-size: 14px;
+  box-sizing: border-box;
+  border: 1px solid #888;
+  border-radius: 4px;
+  outline: none;
+  background-color: #eee;
+  transition: background-color 0.2s, border 0.2s;
+  width: calc(100% - 10px);
 }
 
 #dbg {
