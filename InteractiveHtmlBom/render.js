@@ -284,8 +284,8 @@ function prepareLayer(canvasdict) {
 
 function recalcLayerScale(canvasdict) {
   canvasdivid = { "F": "frontcanvas", "B": "backcanvas"}[canvasdict.layer];
-  var width = document.getElementById(canvasdivid).clientWidth * 2 - 10;
-  var height = document.getElementById(canvasdivid).clientHeight * 2 - 10;
+  var width = document.getElementById(canvasdivid).clientWidth * 2;
+  var height = document.getElementById(canvasdivid).clientHeight * 2;
   var [minx, maxx, miny, maxy] = getEdgesBoundaries(pcbdata.edges);
   var scalefactor = Math.min(
     width * 0.98 / (maxx - minx),
