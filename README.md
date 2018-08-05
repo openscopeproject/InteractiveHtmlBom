@@ -89,10 +89,14 @@ path/to/kicad/bin/python.exe .../generate_interactive_bom.py .../board.kicad_pcb
 
 ## Supported versions
 
-KiCad 5.0 is the only supported version. Pcbnew python interface is not very
+KiCad 5.0 is the only fully supported version. Pcbnew python interface is not very
 stable and tends to have backwards incompatible changes. I will try to support
 future versions but generally you can expect my plugin to be tested only on
 the latest stable build.
+
+Plugin is reported to work with KiCad 4 when used from command line but it can
+break any time. If you encounter issues file a bug report and I will try to fix
+them if possible but no promises.
 
 ## Known issues
 
@@ -104,11 +108,11 @@ the latest stable build.
 
 -   Custom shape pads and copper zone drawings in footprints are supported but
     you need patched version of KiCad python bindings.
+    My patch was integrated in KiCad dev branch, if you install a recent nightly
+    build custom pads and copper/silkscreen graphics will be rendered.
 
-    Patch is sent to KiCad devs and hopefully will be integrated soon. In the
-    meantime you can get prebuilt patched bindings for 5.0
-    [here](http://github.com/openscopeproject/InteractiveHtmlBom/releases)
-    (win x64 only).
+    You can also get prebuilt patched bindings for windows x64 KiCad 5.0
+    [here](http://github.com/openscopeproject/InteractiveHtmlBom/releases).
 
     Overwrite corresponding files:
 
@@ -127,7 +131,7 @@ the latest stable build.
 General software bug reporting rules apply, make sure to describe in most
 clear terms the following:
 
-1.  KiCad version used.
+1.  Platform and KiCad version used.
 2.  What are the steps to reproduce the issue.
 3.  What is the observed behavior.
 4.  What is expected behavior.
@@ -160,8 +164,11 @@ problem area._
 
 ## Browser support
 
-Generated html page is tested in Chrome, Firefox and Edge. IE will not be
+Generated html page is tested in Chrome and Firefox. IE will not be
 supported, patches for other browsers are welcome.
+
+Edge is currently broken because of
+https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/8816771/
 
 # License and credits
 
