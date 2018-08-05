@@ -376,10 +376,23 @@ function handleMouseWheel(e, layerdict) {
   e.preventDefault();
   e.stopPropagation();
   t = layerdict.transform;
-  if (e.deltaY > 0) {
-    m = 100 / e.deltaY;
+  var wheeldelta = e.deltaY;
+  if (e.deltaMode == 1) {
+    // FF only, scroll by lines
+    wheeldelta *= 30;
+  } else if (e.deltaMode == 2) {
+    wheeldelta *= 300;
+  }
+  if (wheeldelta > 0) {
+    m = 100 / wheeldelta;
   } else {
-    m = -e.deltaY / 100;
+    m = -wheeldelta / 100;
+  }
+  // Limit amount of zoom per tick.
+  if (m > 3) {
+    m = 3;
+  } else if (m < 0.33) {
+    m = 0.33;
   }
   t.zoom *= m;
   zoomd = (1 - m) / t.zoom;
@@ -401,7 +414,7 @@ function addMouseHandlers(div, layerdict) {
   div.onmouseout = function(e) {
     handleMouseUp(e, layerdict);
   }
-  div.onmousewheel = function(e) {
+  div.onwheel = function(e) {
     handleMouseWheel(e, layerdict);
   }
   for (element of [div, layerdict.bg, layerdict.silk, layerdict.highlight]) {
