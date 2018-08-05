@@ -4,10 +4,9 @@ var storagePrefix = 'KiCad_HTML_BOM__' + pcbdata.metadata.title + '__' +
   pcbdata.metadata.revision + '__';
 var bomsplit;
 var canvassplit;
-var frontscale = 12;
-var backscale = 12;
 var canvaslayout = "default";
 var bomlayout = "default";
+var highlightedRefs = [];
 
 function readStorage(key) {
   return window.localStorage.getItem(storagePrefix + '#' + key);
@@ -23,7 +22,8 @@ function dbg(str) {
 
 function createRowMouseEnterHandler(refs) {
   return function() {
-    drawHighlights(refs);
+    highlightedRefs = refs;
+    drawHighlights();
   }
 }
 
@@ -130,7 +130,8 @@ function populateBomTable() {
     bom.appendChild(tr);
     tr.onmouseenter = createRowMouseEnterHandler(references);
     if ((filter || reflookup) && first) {
-      drawHighlights(references);
+      highlightedRefs = references;
+      drawHighlights();
       first = false;
     }
   }
@@ -183,7 +184,7 @@ function changeCanvasLayout(layout) {
   }
   canvaslayout = layout;
   writeStorage("canvaslayout", layout);
-  resizeCanvas();
+  resizeAll();
   populateBomTable(layout);
 }
 
@@ -231,14 +232,14 @@ function changeBomLayout(layout) {
       }
       bomsplit = Split(['#bomdiv', '#canvasdiv'], {
         sizes: [50, 50],
-        onDragEnd: resizeCanvas,
+        onDragEnd: resizeAll,
         direction: "vertical",
         gutterSize: 5
       });
       canvassplit = Split(['#frontcanvas', '#backcanvas'], {
         sizes: [50, 50],
         gutterSize: 5,
-        onDragEnd: resizeCanvas
+        onDragEnd: resizeAll
       });
       break;
     case 'LR':
@@ -258,14 +259,14 @@ function changeBomLayout(layout) {
       }
       bomsplit = Split(['#bomdiv', '#canvasdiv'], {
         sizes: [50, 50],
-        onDragEnd: resizeCanvas,
+        onDragEnd: resizeAll,
         gutterSize: 5
       });
       canvassplit = Split(['#frontcanvas', '#backcanvas'], {
         sizes: [50, 50],
         gutterSize: 5,
         direction: "vertical",
-        onDragEnd: resizeCanvas
+        onDragEnd: resizeAll
       });
   }
   bomlayout = layout;
@@ -290,15 +291,7 @@ function cleanGutters() {
 
 window.onload = function(e) {
   cleanGutters();
-  allcanvas = {};
-  allcanvas.front = {};
-  allcanvas.back = {};
-  allcanvas.front.bg = document.getElementById("F_bg");
-  allcanvas.front.silk = document.getElementById("F_slk");
-  allcanvas.front.highlight = document.getElementById("F_hl");
-  allcanvas.back.bg = document.getElementById("B_bg");
-  allcanvas.back.silk = document.getElementById("B_slk");
-  allcanvas.back.highlight = document.getElementById("B_hl");
+  initRender();
   dbgdiv = document.getElementById("dbg");
   bom = document.getElementById("bombody");
   bomlayout = readStorage("bomlayout");
@@ -319,5 +312,5 @@ window.onload = function(e) {
   }
 }
 
-window.onresize = resizeCanvas;
-window.matchMedia("print").addListener(resizeCanvas);
+window.onresize = resizeAll;
+window.matchMedia("print").addListener(resizeAll);

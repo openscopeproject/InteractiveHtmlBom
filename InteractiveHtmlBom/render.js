@@ -22,7 +22,7 @@ function getEdgesBoundaries(edges) {
 
 function drawtext(ctx, scalefactor, text, color, flip) {
   ctx.save();
-  ctx.translate(...text.pos.map(c => c * scalefactor));
+  ctx.translate(...text.pos);
   angle = -text.angle;
   if (flip) {
     ctx.scale(-1, 1);
@@ -43,9 +43,8 @@ function drawtext(ctx, scalefactor, text, color, flip) {
       ctx.textAlign = "right";
       break;
   }
-  spacing = 1.6 * scalefactor;
   for (i = 0; i < txt.length; i++) {
-    offset = -(txt.length - 1) * spacing / 2 + i * spacing;
+    offset = -(txt.length - 1) * 0.8 + i * 1.6;
     ctx.fillText(txt[i], 0, offset);
   }
   ctx.restore();
@@ -53,19 +52,19 @@ function drawtext(ctx, scalefactor, text, color, flip) {
 
 function drawedge(ctx, scalefactor, edge, color) {
   ctx.strokeStyle = color;
-  ctx.lineWidth = Math.max(1, edge.width * scalefactor)
+  ctx.lineWidth = Math.max(2, edge.width) / scalefactor;
   ctx.lineCap = "round";
   if (edge.type == "segment") {
     ctx.beginPath();
-    ctx.moveTo(...edge.start.map(c => c * scalefactor));
-    ctx.lineTo(...edge.end.map(c => c * scalefactor));
+    ctx.moveTo(...edge.start);
+    ctx.lineTo(...edge.end);
     ctx.stroke();
   }
   if (edge.type == "arc") {
     ctx.beginPath();
     ctx.arc(
-      ...edge.start.map(c => c * scalefactor),
-      edge.radius * scalefactor,
+      ...edge.start,
+      edge.radius,
       deg2rad(edge.startangle),
       deg2rad(edge.endangle));
     ctx.stroke();
@@ -73,8 +72,8 @@ function drawedge(ctx, scalefactor, edge, color) {
   if (edge.type == "circle") {
     ctx.beginPath();
     ctx.arc(
-      ...edge.start.map(c => c * scalefactor),
-      edge.radius * scalefactor,
+      ...edge.start,
+      edge.radius,
       0, 2 * Math.PI);
     ctx.stroke();
   }
@@ -85,12 +84,12 @@ function drawOblong(ctx, scalefactor, color, size) {
   ctx.strokeStyle = color;
   ctx.lineCap = "round";
   if (size[0] > size[1]) {
-    ctx.lineWidth = size[1] * scalefactor;
-    var from = [-size[0] * scalefactor / 2 + size[1] * scalefactor / 2, 0];
+    ctx.lineWidth = size[1];
+    var from = [-size[0] / 2 + size[1] / 2, 0];
     var to = [-from[0], 0];
   } else {
-    ctx.lineWidth = size[0] * scalefactor;
-    var from = [0, -size[1] * scalefactor / 2 + size[0] * scalefactor / 2];
+    ctx.lineWidth = size[0];
+    var from = [0, -size[1] / 2 + size[0] / 2];
     var to = [0, -from[1]];
   }
   ctx.moveTo(...from);
@@ -101,11 +100,10 @@ function drawOblong(ctx, scalefactor, color, size) {
 function drawRoundRect(ctx, scalefactor, color, size, radius) {
   ctx.beginPath();
   ctx.strokeStyle = color;
-  x = size[0] * -0.5 * scalefactor;
-  y = size[1] * -0.5 * scalefactor;
-  width = size[0] * scalefactor;
-  height = size[1] * scalefactor;
-  radius = radius * scalefactor;
+  x = size[0] * -0.5;
+  y = size[1] * -0.5;
+  width = size[0];
+  height = size[1];
   ctx.moveTo(x, 0);
   ctx.arcTo(x, y + height, x + width, y + height, radius);
   ctx.arcTo(x + width, y + height, x + width, y, radius);
@@ -120,7 +118,7 @@ function drawPolygons(ctx, scalefactor, color, polygons) {
   for (polygon of polygons) {
     ctx.beginPath();
     for (vertex of polygon) {
-      ctx.lineTo(vertex[0] * scalefactor, vertex[1] * scalefactor)
+      ctx.lineTo(...vertex)
     }
     ctx.closePath();
     ctx.fill();
@@ -129,7 +127,7 @@ function drawPolygons(ctx, scalefactor, color, polygons) {
 
 function drawPolygonShape(ctx, scalefactor, shape, color) {
   ctx.save();
-  ctx.translate(...shape.pos.map(c => c * scalefactor));
+  ctx.translate(...shape.pos);
   ctx.rotate(deg2rad(-shape.angle));
   drawPolygons(ctx, scalefactor, color, shape.polygons);
   ctx.restore();
@@ -153,17 +151,17 @@ function drawModule(ctx, layer, scalefactor, module, highlight) {
     if (module.layer == layer) {
       ctx.save();
       ctx.globalAlpha = 0.2;
-      ctx.translate(...module.bbox.pos.map(c => c * scalefactor));
+      ctx.translate(...module.bbox.pos);
       ctx.fillStyle = "#D04040";
       ctx.fillRect(
         0, 0,
-        ...module.bbox.size.map(c => c * scalefactor));
+        ...module.bbox.size);
       ctx.globalAlpha = 1;
       ctx.strokeStyle = "#D04040";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2 / scalefactor;
       ctx.strokeRect(
         0, 0,
-        ...module.bbox.size.map(c => c * scalefactor));
+        ...module.bbox.size);
       ctx.restore();
     }
   }
@@ -177,18 +175,18 @@ function drawModule(ctx, layer, scalefactor, module, highlight) {
   for (pad of module.pads) {
     if (pad.layers.includes(layer)) {
       ctx.save();
-      ctx.translate(...pad.pos.map(c => c * scalefactor));
+      ctx.translate(...pad.pos);
       ctx.rotate(deg2rad(pad.angle));
       ctx.fillStyle = padcolor;
       if (pad.shape == "rect") {
         ctx.fillRect(
-          ...pad.size.map(c => -c * scalefactor * 0.5),
-          ...pad.size.map(c => c * scalefactor));
+          ...pad.size.map(c => -c * 0.5),
+          ...pad.size);
       } else if (pad.shape == "oval") {
         drawOblong(ctx, scalefactor, padcolor, pad.size)
       } else if (pad.shape == "circle") {
         ctx.beginPath();
-        ctx.arc(0, 0, pad.size[0] * scalefactor / 2, 0, 2 * Math.PI);
+        ctx.arc(0, 0, pad.size[0] / 2, 0, 2 * Math.PI);
         ctx.fill();
       } else if (pad.shape == "roundrect") {
         drawRoundRect(ctx, scalefactor, padcolor, pad.size, pad.radius)
@@ -201,7 +199,7 @@ function drawModule(ctx, layer, scalefactor, module, highlight) {
         } else {
           ctx.fillStyle = "#CCCCCC"
           ctx.beginPath();
-          ctx.arc(0, 0, pad.drillsize[0] * scalefactor / 2, 0, 2 * Math.PI);
+          ctx.arc(0, 0, pad.drillsize[0] / 2, 0, 2 * Math.PI);
           ctx.fill();
         }
       }
@@ -210,14 +208,14 @@ function drawModule(ctx, layer, scalefactor, module, highlight) {
   }
 }
 
-function drawModules(canvas, layer, scalefactor, highlightRefs) {
+function drawModules(canvas, layer, scalefactor, highlightedRefs) {
   var ctx = canvas.getContext("2d");
   for (edge of pcbdata.edges) {
     drawedge(ctx, scalefactor, edge, "black");
   }
   for (i in pcbdata.modules) {
     var mod = pcbdata.modules[i];
-    var highlight = highlightRefs.includes(mod.ref);
+    var highlight = highlightedRefs.includes(mod.ref);
     drawModule(ctx, layer, scalefactor, mod, highlight);
   }
 }
@@ -243,39 +241,47 @@ function clearCanvas(canvas) {
   ctx.restore();
 }
 
-function drawHighlights(highlightRefs) {
-  clearCanvas(allcanvas.front.highlight);
-  clearCanvas(allcanvas.back.highlight);
-  drawModules(allcanvas.front.highlight, "F", frontscale, highlightRefs);
-  drawModules(allcanvas.back.highlight, "B", backscale, highlightRefs);
+function drawHighlightsOnLayer(canvasdict) {
+  clearCanvas(canvasdict.highlight);
+  drawModules(canvasdict.highlight, canvasdict.layer, canvasdict.transform.s, highlightedRefs);
 }
 
-function drawBackground() {
-  clearCanvas(allcanvas.front.bg);
-  clearCanvas(allcanvas.back.bg);
-  clearCanvas(allcanvas.front.silk);
-  clearCanvas(allcanvas.back.silk);
-  drawModules(allcanvas.front.highlight, "F", frontscale, []);
-  drawModules(allcanvas.back.highlight, "B", backscale, []);
-  drawSilkscreen(allcanvas.front.silk, "F", frontscale);
-  drawSilkscreen(allcanvas.back.silk, "B", backscale);
+function drawHighlights() {
+  drawHighlightsOnLayer(allcanvas.front);
+  drawHighlightsOnLayer(allcanvas.back);
 }
 
-function prepareCanvas(canvas, layer, scalefactor, tx, ty) {
+function drawBackground(canvasdict) {
+  clearCanvas(canvasdict.bg);
+  clearCanvas(canvasdict.silk);
+  drawModules(canvasdict.bg, canvasdict.layer, canvasdict.transform.s, []);
+  drawSilkscreen(canvasdict.silk, canvasdict.layer, canvasdict.transform.s);
+}
+
+function prepareCanvas(canvas, flip, transform) {
   var ctx = canvas.getContext("2d");
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  fontsize = 1.5 * scalefactor;
-  ctx.font = "bold " + fontsize + "px Consolas,\"DejaVu Sans Mono\",monospace";
+  fontsize = 1.55;
+  ctx.font = "bold " + fontsize + "px Consolas,\"DejaVu Sans Mono\",Monaco,monospace";
   ctx.textBaseline = "middle";
-  if (layer == "F") {
-    ctx.translate(tx, ty);
-  } else {
+  ctx.scale(transform.zoom, transform.zoom);
+  ctx.translate(transform.panx, transform.pany);
+  if (flip) {
     ctx.scale(-1, 1);
-    ctx.translate(tx, ty);
+  }
+  ctx.translate(transform.x, transform.y);
+  ctx.scale(transform.s, transform.s);
+}
+
+function prepareLayer(canvasdict) {
+  flip = (canvasdict.layer == "B");
+  for (c of ["bg", "silk", "highlight"]) {
+    prepareCanvas(canvasdict[c], flip, canvasdict.transform);
   }
 }
 
-function resizeLayerCanvas(canvaslist, canvasdivid, layer) {
+function recalcLayerScale(canvasdict) {
+  canvasdivid = { "F": "frontcanvas", "B": "backcanvas"}[canvasdict.layer];
   var width = document.getElementById(canvasdivid).clientWidth * 2 - 10;
   var height = document.getElementById(canvasdivid).clientHeight * 2 - 10;
   var [minx, maxx, miny, maxy] = getEdgesBoundaries(pcbdata.edges);
@@ -286,27 +292,159 @@ function resizeLayerCanvas(canvaslist, canvasdivid, layer) {
   if (scalefactor < 0) {
     scalefactor = 0.1;
   }
-  console.log("Scale factor " + canvasdivid + ": " + scalefactor)
-  if (layer == "B") {
-    var tx = -((maxx + minx) * scalefactor + width) * 0.5;
+  canvasdict.transform.s = scalefactor;
+  flip = (canvasdict.layer == "B");
+  if (flip) {
+    canvasdict.transform.x = -((maxx + minx) * scalefactor + width) * 0.5;
   } else {
-    var tx = -((maxx + minx) * scalefactor - width) * 0.5;
+    canvasdict.transform.x = -((maxx + minx) * scalefactor - width) * 0.5;
   }
-  var ty = -((maxy + miny) * scalefactor - height) * 0.5;
-  for (c in canvaslist) {
-    canvas = canvaslist[c];
+  canvasdict.transform.y = -((maxy + miny) * scalefactor - height) * 0.5;
+  for (c of ["bg", "silk", "highlight"]) {
+    canvas = canvasdict[c];
     canvas.width = width;
     canvas.height = height;
     canvas.style.width = (width / 2) + "px";
     canvas.style.height = (height / 2) + "px";
-    prepareCanvas(canvas, layer, scalefactor, tx, ty);
   }
-  return scalefactor;
+  console.log("Scale factor " + canvasdivid + ": ", canvasdict.transform);
 }
 
-function resizeCanvas() {
-  frontscale = resizeLayerCanvas(allcanvas.front, "frontcanvas", "F")
-  backscale = resizeLayerCanvas(allcanvas.back, "backcanvas", "B")
-  drawBackground();
-  drawHighlights([]);
+function redrawCanvas(layerdict) {
+  prepareLayer(layerdict);
+  drawBackground(layerdict);
+  drawHighlights(layerdict);
+  t = layerdict.transform;
+  dbgdiv.innerHTML = "x: " + t.x + "</br>y: " + t.y + "</br>s: " + t.s +
+    "</br>panx: " + t.panx + "</br>pany: " + t.pany + "</br>zoom: " + t.zoom;
+}
+
+function resizeCanvas(layerdict) {
+  recalcLayerScale(layerdict);
+  redrawCanvas(layerdict);
+}
+
+function resizeAll() {
+  resizeCanvas(allcanvas.front);
+  resizeCanvas(allcanvas.back);
+}
+
+function handleMouseDown(e, layerdict) {
+  if (e.which != 1) {
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
+  layerdict.transform.mousestartx = e.offsetX;
+  layerdict.transform.mousestarty = e.offsetY;
+  layerdict.transform.mousedown = true;
+}
+
+function handleMouseUp(e, layerdict) {
+  e.preventDefault();
+  e.stopPropagation();
+  layerdict.transform.mousedown = false;
+  if (e.which == 3) {
+    // Reset pan and zoom on right click.
+    layerdict.transform.panx = 0;
+    layerdict.transform.pany = 0;
+    layerdict.transform.zoom = 1;
+    redrawCanvas(layerdict);
+  }
+}
+
+function handleMouseMove(e, layerdict) {
+  if (!layerdict.transform.mousedown) {
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
+  dx = e.offsetX - layerdict.transform.mousestartx;
+  dy = e.offsetY - layerdict.transform.mousestarty;
+  layerdict.transform.panx += 2 * dx / layerdict.transform.zoom;
+  layerdict.transform.pany += 2 * dy / layerdict.transform.zoom;
+  layerdict.transform.mousestartx = e.offsetX;
+  layerdict.transform.mousestarty = e.offsetY;
+  redrawCanvas(layerdict);
+}
+
+function handleMouseWheel(e, layerdict) {
+  e.preventDefault();
+  e.stopPropagation();
+  t = layerdict.transform;
+  if (e.deltaY > 0) {
+    m = 100 / e.deltaY;
+  } else {
+    m = -e.deltaY / 100;
+  }
+  t.zoom *= m;
+  zoomd = (1 - m) / t.zoom;
+  t.panx += 2 * e.offsetX * zoomd;
+  t.pany += 2 * e.offsetY * zoomd;
+  redrawCanvas(layerdict);
+  console.log(layerdict.transform.zoom);
+}
+
+function addMouseHandlers(div, layerdict) {
+  div.onmousedown = function(e) {
+    handleMouseDown(e, layerdict);
+  };
+  div.onmousemove = function(e) {
+    handleMouseMove(e, layerdict);
+  };
+  div.onmouseup = function(e) {
+    handleMouseUp(e, layerdict);
+  };
+  div.onmouseout = function(e) {
+    handleMouseUp(e, layerdict);
+  }
+  div.onmousewheel = function(e) {
+    handleMouseWheel(e, layerdict);
+  }
+  for (element of [div, layerdict.bg, layerdict.silk, layerdict.highlight]) {
+    element.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
+    }, false);
+  }
+}
+
+function initRender() {
+  allcanvas = {
+    front: {
+      transform: {
+        x: 0,
+        y: 0,
+        s: 1,
+        panx: 0,
+        pany: 0,
+        zoom: 1,
+        mousestartx: 0,
+        mousestarty: 0,
+        mousedown: false,
+      },
+      bg: document.getElementById("F_bg"),
+      silk: document.getElementById("F_slk"),
+      highlight: document.getElementById("F_hl"),
+      layer: "F",
+    },
+    back: {
+      transform: {
+        x: 0,
+        y: 0,
+        s: 1,
+        panx: 0,
+        pany: 0,
+        zoom: 1,
+        mousestartx: 0,
+        mousestarty: 0,
+        mousedown: false,
+      },
+      bg: document.getElementById("B_bg"),
+      silk: document.getElementById("B_slk"),
+      highlight: document.getElementById("B_hl"),
+      layer: "B",
+    }
+  };
+  addMouseHandlers(document.getElementById("frontcanvas"), allcanvas.front);
+  addMouseHandlers(document.getElementById("backcanvas"), allcanvas.back);
 }

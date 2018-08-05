@@ -71,7 +71,11 @@ button#bom-btn {
 }
 
 canvas {
-  margin: 1px;
+  cursor: crosshair;
+}
+
+canvas:active {
+  cursor: grabbing;
 }
 
 .fileinfo {
@@ -257,4 +261,8 @@ mark.highlight {
   padding: 8px;
   border: 1px solid #ccc;
   width: calc(100% - 18px);
+}
+
+#dbg {
+  display: none;
 }
