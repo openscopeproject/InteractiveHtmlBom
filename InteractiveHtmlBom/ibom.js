@@ -21,6 +21,55 @@ function dbg(str) {
   dbgdiv.textContent = str;
 }
 
+function getStoredCheckboxRefs(checkbox) {
+  existingRefs = readStorage("checkbox_" + checkbox);
+  if (!existingRefs) {
+    refsSet = new Set();
+  } else {
+    refsSet = new Set(existingRefs.split(","));
+  }
+  return refsSet;
+}
+
+function setBomCheckboxState(checkbox, element, references) {
+  var storedRefsSet = getStoredCheckboxRefs(checkbox);
+  var currentRefsSet = new Set(references);
+  // Get difference of current - stored
+  var difference = new Set(currentRefsSet);
+  for (ref of storedRefsSet) {
+    difference.delete(ref);
+  }
+  if (difference.size == 0) {
+    // All the current refs are stored
+    element.checked = true;
+  } else if (difference.size == currentRefsSet.size) {
+    // None of the current refs are stored
+    element.checked = false;
+  } else {
+    // Some of the refs are stored
+    element.checked = false;
+    element.indeterminate = true;
+  }
+}
+
+function createCheckboxChangeHandler(checkbox, references) {
+  return function() {
+    refsSet = getStoredCheckboxRefs(checkbox);
+    if (this.checked) {
+      // checkbox ticked
+      for (ref of references) {
+        refsSet.add(ref);
+      }
+    } else {
+      // checkbox unticked
+      for (ref of references) {
+        refsSet.delete(ref);
+      }
+    }
+    writeStorage("checkbox_" + checkbox, [...refsSet].join(","));
+  }
+}
+
 function createRowMouseEnterHandler(refs) {
   return function() {
     highlightedRefs = refs;
@@ -78,14 +127,7 @@ function highlightFilter(s) {
   return r;
 }
 
-function populateBomTable() {
-  while (bom.firstChild) {
-    bom.removeChild(bom.firstChild);
-  }
-  while (bomhead.firstChild) {
-    bomhead.removeChild(bomhead.firstChild);
-  }
-  // Populate header
+function populateBomHeader() {
   var tr = document.createElement("TR");
   var td = document.createElement("TH");
   td.classList.add("numCol");
@@ -116,7 +158,9 @@ function populateBomTable() {
   td.innerHTML = "Quantity";
   tr.appendChild(td);
   bomhead.appendChild(tr);
-  // Populate table body
+}
+
+function populateBomBody() {
   var first = true;
   switch (canvaslayout) {
     case 'F':
@@ -153,6 +197,8 @@ function populateBomTable() {
         td = document.createElement("TD");
         input = document.createElement("input");
         input.type = "checkbox";
+        input.onchange = createCheckboxChangeHandler(checkbox, references);
+        setBomCheckboxState(checkbox, input, references);
         td.appendChild(input);
         tr.appendChild(td);
       }
@@ -181,6 +227,17 @@ function populateBomTable() {
       first = false;
     }
   }
+}
+
+function populateBomTable() {
+  while (bom.firstChild) {
+    bom.removeChild(bom.firstChild);
+  }
+  while (bomhead.firstChild) {
+    bomhead.removeChild(bomhead.firstChild);
+  }
+  populateBomHeader();
+  populateBomBody();
 }
 
 function updateFilter(input) {
