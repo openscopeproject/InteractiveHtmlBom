@@ -35,10 +35,13 @@
       <div class="hideonprint menu" style="float: right; margin: 10px; top: 8px;">
         <button class="menubtn"></button>
         <div class="menu-content">
-          <label class="checkbox-label">
-            <input id="silkscreenCheckbox" type="checkbox" name="silkscreen"
-                   value="silkscreen" checked onchange="silkscreenVisible(this.checked)">
+          <label class="menu-label menu-label-top">
+            <input id="silkscreenCheckbox" type="checkbox" checked onchange="silkscreenVisible(this.checked)">
             Show silkscreen
+          </label>
+          <label class="menu-label">
+            <input id="dragCheckbox" type="checkbox" checked onchange="setRedrawOnDrag(this.checked)">
+            Continuous redraw on drag
           </label>
         </div>
       </div>

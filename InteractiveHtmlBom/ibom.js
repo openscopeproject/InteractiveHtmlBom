@@ -310,6 +310,10 @@ window.onload = function(e) {
     document.getElementById("silkscreenCheckbox").checked = false;
     silkscreenVisible(false);
   }
+  if (readStorage("redrawOnDrag") === "false") {
+    document.getElementById("dragCheckbox").checked = false;
+    setRedrawOnDrag(false);
+  }
 }
 
 window.onresize = resizeAll;

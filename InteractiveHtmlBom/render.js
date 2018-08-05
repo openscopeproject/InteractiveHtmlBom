@@ -1,5 +1,7 @@
 /* PCB rendering code */
 
+var redrawOnDrag = true;
+
 function deg2rad(deg) {
   return deg * Math.PI / 180;
 }
@@ -52,7 +54,7 @@ function drawtext(ctx, scalefactor, text, color, flip) {
 
 function drawedge(ctx, scalefactor, edge, color) {
   ctx.strokeStyle = color;
-  ctx.lineWidth = Math.max(2, edge.width) / scalefactor;
+  ctx.lineWidth = Math.max(1 / scalefactor, edge.width);
   ctx.lineCap = "round";
   if (edge.type == "segment") {
     ctx.beginPath();
@@ -349,8 +351,8 @@ function handleMouseUp(e, layerdict) {
     layerdict.transform.panx = 0;
     layerdict.transform.pany = 0;
     layerdict.transform.zoom = 1;
-    redrawCanvas(layerdict);
   }
+  redrawCanvas(layerdict);
 }
 
 function handleMouseMove(e, layerdict) {
@@ -365,7 +367,9 @@ function handleMouseMove(e, layerdict) {
   layerdict.transform.pany += 2 * dy / layerdict.transform.zoom;
   layerdict.transform.mousestartx = e.offsetX;
   layerdict.transform.mousestarty = e.offsetY;
-  redrawCanvas(layerdict);
+  if (redrawOnDrag) {
+    redrawCanvas(layerdict);
+  }
 }
 
 function handleMouseWheel(e, layerdict) {
@@ -406,6 +410,11 @@ function addMouseHandlers(div, layerdict) {
       e.preventDefault();
     }, false);
   }
+}
+
+function setRedrawOnDrag(value) {
+  redrawOnDrag = value;
+  writeStorage("redrawOnDrag", value);
 }
 
 function initRender() {

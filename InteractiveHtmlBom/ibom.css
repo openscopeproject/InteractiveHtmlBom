@@ -1,7 +1,7 @@
 html, body {
   margin: 0px;
   height: 100%;
-  font-family: "Helvetica Neue", Helvetica, Verdana, sans-serif;
+  font-family: Verdana, sans-serif;
 }
 
 button {
@@ -256,11 +256,16 @@ mark.highlight {
   background-color: #eee;
 }
 
-.checkbox-label {
+.menu-label {
   display: inline-block;
   padding: 8px;
   border: 1px solid #ccc;
+  border-top: 0;
   width: calc(100% - 18px);
+}
+
+.menu-label-top {
+  border-top: 1px solid #ccc;
 }
 
 #dbg {
