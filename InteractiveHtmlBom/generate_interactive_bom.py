@@ -100,7 +100,7 @@ def generate_bom(pcb, filter_layer=None):
 
 
 def normalize(point):
-    return [point[0] * 1e-6, point[1] * 1e-6]
+    return [point[0], point[1]]
 
 
 def parse_draw_segment(d):
@@ -119,28 +119,28 @@ def parse_draw_segment(d):
             "type": shape,
             "start": start,
             "end": end,
-            "width": d.GetWidth() * 1e-6
+            "width": d.GetWidth()
         }
     if shape == "circle":
         return {
             "type": shape,
             "start": start,
-            "radius": d.GetRadius() * 1e-6,
-            "width": d.GetWidth() * 1e-6
+            "radius": d.GetRadius(),
+            "width": d.GetWidth()
         }
     if shape == "arc":
         a1 = d.GetArcAngleStart() * 0.1
         a2 = (d.GetArcAngleStart() + d.GetAngle()) * 0.1
         if d.GetAngle() < 0:
             (a1, a2) = (a2, a1)
-        r = d.GetRadius() * 1e-6
+        r = d.GetRadius()
         return {
             "type": shape,
             "start": start,
             "radius": r,
             "startangle": a1,
             "endangle": a2,
-            "width": d.GetWidth() * 1e-6
+            "width": d.GetWidth()
         }
     if shape == "polygon":
         if hasattr(d, "GetPolyShape"):
@@ -186,11 +186,11 @@ def parse_text(d):
             angle = d.GetOrientation() * 0.1
             print d, angle
     if hasattr(d, "GetTextHeight"):
-        height = d.GetTextHeight() * 1e-6
-        width = d.GetTextWidth() * 1e-6
+        height = d.GetTextHeight()
+        width = d.GetTextWidth()
     else:
-        height = d.GetHeight() * 1e-6
-        width = d.GetWidth() * 1e-6
+        height = d.GetHeight()
+        width = d.GetWidth()
     return {
         "pos": pos,
         "text": d.GetText(),
@@ -317,7 +317,7 @@ def parse_modules(pcb):
                     print 'Detected self intersecting polygons in custom pad'
                 pad_dict["polygons"] = parse_poly_set(polygon_set)
             if shape == "roundrect":
-                pad_dict["radius"] = p.GetRoundRectCornerRadius() * 1e-6
+                pad_dict["radius"] = p.GetRoundRectCornerRadius()
             if (p.GetAttribute() == pcbnew.PAD_ATTRIB_STANDARD or
                     p.GetAttribute() == pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED):
                 pad_dict["type"] = "th"
