@@ -148,10 +148,13 @@ def parse_draw_segment(d):
         else:
             print "Polygons not supported for KiCad 4"
             polygons = []
+        angle = 0
+        if d.GetParentModule() is not None:
+            angle = d.GetParentModule().GetOrientation() * 0.1,
         return {
             "type": shape,
             "pos": start,
-            "angle": d.GetParentModule().GetOrientation() * 0.1,
+            "angle": angle,
             "polygons": polygons
         }
 
