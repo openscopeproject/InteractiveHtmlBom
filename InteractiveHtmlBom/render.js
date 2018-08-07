@@ -375,7 +375,7 @@ function handleMouseMove(e, layerdict) {
 function handleMouseWheel(e, layerdict) {
   e.preventDefault();
   e.stopPropagation();
-  t = layerdict.transform;
+  var t = layerdict.transform;
   var wheeldelta = e.deltaY;
   if (e.deltaMode == 1) {
     // FF only, scroll by lines
@@ -383,19 +383,15 @@ function handleMouseWheel(e, layerdict) {
   } else if (e.deltaMode == 2) {
     wheeldelta *= 300;
   }
-  if (wheeldelta > 0) {
-    m = 100 / wheeldelta;
-  } else {
-    m = -wheeldelta / 100;
-  }
+  var m = Math.pow(1.1, -wheeldelta / 40);
   // Limit amount of zoom per tick.
-  if (m > 3) {
-    m = 3;
-  } else if (m < 0.33) {
-    m = 0.33;
+  if (m > 2) {
+    m = 2;
+  } else if (m < 0.5) {
+    m = 0.5;
   }
   t.zoom *= m;
-  zoomd = (1 - m) / t.zoom;
+  var zoomd = (1 - m) / t.zoom;
   t.panx += 2 * e.offsetX * zoomd;
   t.pany += 2 * e.offsetY * zoomd;
   redrawCanvas(layerdict);
