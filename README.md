@@ -101,11 +101,6 @@ them if possible but no promises.
 ## Known issues
 
 -   Description and Part columns are not supported/tested yet.
--   Circle and Arc shape in edge cuts may lead to incorrect board boundary
-    calculation in html render.
-
-    For example a board that is just one circle will not render.
-
 -   Custom shape pads and copper zone drawings in footprints are supported but
     you need patched version of KiCad python bindings.
     My patch was integrated in KiCad dev branch, if you install a recent nightly

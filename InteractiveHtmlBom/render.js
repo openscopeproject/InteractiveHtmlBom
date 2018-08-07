@@ -6,22 +6,6 @@ function deg2rad(deg) {
   return deg * Math.PI / 180;
 }
 
-function getEdgesBoundaries(edges) {
-  var minx = edges.reduce((min, edge) => {
-    return Math.min(min, edge.start[0]);
-  }, Infinity);
-  var maxx = edges.reduce((min, edge) => {
-    return Math.max(min, edge.start[0]);
-  }, -Infinity);
-  var miny = edges.reduce((min, edge) => {
-    return Math.min(min, edge.start[1]);
-  }, Infinity);
-  var maxy = edges.reduce((min, edge) => {
-    return Math.max(min, edge.start[1]);
-  }, -Infinity);
-  return [minx, maxx, miny, maxy];
-}
-
 function drawtext(ctx, scalefactor, text, color, flip) {
   ctx.save();
   ctx.translate(...text.pos);
@@ -283,25 +267,28 @@ function prepareLayer(canvasdict) {
 }
 
 function recalcLayerScale(canvasdict) {
-  canvasdivid = { "F": "frontcanvas", "B": "backcanvas"}[canvasdict.layer];
+  canvasdivid = {
+    "F": "frontcanvas",
+    "B": "backcanvas"
+  }[canvasdict.layer];
   var width = document.getElementById(canvasdivid).clientWidth * 2;
   var height = document.getElementById(canvasdivid).clientHeight * 2;
-  var [minx, maxx, miny, maxy] = getEdgesBoundaries(pcbdata.edges);
-  var scalefactor = Math.min(
-    width * 0.98 / (maxx - minx),
-    height * 0.98 / (maxy - miny)
+  var bbox = pcbdata.edges_bbox;
+  var scalefactor = 0.98 * Math.min(
+    width / (bbox.maxx - bbox.minx),
+    height / (bbox.maxy - bbox.miny)
   );
-  if (scalefactor < 0) {
-    scalefactor = 0.1;
+  if (scalefactor < 0.1) {
+    scalefactor = 1;
   }
   canvasdict.transform.s = scalefactor;
   flip = (canvasdict.layer == "B");
   if (flip) {
-    canvasdict.transform.x = -((maxx + minx) * scalefactor + width) * 0.5;
+    canvasdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor + width) * 0.5;
   } else {
-    canvasdict.transform.x = -((maxx + minx) * scalefactor - width) * 0.5;
+    canvasdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor - width) * 0.5;
   }
-  canvasdict.transform.y = -((maxy + miny) * scalefactor - height) * 0.5;
+  canvasdict.transform.y = -((bbox.maxy + bbox.miny) * scalefactor - height) * 0.5;
   for (c of ["bg", "silk", "highlight"]) {
     canvas = canvasdict[c];
     canvas.width = width;
@@ -415,7 +402,7 @@ function addMouseHandlers(div, layerdict) {
     handleMouseWheel(e, layerdict);
   }
   for (element of [div, layerdict.bg, layerdict.silk, layerdict.highlight]) {
-    element.addEventListener("contextmenu", function (e) {
+    element.addEventListener("contextmenu", function(e) {
       e.preventDefault();
     }, false);
   }

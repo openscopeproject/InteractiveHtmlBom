@@ -216,11 +216,16 @@ def parse_drawing(d):
 
 def parse_edges(pcb):
     edges = []
+    bbox = None;
     for d in pcb.GetDrawings():
         if d.GetLayer() == pcbnew.Edge_Cuts:
             edges.append(parse_drawing(d))
-
-    return edges
+            if bbox is None:
+                bbox = d.GetBoundingBox()
+            else:
+                bbox.Merge(d.GetBoundingBox())
+    bbox.Normalize()
+    return edges, bbox
 
 
 def parse_silkscreen(pcb):
@@ -400,8 +405,16 @@ def main(pcb, launch_browser=True):
         title = os.path.basename(pcb_file_name)
         # remove .kicad_pcb extension
         title = os.path.splitext(title)[0]
+    edges, bbox = parse_edges(pcb)
+    bbox = {
+        "minx": bbox.GetLeft() * 1e-6,
+        "miny": bbox.GetTop() * 1e-6,
+        "maxx": bbox.GetRight() * 1e-6,
+        "maxy": bbox.GetBottom() * 1e-6,
+    }
     pcbdata = {
-        "edges": parse_edges(pcb),
+        "edges_bbox": bbox,
+        "edges": edges,
         "silkscreen": parse_silkscreen(pcb),
         "modules": parse_modules(pcb),
         "metadata": {
