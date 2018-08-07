@@ -8,13 +8,37 @@ var canvaslayout = "default";
 var bomlayout = "default";
 var highlightedRefs = [];
 var bomCheckboxes = "";
+var storage;
+
+function initStorage(key) {
+  try {
+    window.localStorage.getItem("blank");
+    storage = window.localStorage;
+  } catch (e) {
+    // localStorage not available
+  }
+  if (!storage) {
+    try {
+      window.sessionStorage.getItem("blank");
+      storage = window.sessionStorage;
+    } catch (e) {
+      // sessionStorage also not available
+    }
+  }
+}
 
 function readStorage(key) {
-  return window.localStorage.getItem(storagePrefix + '#' + key);
+  if (storage) {
+    return storage.getItem(storagePrefix + '#' + key);
+  } else {
+    return null;
+  }
 }
 
 function writeStorage(key, value) {
-  window.localStorage.setItem(storagePrefix + '#' + key, value);
+  if (storage) {
+    storage.setItem(storagePrefix + '#' + key, value);
+  }
 }
 
 function dbg(str) {
@@ -399,6 +423,7 @@ function setBomCheckboxes(value) {
 }
 
 window.onload = function(e) {
+  initStorage();
   cleanGutters();
   initRender();
   dbgdiv = document.getElementById("dbg");
