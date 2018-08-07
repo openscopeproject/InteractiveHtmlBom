@@ -395,6 +395,7 @@ function handleMouseWheel(e, layerdict) {
   t.panx += 2 * e.offsetX * zoomd;
   t.pany += 2 * e.offsetY * zoomd;
   redrawCanvas(layerdict);
+  console.log(layerdict.transform.zoom);
 }
 
 function addMouseHandlers(div, layerdict) {
