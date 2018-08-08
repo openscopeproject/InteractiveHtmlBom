@@ -30,12 +30,16 @@
 
 <body>
 <div id="topmostdiv" style="width: 100%; height: 100%">
-  <div id="top" style="height: 78px; border-bottom: 2px solid black;">
+  <div id="top">
     <div style="float: right;">
       <div class="hideonprint menu" style="float: right; margin: 10px; top: 8px;">
         <button class="menubtn"></button>
         <div class="menu-content">
           <label class="menu-label menu-label-top">
+            <input id="darkmodeCheckbox" type="checkbox" onchange="setDarkMode(this.checked)">
+            Dark mode
+          </label>
+          <label class="menu-label">
             <input id="silkscreenCheckbox" type="checkbox" checked onchange="silkscreenVisible(this.checked)">
             Show silkscreen
           </label>

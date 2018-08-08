@@ -45,6 +45,15 @@ function dbg(str) {
   dbgdiv.textContent = str;
 }
 
+function setDarkMode(value) {
+  if (value) {
+    topmostdiv.classList.add("dark");
+  } else {
+    topmostdiv.classList.remove("dark");
+  }
+  writeStorage("darkmode", value);
+}
+
 function getStoredCheckboxRefs(checkbox) {
   existingRefs = readStorage("checkbox_" + checkbox);
   if (!existingRefs) {
@@ -453,6 +462,10 @@ window.onload = function(e) {
   if (readStorage("redrawOnDrag") === "false") {
     document.getElementById("dragCheckbox").checked = false;
     setRedrawOnDrag(false);
+  }
+  if (readStorage("darkmode") === "true") {
+    document.getElementById("darkmodeCheckbox").checked = true;
+    setDarkMode(true);
   }
 }
 
