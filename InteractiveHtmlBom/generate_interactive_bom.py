@@ -195,9 +195,13 @@ def parse_text(d):
     else:
         height = d.GetHeight() * 1e-6
         width = d.GetWidth() * 1e-6
+    if hasattr(d, "GetShownText"):
+        text = d.GetShownText()
+    else:
+        text = d.GetText()
     return {
         "pos": pos,
-        "text": d.GetText(),
+        "text": text,
         "height": height,
         "width": width,
         "horiz_justify": d.GetHorizJustify(),
