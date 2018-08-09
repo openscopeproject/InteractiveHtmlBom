@@ -111,7 +111,8 @@ def parse_draw_segment(d):
         pcbnew.S_POLYGON: "polygon",
     }.get(d.GetShape(), "")
     if shape == "":
-        print "Unsupported shape", d.GetShape()
+        print "Unsupported shape", d.GetShape(), "skipping."
+        return None
     start = normalize(d.GetStart())
     end = normalize(d.GetEnd())
     if shape == "segment":
@@ -210,7 +211,7 @@ def parse_drawing(d):
     elif d.GetClass() in ["PTEXT", "MTEXT"]:
         return parse_text(d)
     else:
-        print "Unsupported drawing class ", d.GetClass()
+        print "Unsupported drawing class", d.GetClass(), "skipping."
         return None
 
 
@@ -219,11 +220,13 @@ def parse_edges(pcb):
     bbox = None;
     for d in pcb.GetDrawings():
         if d.GetLayer() == pcbnew.Edge_Cuts:
-            edges.append(parse_drawing(d))
-            if bbox is None:
-                bbox = d.GetBoundingBox()
-            else:
-                bbox.Merge(d.GetBoundingBox())
+            parsed_drawing = parse_drawing(d)
+            if parsed_drawing:
+                edges.append(parsed_drawing)
+                if bbox is None:
+                    bbox = d.GetBoundingBox()
+                else:
+                    bbox.Merge(d.GetBoundingBox())
     bbox.Normalize()
     return edges, bbox
 
@@ -306,9 +309,10 @@ def parse_modules(pcb):
                 shape_lookup[pcbnew.PAD_SHAPE_ROUNDRECT] = "roundrect"
             if hasattr(pcbnew, "PAD_SHAPE_CUSTOM"):
                 shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
-            shape = shape_lookup.get(p.GetShape(), "unsupported")
-            if shape == "unsupported":
-                print "Unsupported pad shape ", p.GetShape()
+            shape = shape_lookup.get(p.GetShape(), "")
+            if shape == "":
+                print "Unsupported pad shape", p.GetShape(), "skipping."
+                continue
             pad_dict = {
                 "layers": layers,
                 "pos": pos,
