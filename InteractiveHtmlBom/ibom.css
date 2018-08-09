@@ -1,3 +1,11 @@
+:root {
+  --pcb-edge-color: black;
+}
+
+:root .dark {
+  --pcb-edge-color: #eee;
+}
+
 html, body {
   margin: 0px;
   height: 100%;

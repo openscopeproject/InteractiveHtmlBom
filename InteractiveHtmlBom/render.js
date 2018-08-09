@@ -194,15 +194,22 @@ function drawModule(ctx, layer, scalefactor, module, highlight) {
   }
 }
 
+function drawEdges(canvas, scalefactor) {
+  var ctx = canvas.getContext("2d");
+  var edgecolor = getComputedStyle(topmostdiv).getPropertyValue('--pcb-edge-color');
+  for (edge of pcbdata.edges) {
+    drawedge(ctx, scalefactor, edge, edgecolor);
+  }
+}
+
 function drawModules(canvas, layer, scalefactor, highlightedRefs) {
   var ctx = canvas.getContext("2d");
-  for (edge of pcbdata.edges) {
-    drawedge(ctx, scalefactor, edge, "black");
-  }
   for (i in pcbdata.modules) {
     var mod = pcbdata.modules[i];
     var highlight = highlightedRefs.includes(mod.ref);
-    drawModule(ctx, layer, scalefactor, mod, highlight);
+    if (highlightedRefs.length == 0 || highlight) {
+      drawModule(ctx, layer, scalefactor, mod, highlight);
+    }
   }
 }
 
@@ -240,6 +247,7 @@ function drawHighlights() {
 function drawBackground(canvasdict) {
   clearCanvas(canvasdict.bg);
   clearCanvas(canvasdict.silk);
+  drawEdges(canvasdict.bg, canvasdict.transform.s);
   drawModules(canvasdict.bg, canvasdict.layer, canvasdict.transform.s, []);
   drawSilkscreen(canvasdict.silk, canvasdict.layer, canvasdict.transform.s);
 }

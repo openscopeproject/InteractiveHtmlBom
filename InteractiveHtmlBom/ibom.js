@@ -52,6 +52,8 @@ function setDarkMode(value) {
     topmostdiv.classList.remove("dark");
   }
   writeStorage("darkmode", value);
+  redrawCanvas(allcanvas.front);
+  redrawCanvas(allcanvas.back);
 }
 
 function getStoredCheckboxRefs(checkbox) {
@@ -454,7 +456,6 @@ window.onload = function(e) {
     bomCheckboxes = "Sourced,Placed";
   }
   document.getElementById("bomCheckboxes").value = bomCheckboxes;
-  changeBomLayout(bomlayout);
   if (readStorage("silkscreenVisible") === "false") {
     document.getElementById("silkscreenCheckbox").checked = false;
     silkscreenVisible(false);
@@ -467,6 +468,8 @@ window.onload = function(e) {
     document.getElementById("darkmodeCheckbox").checked = true;
     setDarkMode(true);
   }
+  // Triggers render
+  changeBomLayout(bomlayout);
 }
 
 window.onresize = resizeAll;
