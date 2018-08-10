@@ -5,10 +5,16 @@ import wx
 import os
 import re
 import json
+import logging
 import sys
 
 sys.path.append(os.path.dirname(__file__))
 import units
+
+logging.basicConfig(level=logging.INFO,
+                    stream=sys.stdout,
+                    format="%(asctime)-15s %(levelname)s %(message)s")
+is_cli = False
 
 
 def generate_bom(pcb, filter_layer=None):
@@ -111,7 +117,7 @@ def parse_draw_segment(d):
         pcbnew.S_POLYGON: "polygon",
     }.get(d.GetShape(), "")
     if shape == "":
-        print "Unsupported shape", d.GetShape(), "skipping."
+        logging.info("Unsupported shape %s, skipping", d.GetShape())
         return None
     start = normalize(d.GetStart())
     end = normalize(d.GetEnd())
@@ -147,8 +153,8 @@ def parse_draw_segment(d):
         if hasattr(d, "GetPolyShape"):
             polygons = parse_poly_set(d.GetPolyShape())
         else:
-            print "Polygons not supported for KiCad 4"
-            polygons = []
+            logging.info("Polygons not supported for KiCad 4, skipping")
+            return None
         angle = 0
         if d.GetParentModule() is not None:
             angle = d.GetParentModule().GetOrientation() * 0.1,
@@ -165,8 +171,8 @@ def parse_poly_set(polygon_set):
     for polygon_index in xrange(polygon_set.OutlineCount()):
         outline = polygon_set.Outline(polygon_index)
         if not hasattr(outline, "PointCount"):
-            print "No PointCount method on outline object. " \
-                  "Unpatched kicad version?"
+            logging.warn("No PointCount method on outline object. " \
+                         "Unpatched kicad version?")
             return result
         parsed_outline = []
         for point_index in xrange(outline.PointCount()):
@@ -188,7 +194,6 @@ def parse_text(d):
             angle = d.GetTextAngle() * 0.1
         else:
             angle = d.GetOrientation() * 0.1
-            print d, angle
     if hasattr(d, "GetTextHeight"):
         height = d.GetTextHeight() * 1e-6
         width = d.GetTextWidth() * 1e-6
@@ -215,7 +220,7 @@ def parse_drawing(d):
     elif d.GetClass() in ["PTEXT", "MTEXT"]:
         return parse_text(d)
     else:
-        print "Unsupported drawing class", d.GetClass(), "skipping."
+        logging.info("Unsupported drawing class %s, skipping", d.GetClass())
         return None
 
 
@@ -231,7 +236,8 @@ def parse_edges(pcb):
                     bbox = d.GetBoundingBox()
                 else:
                     bbox.Merge(d.GetBoundingBox())
-    bbox.Normalize()
+    if bbox:
+        bbox.Normalize()
     return edges, bbox
 
 
@@ -315,7 +321,8 @@ def parse_modules(pcb):
                 shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
             shape = shape_lookup.get(p.GetShape(), "")
             if shape == "":
-                print "Unsupported pad shape", p.GetShape(), "skipping."
+                logging.info("Unsupported pad shape %s, skipping.",
+                             p.GetShape())
                 continue
             pad_dict = {
                 "layers": layers,
@@ -328,9 +335,10 @@ def parse_modules(pcb):
             if shape == "custom":
                 polygon_set = p.GetCustomShapeAsPolygon()
                 if polygon_set.HasHoles():
-                    print 'Detected holes in custom pad polygons'
+                    logging.warn('Detected holes in custom pad polygons')
                 if polygon_set.IsSelfIntersecting():
-                    print 'Detected self intersecting polygons in custom pad'
+                    logging.warn(
+                        'Detected self intersecting polygons in custom pad')
                 pad_dict["polygons"] = parse_poly_set(polygon_set)
             if shape == "roundrect":
                 pad_dict["radius"] = p.GetRoundRectCornerRadius() * 1e-6
@@ -377,7 +385,7 @@ def generate_file(dir, pcbdata):
         with open(os.path.join(os.path.dirname(__file__), file_name), "r") as f:
             return f.read()
 
-    print "Dumping pcb json data"
+    logging.info("Dumping pcb json data")
     bom_file_name = os.path.join(dir, "ibom.html")
     if not os.path.isdir(os.path.dirname(bom_file_name)):
         os.makedirs(os.path.dirname(bom_file_name))
@@ -390,14 +398,18 @@ def generate_file(dir, pcbdata):
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
     with open(bom_file_name, "wt") as bom:
         bom.write(html)
-    print "Created file", bom_file_name
+    logging.info("Created file %s", bom_file_name)
     return bom_file_name
 
 
 def main(pcb, launch_browser=True):
     pcb_file_name = pcb.GetFileName()
     if not pcb_file_name:
-        wx.MessageBox('Please save the board file before generating BOM.')
+        msg = 'Please save the board file before generating BOM.'
+        if is_cli:
+            logging.error(msg)
+        else:
+            wx.MessageBox(msg)
         return
 
     bom_file_dir = os.path.join(os.path.dirname(pcb_file_name), "bom")
@@ -414,6 +426,14 @@ def main(pcb, launch_browser=True):
         # remove .kicad_pcb extension
         title = os.path.splitext(title)[0]
     edges, bbox = parse_edges(pcb)
+    if bbox is None:
+        msg = 'Please draw pcb outline on the edges ' \
+              'layer before generating BOM.'
+        if is_cli:
+            logging.error(msg)
+        else:
+            wx.MessageBox(msg)
+        return
     bbox = {
         "minx": bbox.GetLeft() * 1e-6,
         "miny": bbox.GetTop() * 1e-6,
@@ -433,10 +453,6 @@ def main(pcb, launch_browser=True):
         },
         "bom": {},
     }
-    if len(pcbdata["edges"]) == 0:
-        wx.MessageBox('Please draw pcb outline on the edges '
-                      'layer before generating BOM.')
-        return
     pcbdata["bom"]["both"] = generate_bom(pcb)
 
     # build BOM
@@ -447,7 +463,7 @@ def main(pcb, launch_browser=True):
     bom_file = generate_file(bom_file_dir, pcbdata)
 
     if launch_browser:
-        print "Opening file in browser"
+        logging.info("Opening file in browser")
         open_file(bom_file)
 
 
@@ -471,6 +487,8 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
 
 
 if __name__ == "__main__":
+    is_cli = True
+
     import argparse
 
     parser = argparse.ArgumentParser(
