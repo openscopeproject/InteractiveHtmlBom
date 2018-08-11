@@ -159,7 +159,7 @@ function highlightFilter(s) {
   }
   var r = "";
   var pos = 0;
-  for (i in parts) {
+  for (var i in parts) {
     if (i > 0) {
       r += '<mark class="highlight">' +
         s.substring(pos, pos + filter.length) +
@@ -219,7 +219,7 @@ function populateBomBody() {
       bomtable = pcbdata.bom.B;
       break;
   }
-  for (i in bomtable) {
+  for (var i in bomtable) {
     var bomentry = bomtable[i];
     if (filter && !entryMatches(bomentry)) {
       continue;
@@ -267,14 +267,57 @@ function populateBomBody() {
     tr.appendChild(td);
     bom.appendChild(tr);
     var handler = createRowHighlightHandler(tr.id, references);
-    tr.onmouseenter = handler;
-    highlightHandlers.push({id: tr.id, handler: handler});
+    tr.onmousemove = handler;
+    highlightHandlers.push({
+      id: tr.id,
+      handler: handler
+    });
     if ((filter || reflookup) && first) {
       highlightedRefs = references;
       drawHighlights();
       first = false;
     }
   }
+}
+
+function highlightPreviousRow() {
+  if (!currentHighlightedRowId) {
+    highlightHandlers[highlightHandlers.length - 1].handler();
+    return;
+  }
+  for (var i = 0; i < highlightHandlers.length - 1; i++) {
+    if (highlightHandlers[i + 1].id == currentHighlightedRowId) {
+      highlightHandlers[i].handler();
+      break;
+    }
+  }
+  if (highlightHandlers.length > 1 &&
+    highlightHandlers[0].id == currentHighlightedRowId) {
+    highlightHandlers[highlightHandlers.length - 1].handler();
+  }
+  document.getElementById(currentHighlightedRowId).scrollIntoView(
+    {behavior: "smooth", block: "center", inline: "nearest"}
+  );
+}
+
+function highlightNextRow() {
+  if (!currentHighlightedRowId) {
+    highlightHandlers[0].handler();
+    return;
+  }
+  for (var i = 1; i < highlightHandlers.length; i++) {
+    if (highlightHandlers[i - 1].id == currentHighlightedRowId) {
+      highlightHandlers[i].handler();
+      break;
+    }
+  }
+  if (highlightHandlers.length > 1 &&
+    highlightHandlers[highlightHandlers.length - 1].id == currentHighlightedRowId) {
+    highlightHandlers[0].handler();
+  }
+  document.getElementById(currentHighlightedRowId).scrollIntoView(
+    {behavior: "smooth", block: "center", inline: "nearest"}
+  );
 }
 
 function populateBomTable() {
@@ -426,7 +469,7 @@ function changeBomLayout(layout) {
 }
 
 function removeGutterNode(node) {
-  for (i = 0; i < node.childNodes.length; i++) {
+  for (var i = 0; i < node.childNodes.length; i++) {
     if (node.childNodes[i].classList &&
       node.childNodes[i].classList.contains("gutter")) {
       node.removeChild(node.childNodes[i]);
@@ -444,6 +487,21 @@ function setBomCheckboxes(value) {
   bomCheckboxes = value;
   writeStorage("bomCheckboxes", value);
   populateBomTable();
+}
+
+document.onkeydown = function(e) {
+  switch (e.key) {
+    case "ArrowUp":
+      highlightPreviousRow();
+      e.preventDefault();
+      break;
+    case "ArrowDown":
+      highlightNextRow();
+      e.preventDefault();
+      break;
+    default:
+      break;
+  }
 }
 
 window.onload = function(e) {
