@@ -207,6 +207,7 @@ function populateBomHeader() {
 
 function populateBomBody() {
   highlightHandlers = [];
+  currentHighlightedRowId = null;
   var first = true;
   switch (canvaslayout) {
     case 'F':
@@ -283,16 +284,16 @@ function populateBomBody() {
 function highlightPreviousRow() {
   if (!currentHighlightedRowId) {
     highlightHandlers[highlightHandlers.length - 1].handler();
-    return;
-  }
-  if (highlightHandlers.length > 1 &&
-    highlightHandlers[0].id == currentHighlightedRowId) {
-    highlightHandlers[highlightHandlers.length - 1].handler();
   } else {
-    for (var i = 0; i < highlightHandlers.length - 1; i++) {
-      if (highlightHandlers[i + 1].id == currentHighlightedRowId) {
-        highlightHandlers[i].handler();
-        break;
+    if (highlightHandlers.length > 1 &&
+      highlightHandlers[0].id == currentHighlightedRowId) {
+      highlightHandlers[highlightHandlers.length - 1].handler();
+    } else {
+      for (var i = 0; i < highlightHandlers.length - 1; i++) {
+        if (highlightHandlers[i + 1].id == currentHighlightedRowId) {
+          highlightHandlers[i].handler();
+          break;
+        }
       }
     }
   }
@@ -306,16 +307,16 @@ function highlightPreviousRow() {
 function highlightNextRow() {
   if (!currentHighlightedRowId) {
     highlightHandlers[0].handler();
-    return;
-  }
-  if (highlightHandlers.length > 1 &&
-    highlightHandlers[highlightHandlers.length - 1].id == currentHighlightedRowId) {
-    highlightHandlers[0].handler();
   } else {
-    for (var i = 1; i < highlightHandlers.length; i++) {
-      if (highlightHandlers[i - 1].id == currentHighlightedRowId) {
-        highlightHandlers[i].handler();
-        break;
+    if (highlightHandlers.length > 1 &&
+      highlightHandlers[highlightHandlers.length - 1].id == currentHighlightedRowId) {
+      highlightHandlers[0].handler();
+    } else {
+      for (var i = 1; i < highlightHandlers.length; i++) {
+        if (highlightHandlers[i - 1].id == currentHighlightedRowId) {
+          highlightHandlers[i].handler();
+          break;
+        }
       }
     }
   }
