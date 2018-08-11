@@ -87,6 +87,28 @@ will look like this:
 path/to/kicad/bin/python.exe .../generate_interactive_bom.py .../board.kicad_pcb
 ```
 
+### BOM mouse actions
+
+You can pan the pcb drawings using left mouse button, zoom using mouse wheel
+and reset view by right click.
+
+### BOM keyboard shortcuts
+
+Html page supports keyboard shortcuts to perform most tasks:
+
+*  `ArrowUp` / `ArrowDown` scroll through the bom table
+*  `Alt-R` focuses reference lookup field
+*  `Alt-F` focuses filter field
+*  `Alt-Z` switches to bom only view
+*  `Alt-X` switches to bom left, drawings right view
+*  `Alt-C` switches to bom top, drawings bot view
+*  `Alt-V` switches to front only view
+*  `Alt-B` switches to front and back view
+*  `Alt-N` switches to back only view
+*  `Alt-1` through `Alt-9` toggle corresponding checkbox for highlighted bom row
+   (if it exists)
+
+
 ## Supported versions
 
 KiCad 5.0 is the only fully supported version. Pcbnew python interface is not very
@@ -162,7 +184,7 @@ problem area._
 Generated html page is tested in Chrome and Firefox. IE will not be
 supported, patches for other browsers are welcome.
 
-Edge is currently broken because of
+Edge works but saving settings/checkboxes is currently broken because of
 https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/8816771/
 
 # License and credits
