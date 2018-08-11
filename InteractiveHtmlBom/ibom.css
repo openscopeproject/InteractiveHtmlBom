@@ -2,10 +2,6 @@
   --pcb-edge-color: black;
 }
 
-:root .dark {
-  --pcb-edge-color: #eee;
-}
-
 html, body {
   margin: 0px;
   height: 100%;
@@ -13,6 +9,7 @@ html, body {
 }
 
 .dark {
+  --pcb-edge-color: #eee;
   background-color: #252c30;
   color: #eee;
 }
@@ -150,6 +147,14 @@ canvas:active {
   background-color: #3b4749;
 }
 
+.bom tr.highlighted:nth-child(n) {
+  background-color: #cfc;
+}
+
+.dark .bom tr.highlighted:nth-child(n) {
+  background-color: #226022;
+}
+
 .bom tr:nth-child(even) {
   background-color: #f2f2f2;
 }
@@ -160,14 +165,6 @@ canvas:active {
 
 .bom tr {
   transition: background-color 0.2s;
-}
-
-.bom tr:hover {
-  background-color: #cfc;
-}
-
-.dark .bom tr:hover {
-  background-color: #226022;
 }
 
 .bom .numCol {

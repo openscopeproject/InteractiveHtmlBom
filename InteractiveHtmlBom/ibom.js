@@ -6,6 +6,8 @@ var bomsplit;
 var canvassplit;
 var canvaslayout = "default";
 var bomlayout = "default";
+var currentHighlightedRowId;
+var highlightHandlers = [];
 var highlightedRefs = [];
 var bomCheckboxes = "";
 var storage;
@@ -105,8 +107,16 @@ function createCheckboxChangeHandler(checkbox, references) {
   }
 }
 
-function createRowMouseEnterHandler(refs) {
+function createRowHighlightHandler(rowid, refs) {
   return function() {
+    if (currentHighlightedRowId) {
+      if (currentHighlightedRowId == rowid) {
+        return;
+      }
+      document.getElementById(currentHighlightedRowId).classList.remove("highlighted");
+    }
+    document.getElementById(rowid).classList.add("highlighted");
+    currentHighlightedRowId = rowid;
     highlightedRefs = refs;
     drawHighlights();
   }
@@ -196,6 +206,7 @@ function populateBomHeader() {
 }
 
 function populateBomBody() {
+  highlightHandlers = [];
   var first = true;
   switch (canvaslayout) {
     case 'F':
@@ -255,7 +266,9 @@ function populateBomBody() {
     td.textContent = bomentry[3].length;
     tr.appendChild(td);
     bom.appendChild(tr);
-    tr.onmouseenter = createRowMouseEnterHandler(references);
+    var handler = createRowHighlightHandler(tr.id, references);
+    tr.onmouseenter = handler;
+    highlightHandlers.push({id: tr.id, handler: handler});
     if ((filter || reflookup) && first) {
       highlightedRefs = references;
       drawHighlights();
