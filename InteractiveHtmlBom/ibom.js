@@ -285,19 +285,22 @@ function highlightPreviousRow() {
     highlightHandlers[highlightHandlers.length - 1].handler();
     return;
   }
-  for (var i = 0; i < highlightHandlers.length - 1; i++) {
-    if (highlightHandlers[i + 1].id == currentHighlightedRowId) {
-      highlightHandlers[i].handler();
-      break;
-    }
-  }
   if (highlightHandlers.length > 1 &&
     highlightHandlers[0].id == currentHighlightedRowId) {
     highlightHandlers[highlightHandlers.length - 1].handler();
+  } else {
+    for (var i = 0; i < highlightHandlers.length - 1; i++) {
+      if (highlightHandlers[i + 1].id == currentHighlightedRowId) {
+        highlightHandlers[i].handler();
+        break;
+      }
+    }
   }
-  document.getElementById(currentHighlightedRowId).scrollIntoView(
-    {behavior: "smooth", block: "center", inline: "nearest"}
-  );
+  document.getElementById(currentHighlightedRowId).scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+    inline: "nearest"
+  });
 }
 
 function highlightNextRow() {
@@ -305,19 +308,22 @@ function highlightNextRow() {
     highlightHandlers[0].handler();
     return;
   }
-  for (var i = 1; i < highlightHandlers.length; i++) {
-    if (highlightHandlers[i - 1].id == currentHighlightedRowId) {
-      highlightHandlers[i].handler();
-      break;
-    }
-  }
   if (highlightHandlers.length > 1 &&
     highlightHandlers[highlightHandlers.length - 1].id == currentHighlightedRowId) {
     highlightHandlers[0].handler();
+  } else {
+    for (var i = 1; i < highlightHandlers.length; i++) {
+      if (highlightHandlers[i - 1].id == currentHighlightedRowId) {
+        highlightHandlers[i].handler();
+        break;
+      }
+    }
   }
-  document.getElementById(currentHighlightedRowId).scrollIntoView(
-    {behavior: "smooth", block: "center", inline: "nearest"}
-  );
+  document.getElementById(currentHighlightedRowId).scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+    inline: "nearest"
+  });
 }
 
 function populateBomTable() {
