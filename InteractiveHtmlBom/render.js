@@ -236,7 +236,8 @@ function clearCanvas(canvas) {
 
 function drawHighlightsOnLayer(canvasdict) {
   clearCanvas(canvasdict.highlight);
-  drawModules(canvasdict.highlight, canvasdict.layer, canvasdict.transform.s, highlightedRefs);
+  drawModules(canvasdict.highlight, canvasdict.layer,
+    canvasdict.transform.s, highlightedRefs);
 }
 
 function drawHighlights() {
@@ -268,7 +269,7 @@ function prepareCanvas(canvas, flip, transform) {
 }
 
 function prepareLayer(canvasdict) {
-  flip = (canvasdict.layer == "B");
+  var flip = (canvasdict.layer == "B");
   for (c of ["bg", "silk", "highlight"]) {
     prepareCanvas(canvasdict[c], flip, canvasdict.transform);
   }
@@ -290,7 +291,7 @@ function recalcLayerScale(canvasdict) {
     scalefactor = 1;
   }
   canvasdict.transform.s = scalefactor;
-  flip = (canvasdict.layer == "B");
+  var flip = (canvasdict.layer == "B");
   if (flip) {
     canvasdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor + width) * 0.5;
   } else {
@@ -311,9 +312,6 @@ function redrawCanvas(layerdict) {
   prepareLayer(layerdict);
   drawBackground(layerdict);
   drawHighlights(layerdict);
-  t = layerdict.transform;
-  dbgdiv.innerHTML = "x: " + t.x + "</br>y: " + t.y + "</br>s: " + t.s +
-    "</br>panx: " + t.panx + "</br>pany: " + t.pany + "</br>zoom: " + t.zoom;
 }
 
 function resizeCanvas(layerdict) {
@@ -326,6 +324,21 @@ function resizeAll() {
   resizeCanvas(allcanvas.back);
 }
 
+function bboxScan(layer, x, y) {
+  var result = [];
+  for (var i in pcbdata.modules) {
+    var module = pcbdata.modules[i];
+    if (module.layer == layer) {
+      var b = module.bbox;
+      if (b.pos[0] <= x && b.pos[0] + b.size[0] >= x &&
+        b.pos[1] <= y && b.pos[1] + b.size[1] >= y) {
+        result.push(module.ref);
+      }
+    }
+  }
+  return result;
+}
+
 function handleMouseDown(e, layerdict) {
   if (e.which != 1) {
     return;
@@ -334,12 +347,37 @@ function handleMouseDown(e, layerdict) {
   e.stopPropagation();
   layerdict.transform.mousestartx = e.offsetX;
   layerdict.transform.mousestarty = e.offsetY;
+  layerdict.transform.mousedownx = e.offsetX;
+  layerdict.transform.mousedowny = e.offsetY;
   layerdict.transform.mousedown = true;
+}
+
+function handleMouseClick(e, layerdict) {
+  var x = e.offsetX;
+  var y = e.offsetY;
+  var t = layerdict.transform;
+  if (layerdict.layer == "B") {
+    x = (2 * x / t.zoom - t.panx + t.x) / -t.s;
+  } else {
+    x = (2 * x / t.zoom - t.panx - t.x) / t.s;
+  }
+  y = (2 * y / t.zoom - t.y - t.pany) / t.s;
+  var reflist = bboxScan(layerdict.layer, x, y);
+  if (reflist.length > 0) {
+    modulesClicked(reflist);
+  }
 }
 
 function handleMouseUp(e, layerdict) {
   e.preventDefault();
   e.stopPropagation();
+  if (e.which == 1 &&
+    layerdict.transform.mousedown &&
+    layerdict.transform.mousedownx == e.offsetX &&
+    layerdict.transform.mousedowny == e.offsetY) {
+    // This is just a click
+    handleMouseClick(e, layerdict);
+  }
   layerdict.transform.mousedown = false;
   if (e.which == 3) {
     // Reset pan and zoom on right click.

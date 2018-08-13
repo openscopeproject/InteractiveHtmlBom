@@ -89,8 +89,13 @@ path/to/kicad/bin/python.exe .../generate_interactive_bom.py .../board.kicad_pcb
 
 ### BOM mouse actions
 
-You can pan the pcb drawings using left mouse button, zoom using mouse wheel
-and reset view by right click.
+You can pan the pcb drawings by dragging with left mouse button, zoom using
+mouse wheel and reset view by right click.
+
+Left click on a component drawing will highlight corresponding component group,
+unless it is currently filtered out by filter or reference lookup fields.
+If there are multiple components under mouse cursor, subsequent clicks
+will cycle through possible interpretations.
 
 ### BOM keyboard shortcuts
 

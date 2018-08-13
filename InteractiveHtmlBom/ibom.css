@@ -379,5 +379,5 @@ mark.highlight {
 }
 
 #dbg {
-  display: none;
+  display: block;
 }

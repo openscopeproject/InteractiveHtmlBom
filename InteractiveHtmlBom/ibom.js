@@ -12,6 +12,7 @@ var highlightedRefs = [];
 var checkboxes = [];
 var bomCheckboxes = "";
 var storage;
+var lastClickedRef;
 
 function initStorage(key) {
   try {
@@ -44,8 +45,8 @@ function writeStorage(key, value) {
   }
 }
 
-function dbg(str) {
-  dbgdiv.textContent = str;
+function dbg(html) {
+  dbgdiv.innerHTML = html;
 }
 
 function setDarkMode(value) {
@@ -272,7 +273,8 @@ function populateBomBody() {
     tr.onmousemove = handler;
     highlightHandlers.push({
       id: tr.id,
-      handler: handler
+      handler: handler,
+      refs: references
     });
     if ((filter || reflookup) && first) {
       highlightedRefs = references;
@@ -281,6 +283,13 @@ function populateBomBody() {
     }
   }
 }
+
+function smoothScrollToRow(rowid) {
+  document.getElementById(rowid).scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+    inline: "nearest"
+  });}
 
 function highlightPreviousRow() {
   if (!currentHighlightedRowId) {
@@ -298,11 +307,7 @@ function highlightPreviousRow() {
       }
     }
   }
-  document.getElementById(currentHighlightedRowId).scrollIntoView({
-    behavior: "smooth",
-    block: "center",
-    inline: "nearest"
-  });
+  smoothScrollToRow(currentHighlightedRowId);
 }
 
 function highlightNextRow() {
@@ -321,11 +326,7 @@ function highlightNextRow() {
       }
     }
   }
-  document.getElementById(currentHighlightedRowId).scrollIntoView({
-    behavior: "smooth",
-    block: "center",
-    inline: "nearest"
-  });
+  smoothScrollToRow(currentHighlightedRowId);
 }
 
 function populateBomTable() {
@@ -337,6 +338,19 @@ function populateBomTable() {
   }
   populateBomHeader();
   populateBomBody();
+}
+
+function modulesClicked(references) {
+  var lastClickedIndex = references.indexOf(lastClickedRef);
+  var ref = references[(lastClickedIndex + 1) % references.length];
+  for (var handler of highlightHandlers) {
+    if (handler.refs.indexOf(ref) >= 0) {
+      lastClickedRef = ref;
+      handler.handler();
+      smoothScrollToRow(currentHighlightedRowId);
+      break;
+    }
+  }
 }
 
 function updateFilter(input) {
