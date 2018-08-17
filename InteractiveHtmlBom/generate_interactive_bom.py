@@ -10,6 +10,7 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 import units
+import xmlbom
 
 logging.basicConfig(level=logging.INFO,
                     stream=sys.stdout,
@@ -17,7 +18,7 @@ logging.basicConfig(level=logging.INFO,
 is_cli = False
 
 
-def generate_bom(pcb, filter_layer=None):
+def generate_bom(pcb, filename, filter_layer=None):
     """
     Generate BOM from pcb layout.
     :param filter_layer: include only parts for given layer
@@ -45,6 +46,7 @@ def generate_bom(pcb, filter_layer=None):
 
     # build grouped part list
     part_groups = {}
+    pnList = xmlbom.getPartNumbers(filename.replace('.kicad_pcb', '.xml'))
     for m in pcb.GetModules():
         # filter part by layer
         if filter_layer is not None and filter_layer != m.GetLayer():
@@ -52,6 +54,10 @@ def generate_bom(pcb, filter_layer=None):
         # group part refs by value and footprint
         value = m.GetValue()
         norm_value = units.componentValue(value)
+        try:
+            partNumber = pnList[m.GetReference()]
+        except:
+            partNumber = ''
         try:
             footprint = str(m.GetFPID().GetFootprintName())
         except:
@@ -61,23 +67,21 @@ def generate_bom(pcb, filter_layer=None):
             attr = attr_dict[attr]
         else:
             attr = str(attr)
-
-        group_key = (norm_value, footprint, attr)
+        group_key = (norm_value, partNumber, attr, footprint)
         valrefs = part_groups.setdefault(group_key, [value, []])
         valrefs[1].append(m.GetReference())
 
     # build bom table, sort refs
     bom_table = []
-    for (norm_value, footprint, attr), valrefs in part_groups.items():
+    for (norm_value, partNumber, attr, footprint), valrefs in part_groups.items():
         if attr == 'Virtual':
             continue
         line = (
-            len(valrefs[1]), valrefs[0], footprint, natural_sort(valrefs[1]))
+            len(valrefs[1]), valrefs[0], partNumber, natural_sort(valrefs[1]), footprint)
         bom_table.append(line)
-
     # sort table by reference prefix, footprint and quantity
     def sort_func(row):
-        qty, _, fp, rf = row
+        qty, _, pn, rf, fp = row
         prefix = re.findall('^[A-Z]*', rf[0])[0]
         ref_ord = {
             "C": 1,
@@ -98,7 +102,7 @@ def generate_bom(pcb, filter_layer=None):
             "NT": 2000,
             "MH": 2001,
         }.get(prefix, 1000)
-        return ref_ord, fp, -qty, alphanum_key(rf[0])
+        return ref_ord, pn, -qty, alphanum_key(rf[0]), fp
 
     bom_table = sorted(bom_table, key=sort_func)
 
@@ -402,7 +406,7 @@ def generate_file(dir, pcbdata):
     return bom_file_name
 
 
-def main(pcb, launch_browser=True):
+def main(pcb, filename, launch_browser=True):
     pcb_file_name = pcb.GetFileName()
     if not pcb_file_name:
         msg = 'Please save the board file before generating BOM.'
@@ -453,11 +457,11 @@ def main(pcb, launch_browser=True):
         },
         "bom": {},
     }
-    pcbdata["bom"]["both"] = generate_bom(pcb)
+    pcbdata["bom"]["both"] = generate_bom(pcb, filename)
 
     # build BOM
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        bom_table = generate_bom(pcb, filter_layer=layer)
+        bom_table = generate_bom(pcb, filename, filter_layer=layer)
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     bom_file = generate_file(bom_file_dir, pcbdata)
@@ -483,7 +487,7 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
                            "table and pcb drawing."
 
     def Run(self):
-        main(pcbnew.GetBoard())
+        main(pcbnew.GetBoard(), '')
 
 
 if __name__ == "__main__":
@@ -501,4 +505,4 @@ if __name__ == "__main__":
         print("File %s does not exist." % args.file)
         exit(1)
     print("Loading %s" % args.file)
-    main(pcbnew.LoadBoard(os.path.abspath(args.file)), not args.nobrowser)
+    main(pcbnew.LoadBoard(os.path.abspath(args.file)), os.path.abspath(args.file), not args.nobrowser)

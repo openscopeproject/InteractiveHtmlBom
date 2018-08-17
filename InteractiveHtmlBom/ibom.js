@@ -197,12 +197,16 @@ function populateBomHeader() {
   td.innerHTML = "Value";
   tr.appendChild(td);
   td = document.createElement("TH");
-  td.classList.add("Footprint");
-  td.innerHTML = "Footprint";
+  td.classList.add("PartNumber");
+  td.innerHTML = "Part Number";
   tr.appendChild(td);
   td = document.createElement("TH");
   td.classList.add("Quantity");
   td.innerHTML = "Quantity";
+  tr.appendChild(td);
+  td = document.createElement("TH");
+  td.classList.add("Footprint");
+  td.innerHTML = "Footprint";
   tr.appendChild(td);
   bomhead.appendChild(tr);
 }
@@ -260,7 +264,7 @@ function populateBomBody() {
     td = document.createElement("TD");
     td.innerHTML = highlightFilter(bomentry[1]);
     tr.appendChild(td);
-    // Footprint
+    // Part Number
     td = document.createElement("TD");
     td.innerHTML = highlightFilter(bomentry[2]);
     tr.appendChild(td);
@@ -269,6 +273,10 @@ function populateBomBody() {
     td.textContent = bomentry[3].length;
     tr.appendChild(td);
     bom.appendChild(tr);
+    // Footprint
+    td = document.createElement("TD");
+    td.innerHTML = highlightFilter(bomentry[4]);
+    tr.appendChild(td);
     var handler = createRowHighlightHandler(tr.id, references);
     tr.onmousemove = handler;
     highlightHandlers.push({
