@@ -479,6 +479,9 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
         """
         self.name = "Generate Interactive HTML BOM"
         self.category = "Read PCB"
+        self.pcbnew_icon_support = hasattr(self, "show_toolbar_button")
+        self.show_toolbar_button = True
+        self.icon_file_name = os.path.join(os.path.dirname(__file__), 'icon.png')
         self.description = "Generate interactive HTML page that contains BOM " \
                            "table and pcb drawing."
 

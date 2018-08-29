@@ -4,10 +4,7 @@ import wx
 import wx.aui
 import threading
 import time
-
-plugin = GenerateInteractiveBomPlugin()
-plugin.register()
-
+import sys
 
 def check_for_bom_button():
     # From Miles McCoo's blog
@@ -42,6 +39,12 @@ def check_for_bom_button():
             top_tb.Realize()
 
 
-t = threading.Thread(target=check_for_bom_button)
-t.daemon = True
-t.start()
+plugin = GenerateInteractiveBomPlugin()
+plugin.register()
+
+# Add a button the hacky way if plugin button is not supported
+# in pcbnew, unless this is linux.
+if not plugin.pcbnew_icon_support and not sys.platform.startswith('linux'):
+    t = threading.Thread(target=check_for_bom_button)
+    t.daemon = True
+    t.start()
