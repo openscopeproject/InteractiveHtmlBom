@@ -23,13 +23,13 @@ KiCad's Pcbnew plugins can be placed in following places, depending on
 platform.
 
 -   Windows
-    -   `{KICAD_INSTALL_PATH}/share/kicad/scripting`
     -   `{KICAD_INSTALL_PATH}/share/kicad/scripting/plugins`
-    -   `%KICAD_PATH%/scripting`
     -   `%KICAD_PATH%/scripting/plugins`
-    -   `%APPDATA%/Roaming/kicad/scripting`
     -   `%APPDATA%/Roaming/kicad/scripting/plugins`
 
+-   Linux
+    -   `~/.kicad/scripting/plugins`
+    -   `~/.kicad_plugins`
 
 -   MacOS
     -   `/Applications/kicad/Kicad/Contents/SharedSupport/scripting/plugins`
@@ -45,12 +45,11 @@ with symlinks just copy InteractiveHtmlBom folder into one of plugin
 directories.
 
 If you want this plugin to work in all KiCad versions you install, it's
-best to put it in user folder (`%APPDATA%` for Windows, `~/` for MacOS).
+best to put it in user folder (`%APPDATA%` for Windows, `~/` for Linux/MacOS).
 
-**Linux users can not install this plugin** at the moment because of
-wxPython/GTK3 mess. If you try to do it pcbnew will most likely crash.
-This _should_ be fixed in KiCad 5.1.
-Meanwhile read on below on how to use it as a standalone script.
+Some newer linux distributions have wxpython option in KiCad disabled because of
+wxPython/GTK3 mess. In that case you have to try to compile KiCad yourself with
+scripting enabled or you can use this plugin from command line.
 
 ## Usage
 
@@ -65,11 +64,14 @@ Save the file and press the
 ![iBOM](https://raw.githubusercontent.com/openscopeproject/InteractiveHtmlBom/master/InteractiveHtmlBom/icon.png)
 button on the top toolbar.
 
-On builds that have plugin menu enabled
+If the button is not on the toolbar
 `Tools -> External Plugins... -> Generate Interactive HTML BOM` also works.
 
+_In recent nightly builds you can choose to hide the plugin button in
+pcbnew preferences._
+
 `bom` folder with generated html bom will be created where the board
-file is saved. On Windows html bom page will be automatically opened in default
+file is saved. Html bom page will be automatically opened in default
 browser.
 
 ### Standalone script
