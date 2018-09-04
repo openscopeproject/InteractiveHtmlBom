@@ -352,6 +352,8 @@ def parse_modules(pcb):
                 pad_dict["drillsize"] = normalize(p.GetDrillSize())
             else:
                 pad_dict["type"] = "smd"
+            if hasattr(p, "GetOffset"):
+                pad_dict["offset"] = normalize(p.GetOffset())
             pads.append(pad_dict)
 
         # add module

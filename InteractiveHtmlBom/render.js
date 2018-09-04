@@ -163,6 +163,9 @@ function drawModule(ctx, layer, scalefactor, module, highlight) {
       ctx.save();
       ctx.translate(...pad.pos);
       ctx.rotate(deg2rad(pad.angle));
+      if (pad.offset) {
+        ctx.translate(...pad.offset);
+      }
       ctx.fillStyle = padcolor;
       if (pad.shape == "rect") {
         ctx.fillRect(
