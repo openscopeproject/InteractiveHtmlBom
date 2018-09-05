@@ -1,5 +1,5 @@
 from xml.dom import minidom
-
+from os import path
 def getText(nodelist):
     rc = []
     for node in nodelist:
@@ -7,16 +7,21 @@ def getText(nodelist):
             rc.append(node.data)
     return ''.join(rc)
 
-def getPartNumbers(filename, fieldName = "Part Number"):
+def getPartNumbers(filename, fieldName):
     pairs = {}
+    if not path.isfile(filename):
+        print 'No XML file found. Part numbers will not be displayed. Generate XML BOM from EESCHEMA'
+        return {}
     try:
         xmldoc = minidom.parse(filename)
         components = xmldoc.getElementsByTagName('comp')
         for c in components:
             fields = c.getElementsByTagName('field')
             for f in fields:
-                pairs[c.attributes['ref'].value] = getText(f.childNodes)
+                if f.attributes['name'].value == fieldName:
+                    pairs[c.attributes['ref'].value] = getText(f.childNodes)
     except:
-        print 'No XML file found. Generate XML BOM from EESCHEMA'
+        print 'XML Parse error'
         return {}
+    # print pairs
     return pairs

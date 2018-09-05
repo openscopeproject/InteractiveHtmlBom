@@ -196,10 +196,12 @@ function populateBomHeader() {
   td.classList.add("Value");
   td.innerHTML = "Value";
   tr.appendChild(td);
-  td = document.createElement("TH");
-  td.classList.add("PartNumber");
-  td.innerHTML = "Part Number";
-  tr.appendChild(td);
+  if (pcbdata.hasPartNumber) {
+    td = document.createElement("TH");
+    td.classList.add("PartNumber");
+    td.innerHTML = "Part Number";
+    tr.appendChild(td);
+}
   td = document.createElement("TH");
   td.classList.add("Quantity");
   td.innerHTML = "Quantity";
@@ -265,9 +267,11 @@ function populateBomBody() {
     td.innerHTML = highlightFilter(bomentry[1]);
     tr.appendChild(td);
     // Part Number
-    td = document.createElement("TD");
-    td.innerHTML = highlightFilter(bomentry[2]);
-    tr.appendChild(td);
+    if (pcbdata.hasPartNumber) {
+      td = document.createElement("TD");
+      td.innerHTML = highlightFilter(bomentry[2]);
+      tr.appendChild(td);
+    }
     // Quantity
     td = document.createElement("TD");
     td.textContent = bomentry[3].length;

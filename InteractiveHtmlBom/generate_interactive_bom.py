@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO,
 is_cli = False
 
 
-def generate_bom(pcb, filename, filter_layer=None):
+def generate_bom(pcb, part_number_field, filter_layer=None):
     """
     Generate BOM from pcb layout.
     :param filter_layer: include only parts for given layer
@@ -45,8 +45,10 @@ def generate_bom(pcb, filename, filter_layer=None):
                  }
 
     # build grouped part list
+    filename = pcb.GetFileName()
     part_groups = {}
-    pnList = xmlbom.getPartNumbers(filename.replace('.kicad_pcb', '.xml'))
+    pnList = xmlbom.getPartNumbers(filename.replace('.kicad_pcb', '.xml'), part_number_field)
+    hasPartNumbers = len(pnList) > 0
     for m in pcb.GetModules():
         # filter part by layer
         if filter_layer is not None and filter_layer != m.GetLayer():
@@ -106,7 +108,7 @@ def generate_bom(pcb, filename, filter_layer=None):
 
     bom_table = sorted(bom_table, key=sort_func)
 
-    return bom_table
+    return bom_table, hasPartNumbers
 
 
 def normalize(point):
@@ -406,7 +408,7 @@ def generate_file(dir, pcbdata):
     return bom_file_name
 
 
-def main(pcb, filename, launch_browser=True):
+def main(pcb, launch_browser=True, part_number_field=''):
     pcb_file_name = pcb.GetFileName()
     if not pcb_file_name:
         msg = 'Please save the board file before generating BOM.'
@@ -457,11 +459,10 @@ def main(pcb, filename, launch_browser=True):
         },
         "bom": {},
     }
-    pcbdata["bom"]["both"] = generate_bom(pcb, filename)
-
+    pcbdata["bom"]["both"], pcbdata["hasPartNumber"] = generate_bom(pcb, part_number_field)
     # build BOM
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        bom_table = generate_bom(pcb, filename, filter_layer=layer)
+        bom_table, dummy = generate_bom(pcb, part_number_field, filter_layer=layer)
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     bom_file = generate_file(bom_file_dir, pcbdata)
@@ -487,7 +488,7 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
                            "table and pcb drawing."
 
     def Run(self):
-        main(pcbnew.GetBoard(), '')
+        main(pcbnew.GetBoard())
 
 
 if __name__ == "__main__":
@@ -498,6 +499,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
             description='KiCad PCB pick and place assistant')
     parser.add_argument('file', type=str, help="KiCad PCB file")
+    parser.add_argument('--pnfield', type=str, help="Part number field name")
     parser.add_argument('--nobrowser', help="Don't launch browser",
                         action="store_true")
     args = parser.parse_args()
@@ -505,4 +507,4 @@ if __name__ == "__main__":
         print("File %s does not exist." % args.file)
         exit(1)
     print("Loading %s" % args.file)
-    main(pcbnew.LoadBoard(os.path.abspath(args.file)), os.path.abspath(args.file), not args.nobrowser)
+    main(pcbnew.LoadBoard(os.path.abspath(args.file)), not args.nobrowser, args.pnfield)
