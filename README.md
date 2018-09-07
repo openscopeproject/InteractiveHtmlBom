@@ -9,7 +9,7 @@ to find the 50 places where that 0.1uF cap should be or which of these
 SOP8 footprints are for the same micro.
 
 This plugin utilizes Pcbnew python bindings to read pcb data and
-render silkscreen, footprint pads, texts and drawings. Most of the pcbnew
+render silkscreen, footprint pads, text and drawings. Most of the pcbnew
 features are supported but there are some rarely used things that will not
 be rendered. For example curve type segments in drawings are not supported.
 
@@ -19,6 +19,7 @@ be rendered. For example curve type segments in drawings are not supported.
 
 ## Installation
 
+### Where to install
 KiCad's Pcbnew plugins can be placed in following places, depending on
 platform.
 
@@ -32,14 +33,25 @@ platform.
     -   `~/.kicad_plugins`
 
 -   MacOS
-    -   `/Applications/kicad/Kicad/Contents/SharedSupport/scripting/plugins`
-    -   `~/Library/Application Support/kicad/scripting/plugins`
+    -   `/Applications/Kicad/kicad.app/Contents/SharedSupport/scripting/plugins`
+    -   `~/Library/Application Support/kicad/scripting/plugins` or on newer versions
+        `~Library/Preferences/kicad/scripting/plugins`
+
+If a folder does not exist you can create one. Above list may be out of date or
+inaccurate for your OS version/distribution. You can get full list of directories
+that pcbnew is scanning for plugins by running this in scripting console:
+```python
+import pcbnew
+print pcbnew.PLUGIN_DIRECTORIES_SEARCH
+```
+
+### How to install
 
 I recommend downloading
 [latest release](http://github.com/openscopeproject/InteractiveHtmlBom/releases)
 or cloning this repo in a directory of your choice and creating a symlink in
-one of KiCad's plugin directories to `InteractiveHtmlBom` folder. MacOS users
-can do it with `ln -s <target> <link>`, in windows
+one of KiCad's plugin directories to `InteractiveHtmlBom` folder. MacOS and Linux
+users can do it with `ln -s <target> <link>`, in windows
 `cmd /c mklink /D <link> <target>` does the job. If you don't want to bother
 with symlinks just copy InteractiveHtmlBom folder into one of plugin
 directories.
@@ -66,9 +78,9 @@ button on the top toolbar.
 
 If the button is not on the toolbar
 `Tools -> External Plugins... -> Generate Interactive HTML BOM` also works.
-
-_In recent nightly builds you can choose to hide the plugin button in
-pcbnew preferences._
+Note that this menu is only present on builds that have KICAD_SCRIPTING_ACTION_MENU
+option turned on. In recent nightly builds you can choose to hide the plugin button in
+pcbnew preferences.
 
 `bom` folder with generated html bom will be created where the board
 file is saved. Html bom page will be automatically opened in default
@@ -76,7 +88,7 @@ browser.
 
 ### Standalone script
 
-On Linux and MacOS Simply run this in terminal:
+On Linux simply run this in terminal:
 
 ```shell
 python2 path/to/InteractiveHtmlBom/generate_interactive_bom.py path/to/board.kicad_pcb
