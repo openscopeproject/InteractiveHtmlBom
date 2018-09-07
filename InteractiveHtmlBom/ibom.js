@@ -546,6 +546,10 @@ function setBomCheckboxes(value) {
 
 document.onkeydown = function(e) {
   switch (e.key) {
+	case " ":
+	  toggleBomCheckbox(currentHighlightedRowId, 2);
+	  e.preventDefault();
+	  break;
     case "ArrowUp":
       highlightPreviousRow();
       e.preventDefault();
