@@ -558,11 +558,11 @@ function setBomCheckboxes(value) {
 
 document.onkeydown = function(e) {
   switch (e.key) {
-	case "n":
-	  checkBomCheckbox(currentHighlightedRowId, 2);
-	  highlightNextRow();
-	  e.preventDefault();
-	  break;
+    case "n":
+      checkBomCheckbox(currentHighlightedRowId, 2);
+      highlightNextRow();
+      e.preventDefault();
+      break;
     case "ArrowUp":
       highlightPreviousRow();
       e.preventDefault();
