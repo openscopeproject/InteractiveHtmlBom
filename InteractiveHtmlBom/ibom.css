@@ -1,5 +1,9 @@
 :root {
   --pcb-edge-color: black;
+  --pad-color: #878787;
+  --pad-color-highlight: #D04040;
+  --pin1-outline-color: #ffb629;
+  --pin1-outline-color-highlight: #b4ff03;
 }
 
 html, body {
@@ -10,6 +14,9 @@ html, body {
 
 .dark {
   --pcb-edge-color: #eee;
+  --pad-color: #808080;
+  --pin1-outline-color: #ffa800;
+  --pin1-outline-color-highlight: #ccff00;
   background-color: #252c30;
   color: #eee;
 }

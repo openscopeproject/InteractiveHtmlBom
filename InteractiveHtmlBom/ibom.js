@@ -11,6 +11,7 @@ var highlightHandlers = [];
 var highlightedRefs = [];
 var checkboxes = [];
 var bomCheckboxes = "";
+var highlightpin1 = false;
 var storage;
 var lastClickedRef;
 
@@ -56,6 +57,13 @@ function setDarkMode(value) {
     topmostdiv.classList.remove("dark");
   }
   writeStorage("darkmode", value);
+  redrawCanvas(allcanvas.front);
+  redrawCanvas(allcanvas.back);
+}
+
+function setHighlightPin1(value) {
+  writeStorage("highlightpin1", value);
+  highlightpin1 = value;
   redrawCanvas(allcanvas.front);
   redrawCanvas(allcanvas.back);
 }
@@ -626,6 +634,10 @@ window.onload = function(e) {
   if (readStorage("darkmode") === "true") {
     document.getElementById("darkmodeCheckbox").checked = true;
     setDarkMode(true);
+  }
+  if (readStorage("highlightpin1") === "true") {
+    document.getElementById("highlightpin1Checkbox").checked = true;
+    setHighlightPin1(true);
   }
   // Triggers render
   changeBomLayout(bomlayout);

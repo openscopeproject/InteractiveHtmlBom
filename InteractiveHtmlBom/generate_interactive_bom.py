@@ -267,6 +267,64 @@ def parse_silkscreen(pcb):
         "B": back
     }
 
+def parse_pad(pad):
+    layers_set = list(pad.GetLayerSet().Seq())
+    layers = []
+    if pcbnew.F_Cu in layers_set:
+        layers.append("F")
+    if pcbnew.B_Cu in layers_set:
+        layers.append("B")
+    pos = normalize(pad.GetPosition())
+    size = normalize(pad.GetSize())
+    is_pin1 = pad.GetPadName() == "1" or pad.GetPadName() == "A1"
+    angle = pad.GetOrientation() * -0.1
+    shape_lookup = {
+        pcbnew.PAD_SHAPE_RECT: "rect",
+        pcbnew.PAD_SHAPE_OVAL: "oval",
+        pcbnew.PAD_SHAPE_CIRCLE: "circle",
+    }
+    if hasattr(pcbnew, "PAD_SHAPE_ROUNDRECT"):
+        shape_lookup[pcbnew.PAD_SHAPE_ROUNDRECT] = "roundrect"
+    if hasattr(pcbnew, "PAD_SHAPE_CUSTOM"):
+        shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
+    shape = shape_lookup.get(pad.GetShape(), "")
+    if shape == "":
+        logging.info("Unsupported pad shape %s, skipping.",
+                     pad.GetShape())
+        return None
+    pad_dict = {
+        "layers": layers,
+        "pos": pos,
+        "size": size,
+        "angle": angle,
+        "shape": shape
+    }
+    if is_pin1:
+        pad_dict['pin1'] = 1
+    if shape == "custom":
+        polygon_set = pad.GetCustomShapeAsPolygon()
+        if polygon_set.HasHoles():
+            logging.warn('Detected holes in custom pad polygons')
+        if polygon_set.IsSelfIntersecting():
+            logging.warn(
+                    'Detected self intersecting polygons in custom pad')
+        pad_dict["polygons"] = parse_poly_set(polygon_set)
+    if shape == "roundrect":
+        pad_dict["radius"] = pad.GetRoundRectCornerRadius() * 1e-6
+    if (pad.GetAttribute() == pcbnew.PAD_ATTRIB_STANDARD or
+            pad.GetAttribute() == pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED):
+        pad_dict["type"] = "th"
+        pad_dict["drillshape"] = {
+            pcbnew.PAD_DRILL_SHAPE_CIRCLE: "circle",
+            pcbnew.PAD_DRILL_SHAPE_OBLONG: "oblong"
+        }.get(pad.GetDrillShape())
+        pad_dict["drillsize"] = normalize(pad.GetDrillSize())
+    else:
+        pad_dict["type"] = "smd"
+    if hasattr(pad, "GetOffset"):
+        pad_dict["offset"] = normalize(pad.GetOffset())
+
+    return pad_dict
 
 def parse_modules(pcb):
     modules = {}
@@ -300,61 +358,9 @@ def parse_modules(pcb):
         # footprint pads
         pads = []
         for p in m.Pads():
-            layers_set = [l for l in p.GetLayerSet().Seq()]
-            layers = []
-            if pcbnew.F_Cu in layers_set:
-                layers.append("F")
-            if pcbnew.B_Cu in layers_set:
-                layers.append("B")
-            pos = normalize(p.GetPosition())
-            size = normalize(p.GetSize())
-            is_pin1 = p.GetPadName() == "1" or p.GetPadName() == "A1"
-            angle = p.GetOrientation() * -0.1
-            shape_lookup = {
-                pcbnew.PAD_SHAPE_RECT: "rect",
-                pcbnew.PAD_SHAPE_OVAL: "oval",
-                pcbnew.PAD_SHAPE_CIRCLE: "circle",
-            }
-            if hasattr(pcbnew, "PAD_SHAPE_ROUNDRECT"):
-                shape_lookup[pcbnew.PAD_SHAPE_ROUNDRECT] = "roundrect"
-            if hasattr(pcbnew, "PAD_SHAPE_CUSTOM"):
-                shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
-            shape = shape_lookup.get(p.GetShape(), "")
-            if shape == "":
-                logging.info("Unsupported pad shape %s, skipping.",
-                             p.GetShape())
-                continue
-            pad_dict = {
-                "layers": layers,
-                "pos": pos,
-                "size": size,
-                "pin1": is_pin1,
-                "angle": angle,
-                "shape": shape
-            }
-            if shape == "custom":
-                polygon_set = p.GetCustomShapeAsPolygon()
-                if polygon_set.HasHoles():
-                    logging.warn('Detected holes in custom pad polygons')
-                if polygon_set.IsSelfIntersecting():
-                    logging.warn(
-                        'Detected self intersecting polygons in custom pad')
-                pad_dict["polygons"] = parse_poly_set(polygon_set)
-            if shape == "roundrect":
-                pad_dict["radius"] = p.GetRoundRectCornerRadius() * 1e-6
-            if (p.GetAttribute() == pcbnew.PAD_ATTRIB_STANDARD or
-                    p.GetAttribute() == pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED):
-                pad_dict["type"] = "th"
-                pad_dict["drillshape"] = {
-                    pcbnew.PAD_DRILL_SHAPE_CIRCLE: "circle",
-                    pcbnew.PAD_DRILL_SHAPE_OBLONG: "oblong"
-                }.get(p.GetDrillShape())
-                pad_dict["drillsize"] = normalize(p.GetDrillSize())
-            else:
-                pad_dict["type"] = "smd"
-            if hasattr(p, "GetOffset"):
-                pad_dict["offset"] = normalize(p.GetOffset())
-            pads.append(pad_dict)
+            pad_dict = parse_pad(p)
+            if pad_dict is not None:
+                pads.append(pad_dict)
 
         # add module
         modules[ref] = {

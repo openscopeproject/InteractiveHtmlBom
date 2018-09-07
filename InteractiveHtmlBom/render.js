@@ -6,7 +6,7 @@ function deg2rad(deg) {
   return deg * Math.PI / 180;
 }
 
-function drawtext(ctx, scalefactor, text, color, flip) {
+function drawtext(ctx, text, color, flip) {
   ctx.save();
   ctx.translate(...text.pos);
   angle = -text.angle;
@@ -65,25 +65,7 @@ function drawedge(ctx, scalefactor, edge, color) {
   }
 }
 
-function drawOblong(ctx, scalefactor, color, size) {
-  ctx.beginPath();
-  ctx.strokeStyle = color;
-  ctx.lineCap = "round";
-  if (size[0] > size[1]) {
-    ctx.lineWidth = size[1];
-    var from = [-size[0] / 2 + size[1] / 2, 0];
-    var to = [-from[0], 0];
-  } else {
-    ctx.lineWidth = size[0];
-    var from = [0, -size[1] / 2 + size[0] / 2];
-    var to = [0, -from[1]];
-  }
-  ctx.moveTo(...from);
-  ctx.lineTo(...to);
-  ctx.stroke();
-}
-
-function drawRoundRect(ctx, scalefactor, color, size, radius) {
+function drawRoundRect(ctx, color, size, radius, ctxmethod) {
   ctx.beginPath();
   ctx.strokeStyle = color;
   x = size[0] * -0.5;
@@ -96,10 +78,14 @@ function drawRoundRect(ctx, scalefactor, color, size, radius) {
   ctx.arcTo(x + width, y, x, y, radius);
   ctx.arcTo(x, y, x, y + height, radius);
   ctx.closePath();
-  ctx.fill();
+  ctxmethod();
 }
 
-function drawPolygons(ctx, scalefactor, color, polygons) {
+function drawOblong(ctx, color, size, ctxmethod) {
+  drawRoundRect(ctx, color, size, Math.min(size[0], size[1]) / 2, ctxmethod);
+}
+
+function drawPolygons(ctx, color, polygons, ctxmethod) {
   ctx.fillStyle = color;
   for (polygon of polygons) {
     ctx.beginPath();
@@ -107,15 +93,15 @@ function drawPolygons(ctx, scalefactor, color, polygons) {
       ctx.lineTo(...vertex)
     }
     ctx.closePath();
-    ctx.fill();
+    ctxmethod();
   }
 }
 
-function drawPolygonShape(ctx, scalefactor, shape, color) {
+function drawPolygonShape(ctx, shape, color) {
   ctx.save();
   ctx.translate(...shape.pos);
   ctx.rotate(deg2rad(-shape.angle));
-  drawPolygons(ctx, scalefactor, color, shape.polygons);
+  drawPolygons(ctx, color, shape.polygons, ctx.fill.bind(ctx));
   ctx.restore();
 }
 
@@ -123,28 +109,69 @@ function drawDrawing(ctx, layer, scalefactor, drawing, color) {
   if (["segment", "arc", "circle"].includes(drawing.type)) {
     drawedge(ctx, scalefactor, drawing, color);
   } else if (drawing.type == "polygon") {
-    drawPolygonShape(ctx, scalefactor, drawing, color);
+    drawPolygonShape(ctx, drawing, color);
   } else {
-    drawtext(ctx, scalefactor, drawing, color, layer == "B");
+    drawtext(ctx, drawing, color, layer == "B");
   }
 }
 
-function drawModule(ctx, layer, scalefactor, module, highlight) {
-  var padcolor = "#808080";
+function drawCircle(ctx, radius, ctxmethod) {
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+  ctx.closePath();
+  ctxmethod();
+}
+
+function drawPad(ctx, pad, color, outline) {
+  ctx.save();
+  ctx.translate(...pad.pos);
+  ctx.rotate(deg2rad(pad.angle));
+  if (pad.offset) {
+    ctx.translate(...pad.offset);
+  }
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  var ctxmethod = outline ? ctx.stroke.bind(ctx) : ctx.fill.bind(ctx);
+  if (pad.shape == "rect") {
+    var rect = [...pad.size.map(c => -c * 0.5), ...pad.size];
+    if (outline) {
+      ctx.strokeRect(...rect);
+    } else {
+      ctx.fillRect(...rect);
+    }
+  } else if (pad.shape == "oval") {
+    drawOblong(ctx, color, pad.size, ctxmethod);
+  } else if (pad.shape == "circle") {
+    drawCircle(ctx, pad.size[0] / 2, ctxmethod);
+  } else if (pad.shape == "roundrect") {
+    drawRoundRect(ctx, color, pad.size, pad.radius, ctxmethod);
+  } else if (pad.shape == "custom") {
+    drawPolygons(ctx, color, pad.polygons, ctxmethod);
+  }
+  if (pad.type == "th" && !outline) {
+    ctx.fillStyle = "#CCCCCC";
+    if (pad.drillshape == "oblong") {
+      drawOblong(ctx, "#CCCCCC", pad.drillsize, ctxmethod);
+    } else {
+      drawCircle(ctx, pad.drillsize[0] / 2, ctxmethod);
+    }
+  }
+  ctx.restore();
+}
+
+function drawModule(ctx, layer, scalefactor, module, padcolor, outlinecolor, highlight) {
   if (highlight) {
-    padcolor = "#D04040";
     // draw bounding box
     if (module.layer == layer) {
       ctx.save();
       ctx.globalAlpha = 0.2;
       ctx.translate(...module.bbox.pos);
-      ctx.fillStyle = "#D04040";
+      ctx.fillStyle = padcolor;
       ctx.fillRect(
         0, 0,
         ...module.bbox.size);
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = "#D04040";
-      ctx.lineWidth = 2 / scalefactor;
+      ctx.strokeStyle = padcolor;
       ctx.strokeRect(
         0, 0,
         ...module.bbox.size);
@@ -160,39 +187,10 @@ function drawModule(ctx, layer, scalefactor, module, highlight) {
   // draw pads
   for (pad of module.pads) {
     if (pad.layers.includes(layer)) {
-      ctx.save();
-      ctx.translate(...pad.pos);
-      ctx.rotate(deg2rad(pad.angle));
-      if (pad.offset) {
-        ctx.translate(...pad.offset);
+      drawPad(ctx, pad, padcolor, false);
+      if (pad.pin1 && highlightpin1) {
+        drawPad(ctx, pad, outlinecolor, true);
       }
-      ctx.fillStyle = padcolor;
-      if (pad.shape == "rect") {
-        ctx.fillRect(
-          ...pad.size.map(c => -c * 0.5),
-          ...pad.size);
-      } else if (pad.shape == "oval") {
-        drawOblong(ctx, scalefactor, padcolor, pad.size)
-      } else if (pad.shape == "circle") {
-        ctx.beginPath();
-        ctx.arc(0, 0, pad.size[0] / 2, 0, 2 * Math.PI);
-        ctx.fill();
-      } else if (pad.shape == "roundrect") {
-        drawRoundRect(ctx, scalefactor, padcolor, pad.size, pad.radius)
-      } else if (pad.shape == "custom") {
-        drawPolygons(ctx, scalefactor, padcolor, pad.polygons)
-      }
-      if (pad.type == "th") {
-        if (pad.drillshape == "oblong") {
-          drawOblong(ctx, scalefactor, "#CCCCCC", pad.drillsize)
-        } else {
-          ctx.fillStyle = "#CCCCCC"
-          ctx.beginPath();
-          ctx.arc(0, 0, pad.drillsize[0] / 2, 0, 2 * Math.PI);
-          ctx.fill();
-        }
-      }
-      ctx.restore();
     }
   }
 }
@@ -207,11 +205,19 @@ function drawEdges(canvas, scalefactor) {
 
 function drawModules(canvas, layer, scalefactor, highlightedRefs) {
   var ctx = canvas.getContext("2d");
-  for (i in pcbdata.modules) {
+  ctx.lineWidth = 3 / scalefactor;
+  var style = getComputedStyle(topmostdiv);
+  var padcolor = style.getPropertyValue('--pad-color');
+  var outlinecolor = style.getPropertyValue('--pin1-outline-color');
+  if (highlightedRefs.length > 0) {
+    padcolor = style.getPropertyValue('--pad-color-highlight');
+    outlinecolor = style.getPropertyValue('--pin1-outline-color-highlight');
+  }
+  for (var i in pcbdata.modules) {
     var mod = pcbdata.modules[i];
     var highlight = highlightedRefs.includes(mod.ref);
     if (highlightedRefs.length == 0 || highlight) {
-      drawModule(ctx, layer, scalefactor, mod, highlight);
+      drawModule(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight);
     }
   }
 }
@@ -222,9 +228,9 @@ function drawSilkscreen(canvas, layer, scalefactor) {
     if (["segment", "arc", "circle"].includes(d.type)) {
       drawedge(ctx, scalefactor, d, "#aa4");
     } else if (d.type == "polygon") {
-      drawPolygonShape(ctx, scalefactor, d, "#4aa");
+      drawPolygonShape(ctx, d, "#4aa");
     } else {
-      drawtext(ctx, scalefactor, d, "#4aa", layer == "B");
+      drawtext(ctx, d, "#4aa", layer == "B");
     }
   }
 }
@@ -282,7 +288,7 @@ function recalcLayerScale(canvasdict) {
   canvasdivid = {
     "F": "frontcanvas",
     "B": "backcanvas"
-  }[canvasdict.layer];
+  } [canvasdict.layer];
   var width = document.getElementById(canvasdivid).clientWidth * 2;
   var height = document.getElementById(canvasdivid).clientHeight * 2;
   var bbox = pcbdata.edges_bbox;
