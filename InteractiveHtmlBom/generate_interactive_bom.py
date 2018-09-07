@@ -437,8 +437,8 @@ def main(pcb, launch_browser=True):
             wx.MessageBox(msg)
         return
     bbox = {
-        "minx": bbox.GetLeft() * 1e-6,
-        "miny": bbox.GetTop() * 1e-6,
+        "minx": bbox.GetPosition().x * 1e-6,
+        "miny": bbox.GetPosition().y * 1e-6,
         "maxx": bbox.GetRight() * 1e-6,
         "maxy": bbox.GetBottom() * 1e-6,
     }
