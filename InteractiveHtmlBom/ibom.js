@@ -523,6 +523,18 @@ function toggleBomCheckbox(bomrowid, checkboxnum) {
   checkbox.onchange();
 }
 
+function checkBomCheckbox(bomrowid, checkboxnum) {
+  if (!bomrowid || checkboxnum > checkboxes.length) {
+    return;
+  }
+  var bomrow = document.getElementById(bomrowid);
+  var checkbox = bomrow.childNodes[checkboxnum].childNodes[0];
+  checkbox.checked = true;
+  checkbox.indeterminate = false;
+  checkbox.onchange();
+}
+
+
 function removeGutterNode(node) {
   for (var i = 0; i < node.childNodes.length; i++) {
     if (node.childNodes[i].classList &&
@@ -546,8 +558,9 @@ function setBomCheckboxes(value) {
 
 document.onkeydown = function(e) {
   switch (e.key) {
-	case " ":
-	  toggleBomCheckbox(currentHighlightedRowId, 2);
+	case "n":
+	  checkBomCheckbox(currentHighlightedRowId, 2);
+	  highlightNextRow();
 	  e.preventDefault();
 	  break;
     case "ArrowUp":
