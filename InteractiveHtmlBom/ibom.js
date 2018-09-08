@@ -639,6 +639,14 @@ window.onload = function(e) {
     document.getElementById("highlightpin1Checkbox").checked = true;
     setHighlightPin1(true);
   }
+  boardRotation = readStorage("boardRotation");
+  if (boardRotation === null) {
+    boardRotation = 0;
+  } else {
+    boardRotation = parseInt(boardRotation);
+  }
+  document.getElementById("boardRotation").value = boardRotation / 5;
+  document.getElementById("rotationDegree").textContent = boardRotation;
   // Triggers render
   changeBomLayout(bomlayout);
 }

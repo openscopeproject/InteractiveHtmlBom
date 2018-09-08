@@ -52,6 +52,11 @@
             Continuous redraw on drag
           </label>
           <label class="menu-label">
+            <span>Board rotation</span>
+            <span style="float: right"><span id="rotationDegree">0</span>&#176;</span>
+            <input id="boardRotation" type="range" min="-36" max="36" value="0" class="slider" oninput="setBoardRotation(this.value)">
+          </label>
+          <label class="menu-label">
             <div style="margin-left: 5px">Bom checkboxes</div>
             <input id="bomCheckboxes" class="menu-textbox" type=text
                    oninput="setBomCheckboxes(this.value)">

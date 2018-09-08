@@ -1,6 +1,7 @@
 /* PCB rendering code */
 
 var redrawOnDrag = true;
+var boardRotation = 0;
 
 function deg2rad(deg) {
   return deg * Math.PI / 180;
@@ -274,6 +275,7 @@ function prepareCanvas(canvas, flip, transform) {
     ctx.scale(-1, 1);
   }
   ctx.translate(transform.x, transform.y);
+  ctx.rotate(deg2rad(boardRotation));
   ctx.scale(transform.s, transform.s);
 }
 
@@ -284,6 +286,26 @@ function prepareLayer(canvasdict) {
   }
 }
 
+function applyRotation(bbox) {
+  var angle = deg2rad(boardRotation);
+  var corners = [
+    [bbox.minx, bbox.miny],
+    [bbox.minx, bbox.maxy],
+    [bbox.maxx, bbox.miny],
+    [bbox.maxx, bbox.maxy],
+  ];
+  corners = corners.map(v => [
+    v[0] * Math.cos(angle) - v[1] * Math.sin(angle),
+    v[0] * Math.sin(angle) + v[1] * Math.cos(angle)
+  ]);
+  return {
+    minx: corners.reduce((a, v) => Math.min(a, v[0]), Infinity),
+    miny: corners.reduce((a, v) => Math.min(a, v[1]), Infinity),
+    maxx: corners.reduce((a, v) => Math.max(a, v[0]), -Infinity),
+    maxy: corners.reduce((a, v) => Math.max(a, v[1]), -Infinity),
+  }
+}
+
 function recalcLayerScale(canvasdict) {
   canvasdivid = {
     "F": "frontcanvas",
@@ -291,7 +313,7 @@ function recalcLayerScale(canvasdict) {
   } [canvasdict.layer];
   var width = document.getElementById(canvasdivid).clientWidth * 2;
   var height = document.getElementById(canvasdivid).clientHeight * 2;
-  var bbox = pcbdata.edges_bbox;
+  var bbox = applyRotation(pcbdata.edges_bbox);
   var scalefactor = 0.98 * Math.min(
     width / (bbox.maxx - bbox.minx),
     height / (bbox.maxy - bbox.miny)
@@ -466,6 +488,13 @@ function addMouseHandlers(div, layerdict) {
 function setRedrawOnDrag(value) {
   redrawOnDrag = value;
   writeStorage("redrawOnDrag", value);
+}
+
+function setBoardRotation(value) {
+  boardRotation = value * 5;
+  writeStorage("boardRotation", boardRotation);
+  document.getElementById("rotationDegree").textContent = boardRotation;
+  resizeAll();
 }
 
 function initRender() {
