@@ -286,18 +286,22 @@ function prepareLayer(canvasdict) {
   }
 }
 
+function rotateVector(v, angle) {
+  angle = deg2rad(angle);
+  return [
+    v[0] * Math.cos(angle) - v[1] * Math.sin(angle),
+    v[0] * Math.sin(angle) + v[1] * Math.cos(angle)
+  ];
+}
+
 function applyRotation(bbox) {
-  var angle = deg2rad(boardRotation);
   var corners = [
     [bbox.minx, bbox.miny],
     [bbox.minx, bbox.maxy],
     [bbox.maxx, bbox.miny],
     [bbox.maxx, bbox.maxy],
   ];
-  corners = corners.map(v => [
-    v[0] * Math.cos(angle) - v[1] * Math.sin(angle),
-    v[0] * Math.sin(angle) + v[1] * Math.cos(angle)
-  ]);
+  corners = corners.map((v) => rotateVector(v, boardRotation));
   return {
     minx: corners.reduce((a, v) => Math.min(a, v[0]), Infinity),
     miny: corners.reduce((a, v) => Math.min(a, v[1]), Infinity),
@@ -393,7 +397,8 @@ function handleMouseClick(e, layerdict) {
     x = (2 * x / t.zoom - t.panx - t.x) / t.s;
   }
   y = (2 * y / t.zoom - t.y - t.pany) / t.s;
-  var reflist = bboxScan(layerdict.layer, x, y);
+  var v = rotateVector([x, y], -boardRotation);
+  var reflist = bboxScan(layerdict.layer, v[0], v[1]);
   if (reflist.length > 0) {
     modulesClicked(reflist);
   }
