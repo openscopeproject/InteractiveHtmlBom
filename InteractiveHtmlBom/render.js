@@ -347,7 +347,7 @@ function recalcLayerScale(canvasdict) {
 function redrawCanvas(layerdict) {
   prepareLayer(layerdict);
   drawBackground(layerdict);
-  drawHighlights(layerdict);
+  drawHighlightsOnLayer(layerdict);
 }
 
 function resizeCanvas(layerdict) {
@@ -402,6 +402,7 @@ function handleMouseClick(e, layerdict) {
   var reflist = bboxScan(layerdict.layer, v[0], v[1]);
   if (reflist.length > 0) {
     modulesClicked(reflist);
+    drawHighlights();
   }
 }
 
@@ -414,15 +415,19 @@ function handleMouseUp(e, layerdict) {
     layerdict.transform.mousedowny == e.offsetY) {
     // This is just a click
     handleMouseClick(e, layerdict);
+    layerdict.transform.mousedown = false;
+    return;
   }
-  layerdict.transform.mousedown = false;
   if (e.which == 3) {
     // Reset pan and zoom on right click.
     layerdict.transform.panx = 0;
     layerdict.transform.pany = 0;
     layerdict.transform.zoom = 1;
+    redrawCanvas(layerdict);
+  } else if (!redrawOnDrag) {
+    redrawCanvas(layerdict);
   }
-  redrawCanvas(layerdict);
+  layerdict.transform.mousedown = false;
 }
 
 function handleMouseMove(e, layerdict) {
