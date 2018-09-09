@@ -186,7 +186,7 @@ function populateBomHeader() {
   var td = document.createElement("TH");
   td.classList.add("numCol");
   tr.appendChild(td);
-  checkboxes = bomCheckboxes.split(",");
+  checkboxes = bomCheckboxes.split(",").filter((e) => e);
   for (var checkbox of checkboxes) {
     if (checkbox) {
       td = document.createElement("TH");
@@ -522,6 +522,23 @@ function toggleBomCheckbox(bomrowid, checkboxnum) {
   checkbox.onchange();
 }
 
+function checkBomCheckbox(bomrowid, checkboxname) {
+  var checkboxnum = 0;
+  while (checkboxnum < checkboxes.length &&
+    checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
+    checkboxnum++;
+  }
+  if (!bomrowid || checkboxnum > checkboxes.length) {
+    return;
+  }
+  var bomrow = document.getElementById(bomrowid);
+  var checkbox = bomrow.childNodes[checkboxnum + 1].childNodes[0];
+  checkbox.checked = true;
+  checkbox.indeterminate = false;
+  checkbox.onchange();
+}
+
+
 function removeGutterNode(node) {
   for (var i = 0; i < node.childNodes.length; i++) {
     if (node.childNodes[i].classList &&
@@ -545,6 +562,13 @@ function setBomCheckboxes(value) {
 
 document.onkeydown = function(e) {
   switch (e.key) {
+    case "n":
+      if (currentHighlightedRowId !== null) {
+        checkBomCheckbox(currentHighlightedRowId, "placed");
+        highlightNextRow();
+        e.preventDefault();
+      }
+      break;
     case "ArrowUp":
       highlightPreviousRow();
       e.preventDefault();
