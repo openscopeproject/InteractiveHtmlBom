@@ -284,8 +284,7 @@ function populateBomBody() {
       refs: references
     });
     if ((filter || reflookup) && first) {
-      highlightedRefs = references;
-      drawHighlights();
+      handler();
       first = false;
     }
   }
