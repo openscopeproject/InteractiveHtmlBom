@@ -69,13 +69,12 @@ function setHighlightPin1(value) {
 }
 
 function getStoredCheckboxRefs(checkbox) {
-  existingRefs = readStorage("checkbox_" + checkbox);
+  var existingRefs = readStorage("checkbox_" + checkbox);
   if (!existingRefs) {
-    refsSet = new Set();
+    return new Set();
   } else {
-    refsSet = new Set(existingRefs.split(","));
+    return new Set(existingRefs.split(","));
   }
-  return refsSet;
 }
 
 function setBomCheckboxState(checkbox, element, references) {
@@ -104,12 +103,12 @@ function createCheckboxChangeHandler(checkbox, references) {
     refsSet = getStoredCheckboxRefs(checkbox);
     if (this.checked) {
       // checkbox ticked
-      for (ref of references) {
+      for (var ref of references) {
         refsSet.add(ref);
       }
     } else {
       // checkbox unticked
-      for (ref of references) {
+      for (var ref of references) {
         refsSet.delete(ref);
       }
     }
@@ -134,7 +133,7 @@ function createRowHighlightHandler(rowid, refs) {
 
 function entryMatches(entry) {
   // check refs
-  for (ref of entry[3]) {
+  for (var ref of entry[3]) {
     if (ref.toLowerCase().indexOf(filter) >= 0) {
       return true;
     }
@@ -151,7 +150,7 @@ function entryMatches(entry) {
 }
 
 function findRefInEntry(entry) {
-  for (ref of entry[3]) {
+  for (var ref of entry[3]) {
     if (ref.toLowerCase() == reflookup) {
       return [ref];
     }
@@ -188,7 +187,7 @@ function populateBomHeader() {
   td.classList.add("numCol");
   tr.appendChild(td);
   checkboxes = bomCheckboxes.split(",");
-  for (checkbox of checkboxes) {
+  for (var checkbox of checkboxes) {
     if (checkbox) {
       td = document.createElement("TH");
       td.classList.add("bom-checkbox");
@@ -235,7 +234,7 @@ function populateBomBody() {
     if (filter && !entryMatches(bomentry)) {
       continue;
     }
-    references = bomentry[3];
+    var references = bomentry[3];
     if (reflookup) {
       references = findRefInEntry(bomentry);
       if (!references) {
@@ -249,10 +248,10 @@ function populateBomBody() {
     td.textContent = rownum;
     tr.appendChild(td);
     // Checkboxes
-    for (checkbox of checkboxes) {
+    for (var checkbox of checkboxes) {
       if (checkbox) {
         td = document.createElement("TD");
-        input = document.createElement("input");
+        var input = document.createElement("input");
         input.type = "checkbox";
         input.onchange = createCheckboxChangeHandler(checkbox, references);
         setBomCheckboxState(checkbox, input, references);
@@ -297,7 +296,8 @@ function smoothScrollToRow(rowid) {
     behavior: "smooth",
     block: "center",
     inline: "nearest"
-  });}
+  });
+}
 
 function highlightPreviousRow() {
   if (!currentHighlightedRowId) {
