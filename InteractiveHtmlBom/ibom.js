@@ -6,6 +6,9 @@ var bomsplit;
 var canvassplit;
 var canvaslayout = "default";
 var bomlayout = "default";
+var bomSortFunction = null;
+var currentSortColumn = null;
+var currentSortOrder = null;
 var currentHighlightedRowId;
 var highlightHandlers = [];
 var highlightedRefs = [];
@@ -181,7 +184,58 @@ function highlightFilter(s) {
   return r;
 }
 
+function createColumnHeader(name, cls, comparator) {
+  var th = document.createElement("TH");
+  th.innerHTML = name;
+  th.classList.add(cls);
+  th.style.cursor = "pointer";
+  var span = document.createElement("SPAN");
+  span.classList.add("sortmark");
+  span.classList.add("none");
+  th.appendChild(span);
+  th.onclick = function() {
+    if (currentSortColumn && this !== currentSortColumn) {
+      // Currently sorted by another column
+      currentSortColumn.childNodes[1].classList.remove(currentSortOrder);
+      currentSortColumn.childNodes[1].classList.add("none");
+      currentSortColumn = null;
+      currentSortOrder = null;
+    }
+    if (currentSortColumn && this === currentSortColumn) {
+      // Already sorted by this column
+      if (currentSortOrder == "asc") {
+        // Sort by this column, descending order
+        bomSortFunction = function(a, b) {
+          return -comparator(a, b);
+        }
+        currentSortColumn.childNodes[1].classList.remove("asc");
+        currentSortColumn.childNodes[1].classList.add("desc");
+        currentSortOrder = "desc";
+      } else {
+        // Unsort
+        bomSortFunction = null;
+        currentSortColumn.childNodes[1].classList.remove("desc");
+        currentSortColumn.childNodes[1].classList.add("none");
+        currentSortColumn = null;
+        currentSortOrder = null;
+      }
+    } else {
+      // Sort by this column, ascending order
+      bomSortFunction = comparator;
+      currentSortColumn = this;
+      currentSortColumn.childNodes[1].classList.remove("none");
+      currentSortColumn.childNodes[1].classList.add("asc");
+      currentSortOrder = "asc";
+    }
+    populateBomBody();
+  }
+  return th;
+}
+
 function populateBomHeader() {
+  while (bomhead.firstChild) {
+    bomhead.removeChild(bomhead.firstChild);
+  }
   var tr = document.createElement("TR");
   var td = document.createElement("TH");
   td.classList.add("numCol");
@@ -195,26 +249,32 @@ function populateBomHeader() {
       tr.appendChild(td);
     }
   }
-  td = document.createElement("TH");
-  td.classList.add("References");
-  td.innerHTML = "References";
-  tr.appendChild(td);
-  td = document.createElement("TH");
-  td.classList.add("Value");
-  td.innerHTML = "Value";
-  tr.appendChild(td);
-  td = document.createElement("TH");
-  td.classList.add("Footprint");
-  td.innerHTML = "Footprint";
-  tr.appendChild(td);
-  td = document.createElement("TH");
-  td.classList.add("Quantity");
-  td.innerHTML = "Quantity";
-  tr.appendChild(td);
+  tr.appendChild(createColumnHeader("References", "References", (a, b) => {
+    var i = 0;
+    while (i < a[3].length && i < b[3].length) {
+      if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
+      i++;
+    }
+    return a[3].length - b[3].length;
+  }));
+  tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
+    if (a[1] != b[1]) return a[1] > b[1] ? 1 : -1;
+    else return 0;
+  }));
+  tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
+    if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
+    else return 0;
+  }));
+  tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
+    return a[3].length - b[3].length;
+  }));
   bomhead.appendChild(tr);
 }
 
 function populateBomBody() {
+  while (bom.firstChild) {
+    bom.removeChild(bom.firstChild);
+  }
   highlightHandlers = [];
   currentHighlightedRowId = null;
   var first = true;
@@ -228,6 +288,9 @@ function populateBomBody() {
     case 'B':
       bomtable = pcbdata.bom.B;
       break;
+  }
+  if (bomSortFunction) {
+    bomtable = bomtable.slice().sort(bomSortFunction);
   }
   for (var i in bomtable) {
     var bomentry = bomtable[i];
@@ -337,12 +400,6 @@ function highlightNextRow() {
 }
 
 function populateBomTable() {
-  while (bom.firstChild) {
-    bom.removeChild(bom.firstChild);
-  }
-  while (bomhead.firstChild) {
-    bomhead.removeChild(bomhead.firstChild);
-  }
   populateBomHeader();
   populateBomBody();
 }

@@ -142,6 +142,7 @@ canvas:active {
   padding: 5px;
   word-wrap: break-word;
   text-align: center;
+  position: relative;
 }
 
 .dark .bom th, .dark .bom td {
@@ -198,6 +199,34 @@ canvas:active {
 
 .bom .Quantity {
   width: 65px;
+}
+
+.bom th .sortmark {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #221 transparent;
+  transform-origin:  50% 85%;
+  transition: opacity 0.2s, transform 0.4s;
+}
+
+.dark .bom th .sortmark {
+  filter: invert(1);
+}
+
+.bom th .sortmark.none {
+  opacity: 0;
+}
+
+.bom th .sortmark.desc {
+  transform:rotate(180deg);
+}
+
+.bom th:hover .sortmark.none {
+  opacity: 0.5;
 }
 
 .split {
