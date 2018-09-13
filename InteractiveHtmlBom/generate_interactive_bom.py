@@ -226,8 +226,12 @@ def parse_drawing(d):
 
 def parse_edges(pcb):
     edges = []
-    bbox = None;
-    for d in pcb.GetDrawings():
+    drawings = list(pcb.getDrawings())
+    bbox = None
+    for m in pcb.GetModules():
+        for g in m.GraphicalItems():
+            drawings.append(g)
+    for d in drawings:
         if d.GetLayer() == pcbnew.Edge_Cuts:
             parsed_drawing = parse_drawing(d)
             if parsed_drawing:
@@ -236,16 +240,6 @@ def parse_edges(pcb):
                     bbox = d.GetBoundingBox()
                 else:
                     bbox.Merge(d.GetBoundingBox())
-    for m in pcb.GetModules():
-        for d in m.GraphicalItems():
-            if d.GetLayer() == pcbnew.Edge_Cuts:
-                parsed_drawing = parse_drawing(d)
-                if(parsed_drawing):
-                    edges.append(parsed_drawing)
-                    if bbox is None:
-                        bbox = d.GetBoundingBox()
-                    else:
-                        bbox.Merge(d.GetBoundingBox())
     if bbox:
         bbox.Normalize()
     return edges, bbox
