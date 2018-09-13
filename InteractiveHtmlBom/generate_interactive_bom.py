@@ -7,14 +7,14 @@ import re
 import json
 import logging
 import sys
-
-sys.path.append(os.path.dirname(__file__))
 import units
+from fontparser import FontParser
 
 logging.basicConfig(level=logging.INFO,
                     stream=sys.stdout,
                     format="%(asctime)-15s %(levelname)s %(message)s")
 is_cli = False
+font_parser = FontParser()
 
 
 def generate_bom(pcb, filter_layer=None):
@@ -204,12 +204,22 @@ def parse_text(d):
         text = d.GetShownText()
     else:
         text = d.GetText()
+    font_parser.parse_font_for_string(text)
+    attributes = []
+    if d.IsMirrored():
+        attributes.append("mirrored")
+    if d.IsItalic():
+        attributes.append("italic")
+    if d.IsBold():
+        attributes.append("bold")
     return {
         "pos": pos,
         "text": text,
         "height": height,
         "width": width,
         "horiz_justify": d.GetHorizJustify(),
+        "thickness": d.GetThickness() * 1e-6,
+        "attr": attributes,
         "angle": angle
     }
 
@@ -473,6 +483,7 @@ def main(pcb, launch_browser=True):
         bom_table = generate_bom(pcb, filter_layer=layer)
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
+    pcbdata["font_data"] = font_parser.get_parsed_font()
     bom_file = generate_file(bom_file_dir, pcbdata)
 
     if launch_browser:

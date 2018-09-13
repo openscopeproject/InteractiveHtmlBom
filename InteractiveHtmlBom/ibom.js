@@ -585,7 +585,7 @@ function checkBomCheckbox(bomrowid, checkboxname) {
     checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
     checkboxnum++;
   }
-  if (!bomrowid || checkboxnum > checkboxes.length) {
+  if (!bomrowid || checkboxnum >= checkboxes.length) {
     return;
   }
   var bomrow = document.getElementById(bomrowid);

@@ -7,32 +7,69 @@ function deg2rad(deg) {
   return deg * Math.PI / 180;
 }
 
+function calcFontPoint(linepoint, text, offsetx, offsety, tilt) {
+  var point = [
+    linepoint[0] * text.width + offsetx,
+    linepoint[1] * text.height + offsety
+  ];
+  // Adding half a line height here is technically a bug
+  // but pcbnew currently does the same, text is slightly shifted.
+  point[0] -= (point[1] + text.height * 0.5) * tilt;
+  return point;
+}
+
 function drawtext(ctx, text, color, flip) {
   ctx.save();
   ctx.translate(...text.pos);
   var angle = -text.angle;
-  if (flip) {
+  if (text.attr.includes("mirrored")) {
     ctx.scale(-1, 1);
     angle = -angle;
   }
+  var tilt = 0;
+  if (text.attr.includes("italic")) {
+    tilt = 0.125;
+  }
+  var interline = (text.height * 1.5 + text.thickness) / 2;
   var txt = text.text.split("\n");
   ctx.rotate(deg2rad(angle));
-  ctx.scale(text.width, text.height);
   ctx.fillStyle = color;
-  switch (text.horiz_justify) {
-    case -1:
-      ctx.textAlign = "left";
-      break;
-    case 0:
-      ctx.textAlign = "center";
-      break;
-    case 1:
-      ctx.textAlign = "right";
-      break;
-  }
-  for (var i = 0; i < txt.length; i++) {
-    var offset = -(txt.length - 1) * 0.8 + i * 1.6;
-    ctx.fillText(txt[i], 0, offset);
+  ctx.strokeStyle = color;
+  ctx.lineCap = "round";
+  ctx.lineWidth = text.thickness;
+  for (var i in txt) {
+    var offsety = (-(txt.length - 1) + i * 2) * interline + text.height / 2;
+    var lineWidth = 0;
+    for (var c of txt[i]) {
+      lineWidth += pcbdata.font_data[c].w * text.width;
+    }
+    var offsetx = 0;
+    switch (text.horiz_justify) {
+      case -1:
+        // Justify left, do nothing
+        break;
+      case 0:
+        // Justify center
+        offsetx -= lineWidth / 2;
+        break;
+      case 1:
+        // Justify right
+        offsetx -= lineWidth;
+        break;
+    }
+    for (var c of txt[i]) {
+      for (var line of pcbdata.font_data[c].l) {
+        // Drawing each segment separately instead of
+        // polyline because round line caps don't work in joints
+        for (var i = 0; i < line.length - 1; i++) {
+          ctx.beginPath();
+          ctx.moveTo(...calcFontPoint(line[i], text, offsetx, offsety, tilt));
+          ctx.lineTo(...calcFontPoint(line[i + 1], text, offsetx, offsety, tilt));
+          ctx.stroke();
+        }
+      }
+      offsetx += pcbdata.font_data[c].w * text.width;
+    }
   }
   ctx.restore();
 }
@@ -268,8 +305,6 @@ function prepareCanvas(canvas, flip, transform) {
   var ctx = canvas.getContext("2d");
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   var fontsize = 1.55;
-  ctx.font = "bold " + fontsize + "px Consolas,\"DejaVu Sans Mono\",Monaco,monospace";
-  ctx.textBaseline = "middle";
   ctx.scale(transform.zoom, transform.zoom);
   ctx.translate(transform.panx, transform.pany);
   if (flip) {
