@@ -236,6 +236,16 @@ def parse_edges(pcb):
                     bbox = d.GetBoundingBox()
                 else:
                     bbox.Merge(d.GetBoundingBox())
+    for m in pcb.GetModules():
+        for d in m.GraphicalItems():
+            if d.GetLayer() == pcbnew.Edge_Cuts:
+                parsed_drawing = parse_drawing(d)
+                if(parsed_drawing):
+                    edges.append(parsed_drawing)
+                    if bbox is None:
+                        bbox = d.GetBoundingBox()
+                    else:
+                        bbox.Merge(d.GetBoundingBox())
     if bbox:
         bbox.Normalize()
     return edges, bbox
@@ -436,7 +446,8 @@ def main(pcb, launch_browser=True):
     edges, bbox = parse_edges(pcb)
     if bbox is None:
         msg = 'Please draw pcb outline on the edges ' \
-              'layer before generating BOM.'
+              'layer on sheet or any module before ' \
+              'generating BOM.'
         if is_cli:
             logging.error(msg)
         else:
