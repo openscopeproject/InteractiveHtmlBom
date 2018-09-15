@@ -236,7 +236,7 @@ def parse_drawing(d):
 
 def parse_edges(pcb):
     edges = []
-    drawings = list(pcb.getDrawings())
+    drawings = list(pcb.GetDrawings())
     bbox = None
     for m in pcb.GetModules():
         for g in m.GraphicalItems():
