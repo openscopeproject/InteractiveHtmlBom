@@ -17,6 +17,18 @@ is_cli = False
 font_parser = FontParser()
 
 
+def loginfo(*args):
+    if is_cli:
+        logging.info(*args)
+
+
+def logerror(msg):
+    if is_cli:
+        logging.error(msg)
+    else:
+        wx.MessageBox(msg)
+
+
 def generate_bom(pcb, filter_layer=None):
     """
     Generate BOM from pcb layout.
@@ -117,7 +129,7 @@ def parse_draw_segment(d):
         pcbnew.S_POLYGON: "polygon",
     }.get(d.GetShape(), "")
     if shape == "":
-        logging.info("Unsupported shape %s, skipping", d.GetShape())
+        loginfo("Unsupported shape %s, skipping", d.GetShape())
         return None
     start = normalize(d.GetStart())
     end = normalize(d.GetEnd())
@@ -153,7 +165,7 @@ def parse_draw_segment(d):
         if hasattr(d, "GetPolyShape"):
             polygons = parse_poly_set(d.GetPolyShape())
         else:
-            logging.info("Polygons not supported for KiCad 4, skipping")
+            loginfo("Polygons not supported for KiCad 4, skipping")
             return None
         angle = 0
         if d.GetParentModule() is not None:
@@ -230,7 +242,7 @@ def parse_drawing(d):
     elif d.GetClass() in ["PTEXT", "MTEXT"]:
         return parse_text(d)
     else:
-        logging.info("Unsupported drawing class %s, skipping", d.GetClass())
+        loginfo("Unsupported drawing class %s, skipping", d.GetClass())
         return None
 
 
@@ -303,7 +315,7 @@ def parse_pad(pad):
         shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
     shape = shape_lookup.get(pad.GetShape(), "")
     if shape == "":
-        logging.info("Unsupported pad shape %s, skipping.",
+        loginfo("Unsupported pad shape %s, skipping.",
                      pad.GetShape())
         return None
     pad_dict = {
@@ -407,7 +419,7 @@ def generate_file(dir, pcbdata):
         with open(os.path.join(os.path.dirname(__file__), file_name), "r") as f:
             return f.read()
 
-    logging.info("Dumping pcb json data")
+    loginfo("Dumping pcb json data")
     bom_file_name = os.path.join(dir, "ibom.html")
     if not os.path.isdir(os.path.dirname(bom_file_name)):
         os.makedirs(os.path.dirname(bom_file_name))
@@ -420,18 +432,14 @@ def generate_file(dir, pcbdata):
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
     with open(bom_file_name, "wt") as bom:
         bom.write(html)
-    logging.info("Created file %s", bom_file_name)
+    loginfo("Created file %s", bom_file_name)
     return bom_file_name
 
 
 def main(pcb, launch_browser=True):
     pcb_file_name = pcb.GetFileName()
     if not pcb_file_name:
-        msg = 'Please save the board file before generating BOM.'
-        if is_cli:
-            logging.error(msg)
-        else:
-            wx.MessageBox(msg)
+        logerror('Please save the board file before generating BOM.')
         return
 
     bom_file_dir = os.path.join(os.path.dirname(pcb_file_name), "bom")
@@ -449,13 +457,9 @@ def main(pcb, launch_browser=True):
         title = os.path.splitext(title)[0]
     edges, bbox = parse_edges(pcb)
     if bbox is None:
-        msg = 'Please draw pcb outline on the edges ' \
-              'layer on sheet or any module before ' \
-              'generating BOM.'
-        if is_cli:
-            logging.error(msg)
-        else:
-            wx.MessageBox(msg)
+        logerror('Please draw pcb outline on the edges ' \
+                 'layer on sheet or any module before ' \
+                 'generating BOM.')
         return
     bbox = {
         "minx": bbox.GetPosition().x * 1e-6,
@@ -487,7 +491,7 @@ def main(pcb, launch_browser=True):
     bom_file = generate_file(bom_file_dir, pcbdata)
 
     if launch_browser:
-        logging.info("Opening file in browser")
+        loginfo("Opening file in browser")
         open_file(bom_file)
 
 
