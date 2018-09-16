@@ -679,6 +679,9 @@ function setBomCheckboxes(value) {
 document.onkeydown = function(e) {
   switch (e.key) {
     case "n":
+      if (document.activeElement.type == "text") {
+        return;
+      }
       if (currentHighlightedRowId !== null) {
         checkBomCheckbox(currentHighlightedRowId, "placed");
         highlightNextRow();

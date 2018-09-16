@@ -229,6 +229,7 @@ canvas:active {
   width: 30px;
   position: relative;
   user-select: none;
+  -moz-user-select: none;
 }
 
 .bom .bom-checkbox:before {
