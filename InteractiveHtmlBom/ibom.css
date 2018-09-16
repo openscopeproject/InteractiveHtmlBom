@@ -151,6 +151,7 @@ canvas:active {
 
 .bom th {
   background-color: #CCCCCC;
+  background-clip: padding-box;
 }
 
 .dark .bom th {
