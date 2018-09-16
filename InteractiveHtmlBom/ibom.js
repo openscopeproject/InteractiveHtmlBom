@@ -80,7 +80,7 @@ function getStoredCheckboxRefs(checkbox) {
   }
 }
 
-function setBomCheckboxState(checkbox, element, references) {
+function getCheckboxState(checkbox, references) {
   var storedRefsSet = getStoredCheckboxRefs(checkbox);
   var currentRefsSet = new Set(references);
   // Get difference of current - stored
@@ -90,15 +90,20 @@ function setBomCheckboxState(checkbox, element, references) {
   }
   if (difference.size == 0) {
     // All the current refs are stored
-    element.checked = true;
+    return "checked";
   } else if (difference.size == currentRefsSet.size) {
     // None of the current refs are stored
-    element.checked = false;
+    return "unchecked";
   } else {
     // Some of the refs are stored
-    element.checked = false;
-    element.indeterminate = true;
+    return "indeterminate";
   }
+}
+
+function setBomCheckboxState(checkbox, element, references) {
+  var state = getCheckboxState(checkbox, references);
+  element.checked = (state == "checked");
+  element.indeterminate = (state == "indeterminate");
 }
 
 function createCheckboxChangeHandler(checkbox, references) {
@@ -241,13 +246,18 @@ function populateBomHeader() {
   td.classList.add("numCol");
   tr.appendChild(td);
   checkboxes = bomCheckboxes.split(",").filter((e) => e);
-  for (var checkbox of checkboxes) {
-    if (checkbox) {
-      td = document.createElement("TH");
-      td.classList.add("bom-checkbox");
-      td.innerHTML = checkbox;
-      tr.appendChild(td);
+  var checkboxClosure = function(checkbox) {
+    return (a, b) => {
+      var stateA = getCheckboxState(checkbox, a[3]);
+      var stateB = getCheckboxState(checkbox, b[3]);
+      if (stateA > stateB) return -1;
+      if (stateA < stateB) return 1;
+      return 0;
     }
+  }
+  for (var checkbox of checkboxes) {
+    tr.appendChild(createColumnHeader(
+      checkbox, "bom-checkbox", checkboxClosure(checkbox)));
   }
   tr.appendChild(createColumnHeader("References", "References", (a, b) => {
     var i = 0;
