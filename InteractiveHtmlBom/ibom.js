@@ -189,6 +189,35 @@ function highlightFilter(s) {
   return r;
 }
 
+function checkboxSetUnsetAllHandler(checkboxname) {
+  return function() {
+    var checkboxnum = 0;
+    while (checkboxnum < checkboxes.length &&
+      checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
+      checkboxnum++;
+    }
+    if (checkboxnum >= checkboxes.length) {
+      return;
+    }
+    var allset = true;
+    var checkbox;
+    var row;
+    for (row of bombody.childNodes) {
+      checkbox = row.childNodes[checkboxnum + 1].childNodes[0];
+      if (!checkbox.checked || checkbox.indeterminate) {
+        allset = false;
+        break;
+      }
+    }
+    for (row of bombody.childNodes) {
+      checkbox = row.childNodes[checkboxnum + 1].childNodes[0];
+      checkbox.checked = !allset;
+      checkbox.indeterminate = false;
+      checkbox.onchange();
+    }
+  }
+}
+
 function createColumnHeader(name, cls, comparator) {
   var th = document.createElement("TH");
   th.innerHTML = name;
@@ -237,16 +266,33 @@ function createColumnHeader(name, cls, comparator) {
   return th;
 }
 
+function fancyDblClickHandler(el, onsingle, ondouble) {
+  return function() {
+    if (el.getAttribute("data-dblclick") == null) {
+      el.setAttribute("data-dblclick", 1);
+      setTimeout(function() {
+        if (el.getAttribute("data-dblclick") == 1) {
+          onsingle();
+        }
+        el.removeAttribute("data-dblclick");
+      }, 200);
+    } else {
+      el.removeAttribute("data-dblclick");
+      ondouble();
+    }
+  }
+}
+
 function populateBomHeader() {
   while (bomhead.firstChild) {
     bomhead.removeChild(bomhead.firstChild);
   }
   var tr = document.createElement("TR");
-  var td = document.createElement("TH");
-  td.classList.add("numCol");
-  tr.appendChild(td);
+  var th = document.createElement("TH");
+  th.classList.add("numCol");
+  tr.appendChild(th);
   checkboxes = bomCheckboxes.split(",").filter((e) => e);
-  var checkboxClosure = function(checkbox) {
+  var checkboxCompareClosure = function(checkbox) {
     return (a, b) => {
       var stateA = getCheckboxState(checkbox, a[3]);
       var stateB = getCheckboxState(checkbox, b[3]);
@@ -256,8 +302,11 @@ function populateBomHeader() {
     }
   }
   for (var checkbox of checkboxes) {
-    tr.appendChild(createColumnHeader(
-      checkbox, "bom-checkbox", checkboxClosure(checkbox)));
+    th = createColumnHeader(
+      checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
+    th.onclick = fancyDblClickHandler(
+      th, th.onclick.bind(th), checkboxSetUnsetAllHandler(checkbox));
+    tr.appendChild(th);
   }
   tr.appendChild(createColumnHeader("References", "References", (a, b) => {
     var i = 0;

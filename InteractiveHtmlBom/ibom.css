@@ -181,10 +181,6 @@ canvas:active {
   width: 25px;
 }
 
-.bom .bom-checkbox {
-  width: 30px;
-}
-
 .bom .Description {
   width: 10%;
 }
@@ -209,7 +205,7 @@ canvas:active {
   border-width: 5px;
   border-style: solid;
   border-color: transparent transparent #221 transparent;
-  transform-origin:  50% 85%;
+  transform-origin: 50% 85%;
   transition: opacity 0.2s, transform 0.4s;
 }
 
@@ -222,11 +218,45 @@ canvas:active {
 }
 
 .bom th .sortmark.desc {
-  transform:rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .bom th:hover .sortmark.none {
   opacity: 0.5;
+}
+
+.bom .bom-checkbox {
+  width: 30px;
+  position: relative;
+  user-select: none;
+}
+
+.bom .bom-checkbox:before {
+  content: "";
+  position: absolute;
+  border-width: 15px;
+  border-style: solid;
+  border-color: #51829f transparent transparent transparent;
+  visibility: hidden;
+  top: -15px;
+}
+
+.bom .bom-checkbox:after {
+  content: "Double click to set/unset all";
+  position: absolute;
+  color: white;
+  top: -35px;
+  left: -26px;
+  background: #51829f;
+  padding: 5px 15px;
+  border-radius: 8px;
+  white-space: nowrap;
+  visibility: hidden;
+}
+
+.bom .bom-checkbox:hover:before, .bom .bom-checkbox:hover:after {
+  visibility: visible;
+  transition: visibility 0.2s linear 1s;
 }
 
 .split {
