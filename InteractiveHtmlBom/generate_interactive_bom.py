@@ -10,23 +10,38 @@ import sys
 import units
 from fontparser import FontParser
 
-logging.basicConfig(level=logging.INFO,
-                    stream=sys.stdout,
-                    format="%(asctime)-15s %(levelname)s %(message)s")
+
+def setup_logger():
+    logger = logging.getLogger('InteractiveHtmlBom')
+    logger.setLevel(logging.INFO)
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)-15s %(levelname)s %(message)s")
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    return logger
+
+
+logger = setup_logger()
 is_cli = False
 font_parser = FontParser()
 
 
 def loginfo(*args):
     if is_cli:
-        logging.info(*args)
+        logger.info(*args)
 
 
 def logerror(msg):
     if is_cli:
-        logging.error(msg)
+        logger.error(msg)
     else:
         wx.MessageBox(msg)
+
+
+def logwarn(msg):
+    if is_cli:
+        logger.warn(msg)
 
 
 def generate_bom(pcb, filter_layer=None):
@@ -183,8 +198,8 @@ def parse_poly_set(polygon_set):
     for polygon_index in xrange(polygon_set.OutlineCount()):
         outline = polygon_set.Outline(polygon_index)
         if not hasattr(outline, "PointCount"):
-            logging.warn("No PointCount method on outline object. " \
-                         "Unpatched kicad version?")
+            logwarn("No PointCount method on outline object. "
+                    "Unpatched kicad version?")
             return result
         parsed_outline = []
         for point_index in xrange(outline.PointCount()):
@@ -293,6 +308,7 @@ def parse_silkscreen(pcb):
         "B": back
     }
 
+
 def parse_pad(pad):
     layers_set = list(pad.GetLayerSet().Seq())
     layers = []
@@ -315,8 +331,7 @@ def parse_pad(pad):
         shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
     shape = shape_lookup.get(pad.GetShape(), "")
     if shape == "":
-        loginfo("Unsupported pad shape %s, skipping.",
-                     pad.GetShape())
+        loginfo("Unsupported pad shape %s, skipping.", pad.GetShape())
         return None
     pad_dict = {
         "layers": layers,
@@ -330,10 +345,9 @@ def parse_pad(pad):
     if shape == "custom":
         polygon_set = pad.GetCustomShapeAsPolygon()
         if polygon_set.HasHoles():
-            logging.warn('Detected holes in custom pad polygons')
+            logwarn('Detected holes in custom pad polygons')
         if polygon_set.IsSelfIntersecting():
-            logging.warn(
-                    'Detected self intersecting polygons in custom pad')
+            logwarn('Detected self intersecting polygons in custom pad')
         pad_dict["polygons"] = parse_poly_set(polygon_set)
     if shape == "roundrect":
         pad_dict["radius"] = pad.GetRoundRectCornerRadius() * 1e-6
@@ -351,6 +365,7 @@ def parse_pad(pad):
         pad_dict["offset"] = normalize(pad.GetOffset())
 
     return pad_dict
+
 
 def parse_modules(pcb):
     modules = {}
