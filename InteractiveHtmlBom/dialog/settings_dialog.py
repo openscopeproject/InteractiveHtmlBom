@@ -4,7 +4,19 @@ import wx
 import dialog_base
 
 # Implementing settings_dialog
-class settings_dialog( dialog_base.settings_dialog ):
+class SettingsDialog( dialog_base.settings_dialog ):
 	def __init__( self, parent ):
 		dialog_base.settings_dialog.__init__( self, parent )
-	
+		self.page1 = dialog_base.HtmlSettingsPanel(self.m_notebook1)
+		self.page2 = dialog_base.GeneralSettingsPanel(self.m_notebook1)
+		self.page3 = dialog_base.ExtraFieldsPanel(self.m_notebook1)
+		self.m_notebook1.AddPage(self.page1, "Html")
+		self.m_notebook1.AddPage(self.page2, "General")
+		self.m_notebook1.AddPage(self.page3, "Extra fields")
+		self.SetSize(self.BestSize)
+
+	def SetSizeHints(self, sz1, sz2):
+		self.SetSizeHintsSz(sz1, sz2)
+
+	def OnExit( self, event ):
+		self.Close()
