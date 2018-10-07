@@ -11,10 +11,10 @@ import wx
 import wx.xrc
 
 ###########################################################################
-## Class settings_dialog
+## Class SettingsDialogBase
 ###########################################################################
 
-class settings_dialog ( wx.Dialog ):
+class SettingsDialogBase ( wx.Dialog ):
     
     def __init__( self, parent ):
         wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"InteractiveHtmlBom", pos = wx.DefaultPosition, size = wx.Size( 463,497 ), style = wx.DEFAULT_DIALOG_STYLE|wx.STAY_ON_TOP )
@@ -24,7 +24,7 @@ class settings_dialog ( wx.Dialog ):
         bSizer20 = wx.BoxSizer( wx.VERTICAL )
         
         self.m_notebook1 = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_TOP )
-        self.m_notebook1.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNFACE ) )
+        self.m_notebook1.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
         self.m_notebook1.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNFACE ) )
         
         
@@ -56,6 +56,8 @@ class settings_dialog ( wx.Dialog ):
         self.Centre( wx.BOTH )
         
         # Connect Events
+        self.m_button41.Bind( wx.EVT_BUTTON, self.OnSaveSettings )
+        self.m_button42.Bind( wx.EVT_BUTTON, self.OnGenerateBom )
         self.m_button43.Bind( wx.EVT_BUTTON, self.OnExit )
     
     def __del__( self ):
@@ -63,15 +65,21 @@ class settings_dialog ( wx.Dialog ):
     
     
     # Virtual event handlers, overide them in your derived class
+    def OnSaveSettings( self, event ):
+        event.Skip()
+    
+    def OnGenerateBom( self, event ):
+        event.Skip()
+    
     def OnExit( self, event ):
         event.Skip()
     
 
 ###########################################################################
-## Class HtmlSettingsPanel
+## Class HtmlSettingsPanelBase
 ###########################################################################
 
-class HtmlSettingsPanel ( wx.Panel ):
+class HtmlSettingsPanelBase ( wx.Panel ):
     
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
         wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
@@ -104,10 +112,10 @@ class HtmlSettingsPanel ( wx.Panel ):
         
         bSizer19.Add( ( 0, 0), 1, wx.EXPAND, 5 )
         
-        self.m_rotationDegree = wx.StaticText( self, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_rotationDegree.Wrap( -1 )
+        self.rotationDegreeLabel = wx.StaticText( self, wx.ID_ANY, u"0", wx.DefaultPosition, wx.Size( 30,-1 ), wx.ALIGN_RIGHT|wx.ST_NO_AUTORESIZE )
+        self.rotationDegreeLabel.Wrap( -1 )
         
-        bSizer19.Add( self.m_rotationDegree, 0, wx.ALL, 5 )
+        bSizer19.Add( self.rotationDegreeLabel, 0, wx.ALL, 5 )
         
         
         bSizer19.Add( ( 8, 0), 0, 0, 5 )
@@ -115,19 +123,19 @@ class HtmlSettingsPanel ( wx.Panel ):
         
         bSizer18.Add( bSizer19, 1, wx.EXPAND, 5 )
         
-        self.m_rotationSlider = wx.Slider( self, wx.ID_ANY, 0, -36, 36, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
-        bSizer18.Add( self.m_rotationSlider, 0, wx.ALL|wx.EXPAND, 5 )
+        self.boardRotationSlider = wx.Slider( self, wx.ID_ANY, 0, -36, 36, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
+        bSizer18.Add( self.boardRotationSlider, 0, wx.ALL|wx.EXPAND, 5 )
         
         
         b_sizer.Add( bSizer18, 0, wx.EXPAND, 5 )
         
         sbSizer31 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Checkboxes" ), wx.HORIZONTAL )
         
-        self.m_textCtrl1 = wx.TextCtrl( sbSizer31.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_textCtrl1 = wx.TextCtrl( sbSizer31.GetStaticBox(), wx.ID_ANY, u"Sourced,Placed", wx.DefaultPosition, wx.DefaultSize, 0 )
         sbSizer31.Add( self.m_textCtrl1, 1, wx.ALL, 5 )
         
         
-        b_sizer.Add( sbSizer31, 0, wx.EXPAND, 5 )
+        b_sizer.Add( sbSizer31, 0, wx.ALL|wx.EXPAND, 5 )
         
         m_bomDefaultViewChoices = [ u"BOM only", u"BOM left, drawings right", u"BOM top, drawings bottom" ]
         self.m_bomDefaultView = wx.RadioBox( self, wx.ID_ANY, u"BOM View", wx.DefaultPosition, wx.DefaultSize, m_bomDefaultViewChoices, 1, wx.RA_SPECIFY_COLS )
@@ -139,20 +147,32 @@ class HtmlSettingsPanel ( wx.Panel ):
         self.m_layerDefaultView.SetSelection( 1 )
         b_sizer.Add( self.m_layerDefaultView, 0, wx.ALL|wx.EXPAND, 5 )
         
+        self.m_openBrowser = wx.CheckBox( self, wx.ID_ANY, u"Open browser", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_openBrowser.SetValue(True) 
+        b_sizer.Add( self.m_openBrowser, 0, wx.ALL, 5 )
+        
         
         self.SetSizer( b_sizer )
         self.Layout()
         b_sizer.Fit( self )
+        
+        # Connect Events
+        self.boardRotationSlider.Bind( wx.EVT_SLIDER, self.OnBoardRotationSlider )
     
     def __del__( self ):
         pass
     
+    
+    # Virtual event handlers, overide them in your derived class
+    def OnBoardRotationSlider( self, event ):
+        event.Skip()
+    
 
 ###########################################################################
-## Class GeneralSettingsPanel
+## Class GeneralSettingsPanelBase
 ###########################################################################
 
-class GeneralSettingsPanel ( wx.Panel ):
+class GeneralSettingsPanelBase ( wx.Panel ):
     
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
         wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
@@ -165,7 +185,7 @@ class GeneralSettingsPanel ( wx.Panel ):
         sbSizer6.Add( self.m_bomDirPicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
         
         
-        bSizer32.Add( sbSizer6, 0, wx.EXPAND, 5 )
+        bSizer32.Add( sbSizer6, 0, wx.ALL|wx.EXPAND, 5 )
         
         sortingSizer = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Component sort order" ), wx.VERTICAL )
         
@@ -201,7 +221,7 @@ class GeneralSettingsPanel ( wx.Panel ):
         sortingSizer.Add( bSizer4, 1, wx.EXPAND, 5 )
         
         
-        bSizer32.Add( sortingSizer, 1, wx.EXPAND, 5 )
+        bSizer32.Add( sortingSizer, 1, wx.ALL|wx.EXPAND, 5 )
         
         blacklistSizer = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Component blacklist" ), wx.VERTICAL )
         
@@ -240,26 +260,50 @@ class GeneralSettingsPanel ( wx.Panel ):
         blacklistSizer.Add( self.m_checkBox4, 0, wx.ALL, 5 )
         
         
-        bSizer32.Add( blacklistSizer, 1, wx.EXPAND|wx.TOP, 5 )
-        
-        self.m_openBrowser = wx.CheckBox( self, wx.ID_ANY, u"Open browser", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_openBrowser.SetValue(True) 
-        bSizer32.Add( self.m_openBrowser, 0, wx.ALL, 5 )
+        bSizer32.Add( blacklistSizer, 1, wx.ALL|wx.EXPAND|wx.TOP, 5 )
         
         
         self.SetSizer( bSizer32 )
         self.Layout()
         bSizer32.Fit( self )
+        
+        # Connect Events
+        self.m_button1.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderUp )
+        self.m_button2.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderDown )
+        self.m_button3.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderAdd )
+        self.m_button4.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderRemove )
+        self.m_button112.Bind( wx.EVT_BUTTON, self.OnComponentBlacklistAdd )
+        self.m_button212.Bind( wx.EVT_BUTTON, self.OnComponentBlacklistRemove )
     
     def __del__( self ):
         pass
     
+    
+    # Virtual event handlers, overide them in your derived class
+    def OnComponentSortOrderUp( self, event ):
+        event.Skip()
+    
+    def OnComponentSortOrderDown( self, event ):
+        event.Skip()
+    
+    def OnComponentSortOrderAdd( self, event ):
+        event.Skip()
+    
+    def OnComponentSortOrderRemove( self, event ):
+        event.Skip()
+    
+    def OnComponentBlacklistAdd( self, event ):
+        event.Skip()
+    
+    def OnComponentBlacklistRemove( self, event ):
+        event.Skip()
+    
 
 ###########################################################################
-## Class ExtraFieldsPanel
+## Class ExtraFieldsPanelBase
 ###########################################################################
 
-class ExtraFieldsPanel ( wx.Panel ):
+class ExtraFieldsPanelBase ( wx.Panel ):
     
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
         wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
@@ -272,7 +316,7 @@ class ExtraFieldsPanel ( wx.Panel ):
         sbSizer7.Add( self.m_filePicker1, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
         
         
-        bSizer42.Add( sbSizer7, 0, wx.EXPAND, 5 )
+        bSizer42.Add( sbSizer7, 0, wx.ALL|wx.EXPAND, 5 )
         
         extraFieldsSizer = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Extra fields" ), wx.VERTICAL )
         
@@ -302,23 +346,35 @@ class ExtraFieldsPanel ( wx.Panel ):
         extraFieldsSizer.Add( bSizer4, 1, wx.EXPAND, 5 )
         
         
-        bSizer42.Add( extraFieldsSizer, 1, wx.EXPAND, 5 )
+        bSizer42.Add( extraFieldsSizer, 1, wx.ALL|wx.EXPAND, 5 )
         
         sbSizer32 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Board variant" ), wx.VERTICAL )
         
-        m_comboBox1Choices = [ u"None" ]
-        self.m_comboBox1 = wx.ComboBox( sbSizer32.GetStaticBox(), wx.ID_ANY, u"None", wx.DefaultPosition, wx.DefaultSize, m_comboBox1Choices, 0 )
+        m_comboBox1Choices = [ u"-None-" ]
+        self.m_comboBox1 = wx.ComboBox( sbSizer32.GetStaticBox(), wx.ID_ANY, u"-None-", wx.DefaultPosition, wx.DefaultSize, m_comboBox1Choices, 0 )
         sbSizer32.Add( self.m_comboBox1, 0, wx.ALL|wx.EXPAND, 5 )
         
         
-        bSizer42.Add( sbSizer32, 0, wx.EXPAND, 5 )
+        bSizer42.Add( sbSizer32, 0, wx.ALL|wx.EXPAND, 5 )
         
         
         self.SetSizer( bSizer42 )
         self.Layout()
         bSizer42.Fit( self )
+        
+        # Connect Events
+        self.m_button1.Bind( wx.EVT_BUTTON, self.OnExtraFieldsUp )
+        self.m_button2.Bind( wx.EVT_BUTTON, self.OnExtraFieldsDown )
     
     def __del__( self ):
         pass
+    
+    
+    # Virtual event handlers, overide them in your derived class
+    def OnExtraFieldsUp( self, event ):
+        event.Skip()
+    
+    def OnExtraFieldsDown( self, event ):
+        event.Skip()
     
 
