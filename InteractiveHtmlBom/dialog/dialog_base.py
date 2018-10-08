@@ -17,33 +17,33 @@ import wx.xrc
 class SettingsDialogBase ( wx.Dialog ):
     
     def __init__( self, parent ):
-        wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"InteractiveHtmlBom", pos = wx.DefaultPosition, size = wx.Size( 463,497 ), style = wx.DEFAULT_DIALOG_STYLE|wx.STAY_ON_TOP )
+        wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"InteractiveHtmlBom", pos = wx.DefaultPosition, size = wx.Size( 463,497 ), style = wx.DEFAULT_DIALOG_STYLE|wx.STAY_ON_TOP|wx.BORDER_NONE )
         
         self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
         
         bSizer20 = wx.BoxSizer( wx.VERTICAL )
         
-        self.m_notebook1 = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_TOP )
-        self.m_notebook1.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
-        self.m_notebook1.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNFACE ) )
+        self.notebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_TOP|wx.BORDER_DEFAULT )
+        self.notebook.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+        self.notebook.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNFACE ) )
         
         
-        bSizer20.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
+        bSizer20.Add( self.notebook, 1, wx.EXPAND |wx.ALL, 5 )
         
         bSizer39 = wx.BoxSizer( wx.HORIZONTAL )
         
-        self.m_button41 = wx.Button( self, wx.ID_ANY, u"Save current settings", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_button41 = wx.Button( self, wx.ID_ANY, u"Save current settings", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_NONE )
         bSizer39.Add( self.m_button41, 0, wx.ALL, 5 )
         
         
         bSizer39.Add( ( 50, 0), 0, wx.EXPAND, 5 )
         
-        self.m_button42 = wx.Button( self, wx.ID_ANY, u"Generate BOM", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_button42 = wx.Button( self, wx.ID_ANY, u"Generate BOM", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_NONE )
         
         self.m_button42.SetDefault()
         bSizer39.Add( self.m_button42, 0, wx.ALL, 5 )
         
-        self.m_button43 = wx.Button( self, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_button43 = wx.Button( self, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_NONE )
         bSizer39.Add( self.m_button43, 0, wx.ALL, 5 )
         
         
@@ -86,19 +86,19 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         
         b_sizer = wx.BoxSizer( wx.VERTICAL )
         
-        self.m_darkMode = wx.CheckBox( self, wx.ID_ANY, u"Dark mode", wx.DefaultPosition, wx.DefaultSize, 0 )
-        b_sizer.Add( self.m_darkMode, 0, wx.ALL, 5 )
+        self.darkModeCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Dark mode", wx.DefaultPosition, wx.DefaultSize, 0 )
+        b_sizer.Add( self.darkModeCheckbox, 0, wx.ALL, 5 )
         
-        self.m_showSilkscreen = wx.CheckBox( self, wx.ID_ANY, u"Show silkscreen", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_showSilkscreen.SetValue(True) 
-        b_sizer.Add( self.m_showSilkscreen, 0, wx.ALL, 5 )
+        self.showSilkscreenCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Show silkscreen", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.showSilkscreenCheckbox.SetValue(True) 
+        b_sizer.Add( self.showSilkscreenCheckbox, 0, wx.ALL, 5 )
         
-        self.m_highlightPin1 = wx.CheckBox( self, wx.ID_ANY, u"Highlight first pin", wx.DefaultPosition, wx.DefaultSize, 0 )
-        b_sizer.Add( self.m_highlightPin1, 0, wx.ALL, 5 )
+        self.highlightPin1Checkbox = wx.CheckBox( self, wx.ID_ANY, u"Highlight first pin", wx.DefaultPosition, wx.DefaultSize, 0 )
+        b_sizer.Add( self.highlightPin1Checkbox, 0, wx.ALL, 5 )
         
-        self.m_continuousRedraw = wx.CheckBox( self, wx.ID_ANY, u"Continuous redraw on drag", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_continuousRedraw.SetValue(True) 
-        b_sizer.Add( self.m_continuousRedraw, 0, wx.ALL, 5 )
+        self.continuousRedrawCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Continuous redraw on drag", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.continuousRedrawCheckbox.SetValue(True) 
+        b_sizer.Add( self.continuousRedrawCheckbox, 0, wx.ALL, 5 )
         
         bSizer18 = wx.BoxSizer( wx.VERTICAL )
         
@@ -131,25 +131,25 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         
         sbSizer31 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Checkboxes" ), wx.HORIZONTAL )
         
-        self.m_textCtrl1 = wx.TextCtrl( sbSizer31.GetStaticBox(), wx.ID_ANY, u"Sourced,Placed", wx.DefaultPosition, wx.DefaultSize, 0 )
-        sbSizer31.Add( self.m_textCtrl1, 1, wx.ALL, 5 )
+        self.bomCheckboxesCtrl = wx.TextCtrl( sbSizer31.GetStaticBox(), wx.ID_ANY, u"Sourced,Placed", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer31.Add( self.bomCheckboxesCtrl, 1, wx.ALL, 5 )
         
         
         b_sizer.Add( sbSizer31, 0, wx.ALL|wx.EXPAND, 5 )
         
-        m_bomDefaultViewChoices = [ u"BOM only", u"BOM left, drawings right", u"BOM top, drawings bottom" ]
-        self.m_bomDefaultView = wx.RadioBox( self, wx.ID_ANY, u"BOM View", wx.DefaultPosition, wx.DefaultSize, m_bomDefaultViewChoices, 1, wx.RA_SPECIFY_COLS )
-        self.m_bomDefaultView.SetSelection( 1 )
-        b_sizer.Add( self.m_bomDefaultView, 0, wx.ALL|wx.EXPAND, 5 )
+        bomDefaultViewChoices = [ u"BOM only", u"BOM left, drawings right", u"BOM top, drawings bottom" ]
+        self.bomDefaultView = wx.RadioBox( self, wx.ID_ANY, u"BOM View", wx.DefaultPosition, wx.DefaultSize, bomDefaultViewChoices, 1, wx.RA_SPECIFY_COLS )
+        self.bomDefaultView.SetSelection( 1 )
+        b_sizer.Add( self.bomDefaultView, 0, wx.ALL|wx.EXPAND, 5 )
         
-        m_layerDefaultViewChoices = [ u"Front only", u"Front and Back", u"Back only" ]
-        self.m_layerDefaultView = wx.RadioBox( self, wx.ID_ANY, u"Layer View", wx.DefaultPosition, wx.DefaultSize, m_layerDefaultViewChoices, 1, wx.RA_SPECIFY_COLS )
-        self.m_layerDefaultView.SetSelection( 1 )
-        b_sizer.Add( self.m_layerDefaultView, 0, wx.ALL|wx.EXPAND, 5 )
+        layerDefaultViewChoices = [ u"Front only", u"Front and Back", u"Back only" ]
+        self.layerDefaultView = wx.RadioBox( self, wx.ID_ANY, u"Layer View", wx.DefaultPosition, wx.DefaultSize, layerDefaultViewChoices, 1, wx.RA_SPECIFY_COLS )
+        self.layerDefaultView.SetSelection( 1 )
+        b_sizer.Add( self.layerDefaultView, 0, wx.ALL|wx.EXPAND, 5 )
         
-        self.m_openBrowser = wx.CheckBox( self, wx.ID_ANY, u"Open browser", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_openBrowser.SetValue(True) 
-        b_sizer.Add( self.m_openBrowser, 0, wx.ALL, 5 )
+        self.openBrowserCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Open browser", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.openBrowserCheckbox.SetValue(True) 
+        b_sizer.Add( self.openBrowserCheckbox, 0, wx.ALL, 5 )
         
         
         self.SetSizer( b_sizer )
@@ -181,8 +181,8 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         sbSizer6 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Bom destination directory" ), wx.VERTICAL )
         
-        self.m_bomDirPicker = wx.DirPickerCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select bom folder", wx.DefaultPosition, wx.DefaultSize, wx.DIRP_DEFAULT_STYLE|wx.DIRP_SMALL )
-        sbSizer6.Add( self.m_bomDirPicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+        self.bomDirPicker = wx.DirPickerCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select bom folder", wx.DefaultPosition, wx.DefaultSize, wx.DIRP_DIR_MUST_EXIST|wx.DIRP_SMALL|wx.DIRP_USE_TEXTCTRL|wx.BORDER_SIMPLE )
+        sbSizer6.Add( self.bomDirPicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
         
         
         bSizer32.Add( sbSizer6, 0, wx.ALL|wx.EXPAND, 5 )
@@ -193,25 +193,25 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         bSizer6 = wx.BoxSizer( wx.VERTICAL )
         
-        m_listBox2Choices = []
-        self.m_listBox2 = wx.ListBox( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_listBox2Choices, wx.LB_SINGLE )
-        bSizer6.Add( self.m_listBox2, 1, wx.ALL|wx.EXPAND, 5 )
+        componentSortOrderBoxChoices = []
+        self.componentSortOrderBox = wx.ListBox( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, componentSortOrderBoxChoices, wx.LB_SINGLE|wx.BORDER_SIMPLE )
+        bSizer6.Add( self.componentSortOrderBox, 1, wx.ALL|wx.EXPAND, 5 )
         
         
         bSizer4.Add( bSizer6, 1, wx.EXPAND, 5 )
         
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
         
-        self.m_button1 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"Up", wx.DefaultPosition, wx.Size( 30,30 ), 0 )
+        self.m_button1 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"Up", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
         bSizer5.Add( self.m_button1, 0, wx.ALL, 5 )
         
-        self.m_button2 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"Dn", wx.DefaultPosition, wx.Size( 30,30 ), 0 )
+        self.m_button2 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"Dn", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
         bSizer5.Add( self.m_button2, 0, wx.ALL, 5 )
         
-        self.m_button3 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"+", wx.DefaultPosition, wx.Size( 30,30 ), 0 )
+        self.m_button3 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"+", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
         bSizer5.Add( self.m_button3, 0, wx.ALL, 5 )
         
-        self.m_button4 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"-", wx.DefaultPosition, wx.Size( 30,30 ), 0 )
+        self.m_button4 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"-", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
         bSizer5.Add( self.m_button4, 0, wx.ALL, 5 )
         
         
@@ -229,19 +229,19 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         bSizer612 = wx.BoxSizer( wx.VERTICAL )
         
-        m_listBox1Choices = []
-        self.m_listBox1 = wx.ListBox( blacklistSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_listBox1Choices, wx.LB_SINGLE|wx.LB_SORT )
-        bSizer612.Add( self.m_listBox1, 1, wx.ALL|wx.EXPAND, 5 )
+        blacklistBoxChoices = []
+        self.blacklistBox = wx.ListBox( blacklistSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, blacklistBoxChoices, wx.LB_SINGLE|wx.LB_SORT|wx.BORDER_SIMPLE )
+        bSizer612.Add( self.blacklistBox, 1, wx.ALL|wx.EXPAND, 5 )
         
         
         bSizer412.Add( bSizer612, 1, wx.EXPAND, 5 )
         
         bSizer512 = wx.BoxSizer( wx.VERTICAL )
         
-        self.m_button112 = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"+", wx.DefaultPosition, wx.Size( 30,30 ), 0 )
+        self.m_button112 = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"+", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
         bSizer512.Add( self.m_button112, 0, wx.ALL, 5 )
         
-        self.m_button212 = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"-", wx.DefaultPosition, wx.Size( 30,30 ), 0 )
+        self.m_button212 = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"-", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
         bSizer512.Add( self.m_button212, 0, wx.ALL, 5 )
         
         
@@ -255,9 +255,9 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         blacklistSizer.Add( self.m_staticText1, 0, wx.ALL, 5 )
         
-        self.m_checkBox4 = wx.CheckBox( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"Blacklist virtual components", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_checkBox4.SetValue(True) 
-        blacklistSizer.Add( self.m_checkBox4, 0, wx.ALL, 5 )
+        self.blacklistVirtualCheckbox = wx.CheckBox( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"Blacklist virtual components", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.blacklistVirtualCheckbox.SetValue(True) 
+        blacklistSizer.Add( self.blacklistVirtualCheckbox, 0, wx.ALL, 5 )
         
         
         bSizer32.Add( blacklistSizer, 1, wx.ALL|wx.EXPAND|wx.TOP, 5 )
@@ -312,8 +312,8 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         
         sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Netlist or xml file" ), wx.VERTICAL )
         
-        self.m_filePicker1 = wx.FilePickerCtrl( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select a file", u"*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_SMALL )
-        sbSizer7.Add( self.m_filePicker1, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+        self.netlistFilePicker = wx.FilePickerCtrl( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select a file", u"*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_SMALL|wx.BORDER_SIMPLE )
+        sbSizer7.Add( self.netlistFilePicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
         
         
         bSizer42.Add( sbSizer7, 0, wx.ALL|wx.EXPAND, 5 )
@@ -324,19 +324,19 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         
         bSizer6 = wx.BoxSizer( wx.VERTICAL )
         
-        m_checkList1Choices = [u"a", u"b"]
-        self.m_checkList1 = wx.CheckListBox( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_checkList1Choices, wx.LB_MULTIPLE )
-        bSizer6.Add( self.m_checkList1, 1, wx.ALL|wx.EXPAND, 5 )
+        extraFieldsListChoices = [u"a", u"b", u"c", u"d"]
+        self.extraFieldsList = wx.CheckListBox( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, extraFieldsListChoices, 0|wx.BORDER_SIMPLE )
+        bSizer6.Add( self.extraFieldsList, 1, wx.ALL|wx.EXPAND, 5 )
         
         
         bSizer4.Add( bSizer6, 1, wx.EXPAND, 5 )
         
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
         
-        self.m_button1 = wx.Button( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Up", wx.DefaultPosition, wx.Size( 30,30 ), 0 )
+        self.m_button1 = wx.Button( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Up", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
         bSizer5.Add( self.m_button1, 0, wx.ALL, 5 )
         
-        self.m_button2 = wx.Button( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Dn", wx.DefaultPosition, wx.Size( 30,30 ), 0 )
+        self.m_button2 = wx.Button( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Dn", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
         bSizer5.Add( self.m_button2, 0, wx.ALL, 5 )
         
         
@@ -350,12 +350,35 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         
         sbSizer32 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Board variant" ), wx.VERTICAL )
         
-        m_comboBox1Choices = [ u"-None-" ]
-        self.m_comboBox1 = wx.ComboBox( sbSizer32.GetStaticBox(), wx.ID_ANY, u"-None-", wx.DefaultPosition, wx.DefaultSize, m_comboBox1Choices, 0 )
-        sbSizer32.Add( self.m_comboBox1, 0, wx.ALL|wx.EXPAND, 5 )
+        self.m_staticText5 = wx.StaticText( sbSizer32.GetStaticBox(), wx.ID_ANY, u"Board variant field name", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText5.Wrap( -1 )
+        
+        sbSizer32.Add( self.m_staticText5, 0, wx.ALL, 5 )
+        
+        boardVariantFieldBoxChoices = []
+        self.boardVariantFieldBox = wx.ComboBox( sbSizer32.GetStaticBox(), wx.ID_ANY, u"-None-", wx.DefaultPosition, wx.DefaultSize, boardVariantFieldBoxChoices, 0|wx.BORDER_SIMPLE )
+        sbSizer32.Add( self.boardVariantFieldBox, 0, wx.ALL|wx.EXPAND, 5 )
+        
+        boardVariantListChoices = []
+        self.boardVariantList = wx.CheckListBox( sbSizer32.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, boardVariantListChoices, 0|wx.BORDER_SIMPLE )
+        sbSizer32.Add( self.boardVariantList, 1, wx.ALL|wx.EXPAND, 5 )
         
         
-        bSizer42.Add( sbSizer32, 0, wx.ALL|wx.EXPAND, 5 )
+        bSizer42.Add( sbSizer32, 1, wx.ALL|wx.EXPAND, 5 )
+        
+        sbSizer8 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"DNP field name" ), wx.VERTICAL )
+        
+        self.m_staticText4 = wx.StaticText( sbSizer8.GetStaticBox(), wx.ID_ANY, u"Components with this field not empty will be ignored", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText4.Wrap( -1 )
+        
+        sbSizer8.Add( self.m_staticText4, 0, wx.ALL, 5 )
+        
+        dnpFieldBoxChoices = []
+        self.dnpFieldBox = wx.ComboBox( sbSizer8.GetStaticBox(), wx.ID_ANY, u"-None-", wx.DefaultPosition, wx.DefaultSize, dnpFieldBoxChoices, 0|wx.BORDER_NONE )
+        sbSizer8.Add( self.dnpFieldBox, 0, wx.ALL|wx.EXPAND, 5 )
+        
+        
+        bSizer42.Add( sbSizer8, 0, wx.ALL|wx.EXPAND, 5 )
         
         
         self.SetSizer( bSizer42 )
