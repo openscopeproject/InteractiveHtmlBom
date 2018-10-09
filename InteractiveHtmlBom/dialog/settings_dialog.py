@@ -31,14 +31,16 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
         self.SetSizeHintsSz(sz1, sz2)
 
     def OnExit(self, event):
-        self.Close()
+        self.EndModal(wx.ID_CANCEL)
 
     def OnSaveSettings(self, event):
         # TODO: implement OnSaveSettings
         pass
 
     def OnGenerateBom(self, event):
-        # TODO: implement OnGenerateBom
+        self.EndModal(wx.ID_OK)
+
+    def init(self, extra_fields_box_wildcard):
         pass
 
 

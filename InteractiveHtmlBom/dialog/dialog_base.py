@@ -312,7 +312,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         
         sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Netlist or xml file" ), wx.VERTICAL )
         
-        self.netlistFilePicker = wx.FilePickerCtrl( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select a file", u"*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_SMALL|wx.BORDER_SIMPLE )
+        self.netlistFilePicker = wx.FilePickerCtrl( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select a file", u"Netlist and xml files (*.net; *.xml)|*.net;*.xml", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_SMALL|wx.BORDER_SIMPLE )
         sbSizer7.Add( self.netlistFilePicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
         
         
@@ -356,7 +356,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         sbSizer32.Add( self.m_staticText5, 0, wx.ALL, 5 )
         
         boardVariantFieldBoxChoices = []
-        self.boardVariantFieldBox = wx.ComboBox( sbSizer32.GetStaticBox(), wx.ID_ANY, u"-None-", wx.DefaultPosition, wx.DefaultSize, boardVariantFieldBoxChoices, 0|wx.BORDER_SIMPLE )
+        self.boardVariantFieldBox = wx.ComboBox( sbSizer32.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, boardVariantFieldBoxChoices, wx.CB_READONLY|wx.CB_SORT|wx.BORDER_SIMPLE )
         sbSizer32.Add( self.boardVariantFieldBox, 0, wx.ALL|wx.EXPAND, 5 )
         
         boardVariantListChoices = []
@@ -374,7 +374,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         sbSizer8.Add( self.m_staticText4, 0, wx.ALL, 5 )
         
         dnpFieldBoxChoices = []
-        self.dnpFieldBox = wx.ComboBox( sbSizer8.GetStaticBox(), wx.ID_ANY, u"-None-", wx.DefaultPosition, wx.DefaultSize, dnpFieldBoxChoices, 0|wx.BORDER_NONE )
+        self.dnpFieldBox = wx.ComboBox( sbSizer8.GetStaticBox(), wx.ID_ANY, u"-None-", wx.DefaultPosition, wx.DefaultSize, dnpFieldBoxChoices, wx.CB_READONLY|wx.CB_SORT|wx.BORDER_NONE )
         sbSizer8.Add( self.dnpFieldBox, 0, wx.ALL|wx.EXPAND, 5 )
         
         

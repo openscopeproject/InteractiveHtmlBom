@@ -539,9 +539,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
             description='KiCad PCB pick and place assistant')
-    parser.add_argument('file', type=str, help="KiCad PCB file")
-    parser.add_argument('--nobrowser', help="Don't launch browser",
-                        action="store_true")
+    parser.add_argument('file', type=str, help="KiCad PCB file", required=True)
     args = parser.parse_args()
     if not os.path.isfile(args.file):
         print("File %s does not exist." % args.file)
