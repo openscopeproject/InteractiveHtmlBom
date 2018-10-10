@@ -5,6 +5,16 @@ import argparse
 
 
 class Config:
+    # Helper constants
+    bom_view_choices = ['bom-only', 'left-right', 'top-bottom']
+    layer_view_choices = ['F', 'FB', 'B']
+    default_sort_order = [
+        'C', 'R', 'L', 'D', 'U', 'Y', 'X', 'F', 'SW', 'A',
+        '~',
+        'HS', 'CNN', 'J', 'P', 'NT', 'MH',
+    ]
+    default_checkboxes = ['Sourced', 'Placed']
+
     # Defaults
 
     # HTML section
@@ -13,18 +23,14 @@ class Config:
     highlight_pin1 = False
     redraw_on_drag = True
     board_rotation = 0
-    checkboxes = 'Sourced,Placed'
+    checkboxes = default_checkboxes
     bom_view = 1
     layer_view = 1
     open_browser = True
 
     # General section
     bom_dest_dir = './bom/'  # This is relative to pcb file directory
-    component_sort_order = [
-        'C', 'R', 'L', 'D', 'U', 'Y', 'X', 'F', 'SW', 'A',
-        '~',
-        'HS', 'CNN', 'J', 'P', 'NT', 'MH',
-    ]
+    component_sort_order = default_sort_order
     component_blacklist = []
     blacklist_virtual = True
 
@@ -101,8 +107,8 @@ class Config:
         dlg.extra.dnpFieldBox.Value = self.dnp_field
 
     # noinspection PyTypeChecker
-    @staticmethod
-    def add_options(parser):
+    @classmethod
+    def add_options(cls, parser):
         # type: (argparse.ArgumentParser) -> None
         parser.add_argument('--show-dialog', action='store_true',
                             help='Shows config dialog. All other flags '
@@ -122,13 +128,14 @@ class Config:
         parser.add_argument('--board-rotation', type=int, default=0,
                             help='Board rotation in degrees (-180 to 180). '
                                  'Will be rounded to multiple of 5.')
-        parser.add_argument('--checkboxes', default='Sourced,Placed',
+        parser.add_argument('--checkboxes',
+                            default=','.join(cls.default_checkboxes),
                             help='Comma separated list of checkbox columns.')
         parser.add_argument('--bom-view', default='left-right',
-                            choices=['left-right', 'top-bottom', 'bom-only'],
+                            choices=cls.bom_view_choices,
                             help='Default BOM view.')
         parser.add_argument('--layer-view', default='FB',
-                            choices=['FB', 'F', 'B'],
+                            choices=cls.layer_view_choices,
                             help='Default layer view.')
         parser.add_argument('--no-browser', help='Do not launch browser.',
                             action='store_true')
@@ -140,12 +147,7 @@ class Config:
         parser.add_argument('--sort-order',
                             help='Default sort order for components. '
                                  'Must contain "~" once.',
-                            default=','.join([
-                                'C', 'R', 'L', 'D', 'U', 'Y', 'X', 'F', 'SW',
-                                'A',
-                                '~',
-                                'HS', 'CNN', 'J', 'P', 'NT', 'MH',
-                            ]))
+                            default=','.join(cls.default_sort_order))
         parser.add_argument('--blacklist',
                             help='List of comma separated blacklisted '
                                  'components or prefixes with *. E.g. "X1,MH*"')
@@ -171,5 +173,28 @@ class Config:
 
     def set_from_args(self, args):
         # type: (argparse.Namespace) -> None
-        # TODO: implement setting config fields from parsed args
-        pass
+        import math
+
+        # Html
+        self.dark_mode = args.dark_mode
+        self.show_silkscreen = not args.hide_silkscreen
+        self.highlight_pin1 = args.highlight_pin1
+        self.redraw_on_drag = not args.no_redraw_on_drag
+        self.board_rotation = math.fmod(args.board_rotation // 5, 37)
+        self.checkboxes = args.checkboxes.split(',')
+        self.bom_view = self.bom_view_choices.index(args.bom_view)
+        self.layer_view = self.layer_view_choices.index(args.layer_view)
+        self.open_browser = not args.no_browser
+
+        # General
+        self.bom_dest_dir = args.dest_dir
+        self.component_sort_order = args.sort_order.split(',')
+        self.component_blacklist = args.blacklist.split(',')
+        self.blacklist_virtual = not args.no_blacklist_virtual
+
+        # Extra
+        self.netlist_file = args.netlist_file
+        self.extra_fields = args.extra_fields.split(',')
+        self.board_variant_field = args.board_variant_field
+        self.board_variants = args.board_variants.split(',')
+        self.dnp_field = args.dnp_field
