@@ -8,7 +8,9 @@ import json
 import logging
 import sys
 import units
+from config import Config
 from fontparser import FontParser
+import dialog.settings_dialog as dialog
 
 
 def setup_logger():
@@ -451,7 +453,8 @@ def generate_file(dir, pcbdata):
     return bom_file_name
 
 
-def main(pcb, launch_browser=True):
+def main(pcb, config):
+    # type: (pcbnew.BOARD, Config) -> None
     pcb_file_name = pcb.GetFileName()
     if not pcb_file_name:
         logerror('Please save the board file before generating BOM.')
@@ -505,7 +508,7 @@ def main(pcb, launch_browser=True):
     pcbdata["font_data"] = font_parser.get_parsed_font()
     bom_file = generate_file(bom_file_dir, pcbdata)
 
-    if launch_browser:
+    if config.open_browser:
         loginfo("Opening file in browser")
         open_file(bom_file)
 
@@ -529,7 +532,12 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
                            "table and pcb drawing."
 
     def Run(self):
-        main(pcbnew.GetBoard())
+        config = Config()
+        dlg = dialog.SettingsDialog(None)
+        if dlg.ShowModal() == wx.ID_OK:
+            config.set_from_dialog(dlg)
+            main(pcbnew.GetBoard(), config)
+        dlg.Destroy()
 
 
 if __name__ == "__main__":
@@ -539,10 +547,23 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
             description='KiCad PCB pick and place assistant')
-    parser.add_argument('file', type=str, help="KiCad PCB file", required=True)
+    parser.add_argument('file', type=str, help="KiCad PCB file")
+    config = Config()
+    config.add_options(parser)
     args = parser.parse_args()
     if not os.path.isfile(args.file):
         print("File %s does not exist." % args.file)
         exit(1)
     print("Loading %s" % args.file)
-    main(pcbnew.LoadBoard(os.path.abspath(args.file)), not args.nobrowser)
+    board = pcbnew.LoadBoard(os.path.abspath(args.file))
+    if args.show_dialog:
+        # Create simple app to show config dialog, infer config.
+        app = wx.App()
+        dlg = dialog.SettingsDialog(None)
+        if dlg.ShowModal() == wx.ID_OK:
+            config.set_from_dialog(dlg)
+            main(board, config)
+        dlg.Destroy()
+    else:
+        config.set_from_args(args)
+        main(board, config)

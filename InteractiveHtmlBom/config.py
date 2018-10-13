@@ -148,7 +148,7 @@ class Config:
                             help='Default sort order for components. '
                                  'Must contain "~" once.',
                             default=','.join(cls.default_sort_order))
-        parser.add_argument('--blacklist',
+        parser.add_argument('--blacklist', default='',
                             help='List of comma separated blacklisted '
                                  'components or prefixes with *. E.g. "X1,MH*"')
         parser.add_argument('--no-blacklist-virtual', action='store_true',
@@ -156,16 +156,16 @@ class Config:
 
         # Extra fields section
         parser.add_argument('--netlist-file',
-                            help='Path to netlist or xml file')
-        parser.add_argument('--extra-fields',
+                            help='Path to netlist or xml file.')
+        parser.add_argument('--extra-fields', default='',
                             help='Comma separated list of extra fields to '
                                  'pull from netlist or xml file.')
         parser.add_argument('--board-variant-field',
                             help='Name of the extra field that stores board '
-                                 'variant for component')
-        parser.add_argument('--board-variants',
+                                 'variant for component.')
+        parser.add_argument('--board-variants', default='',
                             help='Comma separated list of board variants to '
-                                 'include in the BOM')
+                                 'include in the BOM.')
         parser.add_argument('--dnp-field',
                             help='Name of the extra field that indicates '
                                  'do not populate status. Components with this '
