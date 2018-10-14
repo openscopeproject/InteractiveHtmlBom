@@ -505,19 +505,19 @@ function changeCanvasLayout(layout) {
   switch (layout) {
     case 'F':
       document.getElementById("fl-btn").classList.add("depressed");
-      if (bomlayout != "BOM") {
+      if (bomlayout != "bom-only") {
         canvassplit.collapse(1);
       }
       break;
     case 'B':
       document.getElementById("bl-btn").classList.add("depressed");
-      if (bomlayout != "BOM") {
+      if (bomlayout != "bom-only") {
         canvassplit.collapse(0);
       }
       break;
     default:
       document.getElementById("fb-btn").classList.add("depressed");
-      if (bomlayout != "BOM") {
+      if (bomlayout != "bom-only") {
         canvassplit.setSizes([50, 50]);
       }
   }
@@ -542,7 +542,7 @@ function changeBomLayout(layout) {
   document.getElementById("lr-btn").classList.remove("depressed");
   document.getElementById("tb-btn").classList.remove("depressed");
   switch (layout) {
-    case 'BOM':
+    case 'bom-only':
       document.getElementById("bom-btn").classList.add("depressed");
       if (bomsplit) {
         bomsplit.destroy();
@@ -554,7 +554,7 @@ function changeBomLayout(layout) {
       document.getElementById("backcanvas").style.display = "none";
       document.getElementById("bot").style.height = "";
       break;
-    case 'TB':
+    case 'top-bottom':
       document.getElementById("tb-btn").classList.add("depressed");
       document.getElementById("frontcanvas").style.display = "";
       document.getElementById("backcanvas").style.display = "";
@@ -581,7 +581,7 @@ function changeBomLayout(layout) {
         onDragEnd: resizeAll
       });
       break;
-    case 'LR':
+    case 'left-right':
       document.getElementById("lr-btn").classList.add("depressed");
       document.getElementById("frontcanvas").style.display = "";
       document.getElementById("backcanvas").style.display = "";
@@ -710,15 +710,15 @@ document.onkeydown = function(e) {
         e.preventDefault();
         break;
       case "z":
-        changeBomLayout("BOM");
+        changeBomLayout("bom-only");
         e.preventDefault();
         break;
       case "x":
-        changeBomLayout("LR");
+        changeBomLayout("left-right");
         e.preventDefault();
         break;
       case "c":
-        changeBomLayout("TB");
+        changeBomLayout("top-bottom");
         e.preventDefault();
         break;
       case "v":
@@ -742,53 +742,73 @@ document.onkeydown = function(e) {
   }
 }
 
-window.onload = function(e) {
-  initStorage();
-  cleanGutters();
-  initRender();
-  dbgdiv = document.getElementById("dbg");
-  bom = document.getElementById("bombody");
-  bomhead = document.getElementById("bomhead");
+function initDefaults() {
   bomlayout = readStorage("bomlayout");
-  if (!bomlayout) {
-    bomlayout = "LR";
+  if (bomlayout === null) {
+    bomlayout = config.bom_view;
+  }
+  if (!['bom-only', 'left-right', 'top-bottom'].includes(bomlayout)) {
+    bomlayout = config.bom_view;
   }
   canvaslayout = readStorage("canvaslayout");
-  if (!canvaslayout) {
-    canvaslayout = "FB";
+  if (canvaslayout === null) {
+    canvaslayout = config.layer_view;
   }
-  filter = "";
-  reflookup = "";
-  populateMetadata();
   bomCheckboxes = readStorage("bomCheckboxes");
   if (bomCheckboxes === null) {
-    bomCheckboxes = "Sourced,Placed";
+    bomCheckboxes = config.checkboxes;
   }
   document.getElementById("bomCheckboxes").value = bomCheckboxes;
-  if (readStorage("silkscreenVisible") === "false") {
-    document.getElementById("silkscreenCheckbox").checked = false;
-    silkscreenVisible(false);
+
+  var b = readStorage("silkscreenVisible");
+  if (b === null) {
+    b = config.show_silkscreen;
   }
-  if (readStorage("redrawOnDrag") === "false") {
-    document.getElementById("dragCheckbox").checked = false;
-    setRedrawOnDrag(false);
+  document.getElementById("silkscreenCheckbox").checked = b;
+  silkscreenVisible(b);
+
+  b = readStorage("redrawOnDrag");
+  if (b === null) {
+    b = config.redraw_on_drag;
   }
-  if (readStorage("darkmode") === "true") {
-    document.getElementById("darkmodeCheckbox").checked = true;
-    setDarkMode(true);
+  document.getElementById("dragCheckbox").checked = b;
+  setRedrawOnDrag(b);
+
+  b = readStorage("darkmode");
+  if (b === null) {
+    b = config.dark_mode;
   }
-  if (readStorage("highlightpin1") === "true") {
-    document.getElementById("highlightpin1Checkbox").checked = true;
-    setHighlightPin1(true);
+  document.getElementById("darkmodeCheckbox").checked = b;
+  setDarkMode(b);
+
+  b = readStorage("highlightpin1");
+  if (b === null) {
+    b = config.highlight_pin1;
   }
+  document.getElementById("highlightpin1Checkbox").checked = b;
+  setHighlightPin1(b);
+
   boardRotation = readStorage("boardRotation");
   if (boardRotation === null) {
-    boardRotation = 0;
+    boardRotation = config.board_rotation * 5;
   } else {
     boardRotation = parseInt(boardRotation);
   }
   document.getElementById("boardRotation").value = boardRotation / 5;
   document.getElementById("rotationDegree").textContent = boardRotation;
+}
+
+window.onload = function(e) {
+  initRender();
+  initStorage();
+  initDefaults();
+  cleanGutters();
+  populateMetadata();
+  dbgdiv = document.getElementById("dbg");
+  bom = document.getElementById("bombody");
+  bomhead = document.getElementById("bomhead");
+  filter = "";
+  reflookup = "";
   // Triggers render
   changeBomLayout(bomlayout);
 }

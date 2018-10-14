@@ -431,7 +431,7 @@ def open_file(filename):
         subprocess.call(('xdg-open', filename))
 
 
-def generate_file(dir, pcbdata):
+def generate_file(dir, pcbdata, config):
     def get_file_content(file_name):
         with open(os.path.join(os.path.dirname(__file__), file_name), "r") as f:
             return f.read()
@@ -441,9 +441,11 @@ def generate_file(dir, pcbdata):
     if not os.path.isdir(os.path.dirname(bom_file_name)):
         os.makedirs(os.path.dirname(bom_file_name))
     pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
+    config_js = "var config = " + config.get_html_config()
     html = get_file_content("ibom.html")
     html = html.replace('///CSS///', get_file_content('ibom.css'))
     html = html.replace('///SPLITJS///', get_file_content('split.js'))
+    html = html.replace('///CONFIG///', config_js)
     html = html.replace('///PCBDATA///', pcbdata_js)
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
@@ -506,7 +508,7 @@ def main(pcb, config):
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     pcbdata["font_data"] = font_parser.get_parsed_font()
-    bom_file = generate_file(bom_file_dir, pcbdata)
+    bom_file = generate_file(bom_file_dir, pcbdata, config)
 
     if config.open_browser:
         loginfo("Opening file in browser")
@@ -562,6 +564,7 @@ if __name__ == "__main__":
         dlg = dialog.SettingsDialog(None)
         if dlg.ShowModal() == wx.ID_OK:
             config.set_from_dialog(dlg)
+            print config.get_html_config()
             main(board, config)
         dlg.Destroy()
     else:

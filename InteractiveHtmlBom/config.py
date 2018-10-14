@@ -14,6 +14,10 @@ class Config:
         'HS', 'CNN', 'J', 'P', 'NT', 'MH',
     ]
     default_checkboxes = ['Sourced', 'Placed']
+    html_config_fields = [
+        'dark_mode', 'show_silkscreen', 'highlight_pin1', 'redraw_on_drag',
+        'board_rotation', 'checkboxes', 'bom_view', 'layer_view', 'extra_fields'
+    ]
 
     # Defaults
 
@@ -55,8 +59,9 @@ class Config:
         self.redraw_on_drag = dlg.html.continuousRedrawCheckbox.IsChecked()
         self.board_rotation = dlg.html.boardRotationSlider.Value
         self.checkboxes = dlg.html.bomCheckboxesCtrl.Value
-        self.bom_view = dlg.html.bomDefaultView.Selection
-        self.layer_view = dlg.html.layerDefaultView.Selection
+        self.bom_view = self.bom_view_choices[dlg.html.bomDefaultView.Selection]
+        self.layer_view = self.layer_view_choices[
+            dlg.html.layerDefaultView.Selection]
         self.open_browser = dlg.html.openBrowserCheckbox.IsChecked()
 
         # General
@@ -198,3 +203,10 @@ class Config:
         self.board_variant_field = args.board_variant_field
         self.board_variants = args.board_variants.split(',')
         self.dnp_field = args.dnp_field
+
+    def get_html_config(self):
+        import json
+        d = {}
+        for f in self.html_config_fields:
+            d[f] = getattr(self, f)
+        return json.dumps(d)
