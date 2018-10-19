@@ -46,9 +46,11 @@ def logwarn(msg):
         logger.warn(msg)
 
 
-def generate_bom(pcb, filter_layer=None):
+def generate_bom(pcb, config, filter_layer=None):
     """
     Generate BOM from pcb layout.
+    :param pcb: pcbnew BOARD object
+    :param config: Config object
     :param filter_layer: include only parts for given layer
     :return: BOM table (qty, value, footprint, refs)
     """
@@ -78,6 +80,15 @@ def generate_bom(pcb, filter_layer=None):
         # filter part by layer
         if filter_layer is not None and filter_layer != m.GetLayer():
             continue
+
+        # skip blacklisted components
+        ref = m.GetReference()
+        ref_prefix = re.findall('^[A-Z]*', ref)[0]
+        if ref in config.component_blacklist:
+            continue
+        if ref_prefix + '*' in config.component_blacklist:
+            continue
+
         # group part refs by value and footprint
         value = m.GetValue()
         norm_value = units.componentValue(value)
@@ -91,6 +102,10 @@ def generate_bom(pcb, filter_layer=None):
         else:
             attr = str(attr)
 
+        # skip virtual components if needed
+        if config.blacklist_virtual and attr == 'Virtual':
+            continue
+
         group_key = (norm_value, footprint, attr)
         valrefs = part_groups.setdefault(group_key, [value, []])
         valrefs[1].append(m.GetReference())
@@ -98,37 +113,22 @@ def generate_bom(pcb, filter_layer=None):
     # build bom table, sort refs
     bom_table = []
     for (norm_value, footprint, attr), valrefs in part_groups.items():
-        if attr == 'Virtual':
-            continue
-        line = (
+        bom_row = (
             len(valrefs[1]), valrefs[0], footprint, natural_sort(valrefs[1]))
-        bom_table.append(line)
+        bom_table.append(bom_row)
 
     # sort table by reference prefix, footprint and quantity
     def sort_func(row):
         qty, _, fp, rf = row
         prefix = re.findall('^[A-Z]*', rf[0])[0]
-        ref_ord = {
-            "C": 1,
-            "R": 2,
-            "L": 3,
-            "D": 4,
-            "Q": 5,
-            "U": 6,
-            "Y": 7,
-            "X": 8,
-            "F": 9,
-            "SW": 10,
-            "A": 11,
-            "HS": 1996,
-            "CNN": 1997,
-            "J": 1998,
-            "P": 1999,
-            "NT": 2000,
-            "MH": 2001,
-        }.get(prefix, 1000)
+        if prefix in config.component_sort_order:
+            ref_ord = config.component_sort_order.index(prefix)
+        else:
+            ref_ord = config.component_sort_order.index('~')
         return ref_ord, fp, -qty, alphanum_key(rf[0])
 
+    if '~' not in config.component_sort_order:
+        config.component_sort_order.append('~')
     bom_table = sorted(bom_table, key=sort_func)
 
     return bom_table
@@ -477,8 +477,8 @@ def main(pcb, config):
         title = os.path.splitext(title)[0]
     edges, bbox = parse_edges(pcb)
     if bbox is None:
-        logerror('Please draw pcb outline on the edges ' \
-                 'layer on sheet or any module before ' \
+        logerror('Please draw pcb outline on the edges '
+                 'layer on sheet or any module before '
                  'generating BOM.')
         return
     bbox = {
@@ -500,11 +500,11 @@ def main(pcb, config):
         },
         "bom": {},
     }
-    pcbdata["bom"]["both"] = generate_bom(pcb)
+    pcbdata["bom"]["both"] = generate_bom(pcb, config)
 
     # build BOM
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        bom_table = generate_bom(pcb, filter_layer=layer)
+        bom_table = generate_bom(pcb, config, filter_layer=layer)
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     pcbdata["font_data"] = font_parser.get_parsed_font()
@@ -536,6 +536,7 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
     def Run(self):
         config = Config()
         dlg = dialog.SettingsDialog(None)
+        config.transfer_to_dialog(dlg)
         if dlg.ShowModal() == wx.ID_OK:
             config.set_from_dialog(dlg)
             main(pcbnew.GetBoard(), config)
@@ -562,6 +563,7 @@ if __name__ == "__main__":
         # Create simple app to show config dialog, infer config.
         app = wx.App()
         dlg = dialog.SettingsDialog(None)
+        config.transfer_to_dialog(dlg)
         if dlg.ShowModal() == wx.ID_OK:
             config.set_from_dialog(dlg)
             print config.get_html_config()

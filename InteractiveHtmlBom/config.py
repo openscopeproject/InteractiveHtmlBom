@@ -27,7 +27,7 @@ class Config:
     highlight_pin1 = False
     redraw_on_drag = True
     board_rotation = 0
-    checkboxes = default_checkboxes
+    checkboxes = ','.join(default_checkboxes)
     bom_view = 1
     layer_view = 1
     open_browser = True
@@ -87,7 +87,7 @@ class Config:
         dlg.html.highlightPin1Checkbox.Value = self.highlight_pin1
         dlg.html.continuousRedrawCheckbox.value = self.redraw_on_drag
         dlg.html.boardRotationSlider.Value = self.board_rotation
-        dlg.html.bomCheckboxesCtrl.Value = self.checkboxes
+        dlg.html.bomCheckboxesCtrl.Value = ','.join(self.checkboxes)
         dlg.html.bomDefaultView.Selection = self.bom_view
         dlg.html.layerDefaultView.Selection = self.layer_view
         dlg.html.openBrowserCheckbox.Value = self.open_browser
@@ -186,9 +186,9 @@ class Config:
         self.highlight_pin1 = args.highlight_pin1
         self.redraw_on_drag = not args.no_redraw_on_drag
         self.board_rotation = math.fmod(args.board_rotation // 5, 37)
-        self.checkboxes = args.checkboxes.split(',')
-        self.bom_view = self.bom_view_choices.index(args.bom_view)
-        self.layer_view = self.layer_view_choices.index(args.layer_view)
+        self.checkboxes = args.checkboxes
+        self.bom_view = args.bom_view
+        self.layer_view = args.layer_view
         self.open_browser = not args.no_browser
 
         # General
