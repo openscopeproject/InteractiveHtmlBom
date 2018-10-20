@@ -431,15 +431,20 @@ def open_file(filename):
         subprocess.call(('xdg-open', filename))
 
 
-def generate_file(dir, pcbdata, config):
+def generate_file(pcb_file_dir, pcbdata, config):
     def get_file_content(file_name):
         with open(os.path.join(os.path.dirname(__file__), file_name), "r") as f:
             return f.read()
 
     loginfo("Dumping pcb json data")
-    bom_file_name = os.path.join(dir, "ibom.html")
-    if not os.path.isdir(os.path.dirname(bom_file_name)):
-        os.makedirs(os.path.dirname(bom_file_name))
+
+    if os.path.isabs(config.bom_dest_dir):
+        bom_file_name = config.bom_dest_dir
+    else:
+        bom_file_name = os.path.join(pcb_file_dir, config.bom_dest_dir)
+    if not os.path.isdir(bom_file_name):
+        os.makedirs(bom_file_name)
+    bom_file_name = os.path.join(bom_file_name, "ibom.html")
     pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
     config_js = "var config = " + config.get_html_config()
     html = get_file_content("ibom.html")
@@ -462,7 +467,7 @@ def main(pcb, config):
         logerror('Please save the board file before generating BOM.')
         return
 
-    bom_file_dir = os.path.join(os.path.dirname(pcb_file_name), "bom")
+    pcb_file_dir = os.path.dirname(pcb_file_name)
 
     title_block = pcb.GetTitleBlock()
     file_date = title_block.GetDate()
@@ -508,7 +513,7 @@ def main(pcb, config):
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     pcbdata["font_data"] = font_parser.get_parsed_font()
-    bom_file = generate_file(bom_file_dir, pcbdata, config)
+    bom_file = generate_file(pcb_file_dir, pcbdata, config)
 
     if config.open_browser:
         loginfo("Opening file in browser")
@@ -529,7 +534,8 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
         self.category = "Read PCB"
         self.pcbnew_icon_support = hasattr(self, "show_toolbar_button")
         self.show_toolbar_button = True
-        self.icon_file_name = os.path.join(os.path.dirname(__file__), 'icon.png')
+        self.icon_file_name = os.path.join(
+                os.path.dirname(__file__), 'icon.png')
         self.description = "Generate interactive HTML page that contains BOM " \
                            "table and pcb drawing."
 

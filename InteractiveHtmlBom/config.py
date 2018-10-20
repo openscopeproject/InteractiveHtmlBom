@@ -33,7 +33,7 @@ class Config:
     open_browser = True
 
     # General section
-    bom_dest_dir = './bom/'  # This is relative to pcb file directory
+    bom_dest_dir = 'bom/'  # This is relative to pcb file directory
     component_sort_order = default_sort_order
     component_blacklist = []
     blacklist_virtual = True
@@ -87,7 +87,7 @@ class Config:
         dlg.html.highlightPin1Checkbox.Value = self.highlight_pin1
         dlg.html.continuousRedrawCheckbox.value = self.redraw_on_drag
         dlg.html.boardRotationSlider.Value = self.board_rotation
-        dlg.html.bomCheckboxesCtrl.Value = ','.join(self.checkboxes)
+        dlg.html.bomCheckboxesCtrl.Value = self.checkboxes
         dlg.html.bomDefaultView.Selection = self.bom_view
         dlg.html.layerDefaultView.Selection = self.layer_view
         dlg.html.openBrowserCheckbox.Value = self.open_browser
