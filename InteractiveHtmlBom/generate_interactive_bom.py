@@ -70,10 +70,16 @@ def skip_component(m, config, extra_data, filter_layer):
         return True
 
     # skip components with wrong variant field
-    if config.board_variant_field and config.board_variants:
+    if config.board_variant_field and config.board_variant_whitelist:
         if ref in extra_data:
             ref_variant = extra_data[ref].get(config.board_variant_field, '')
-            if ref_variant and ref_variant not in config.board_variants:
+            if ref_variant not in config.board_variant_whitelist:
+                return True
+
+    if config.board_variant_field and config.board_variant_blacklist:
+        if ref in extra_data:
+            ref_variant = extra_data[ref].get(config.board_variant_field, '')
+            if ref_variant and ref_variant in config.board_variant_blacklist:
                 return True
 
     return False
@@ -504,7 +510,7 @@ def main(pcb, config):
     if os.path.isfile(config.netlist_file):
         extra_fields = parse_schematic_data(config.netlist_file)
     need_extra_fields = \
-        config.extra_fields or config.board_variants or config.dnp_field
+        config.extra_fields or config.board_variant_whitelist or config.dnp_field
 
     if extra_fields is None and need_extra_fields:
         logerror('Failed parsing %s' % config.netlist_file)

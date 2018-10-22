@@ -179,7 +179,8 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
             field_list.append(self.NONE_STRING)
             self.boardVariantFieldBox.SetItems(field_list)
             self.boardVariantFieldBox.SetStringSelection(self.NONE_STRING)
-            self.boardVariantList.Clear()
+            self.boardVariantWhitelist.Clear()
+            self.boardVariantBlacklist.Clear()
             self.dnpFieldBox.SetItems(field_list)
             self.dnpFieldBox.SetStringSelection(self.NONE_STRING)
 
@@ -187,10 +188,12 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
         selection = self.boardVariantFieldBox.Value
         if not selection or selection == self.NONE_STRING \
                 or self.extra_field_data is None:
-            self.boardVariantList.Clear()
+            self.boardVariantWhitelist.Clear()
+            self.boardVariantBlacklist.Clear()
             return
         variant_set = set()
         for _, field_dict in self.extra_field_data[1].items():
             if selection in field_dict:
                 variant_set.add(field_dict[selection])
-        self.boardVariantList.SetItems(list(variant_set))
+        self.boardVariantWhitelist.SetItems(list(variant_set))
+        self.boardVariantBlacklist.SetItems(list(variant_set))

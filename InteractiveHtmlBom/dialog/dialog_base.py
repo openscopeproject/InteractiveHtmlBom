@@ -359,7 +359,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         extraFieldsSizer.Add( bSizer4, 1, wx.EXPAND, 5 )
         
         
-        bSizer42.Add( extraFieldsSizer, 1, wx.ALL|wx.EXPAND, 5 )
+        bSizer42.Add( extraFieldsSizer, 2, wx.ALL|wx.EXPAND, 5 )
         
         sbSizer32 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Board variant" ), wx.VERTICAL )
         
@@ -372,12 +372,41 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         self.boardVariantFieldBox = wx.ComboBox( sbSizer32.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, boardVariantFieldBoxChoices, wx.CB_READONLY|wx.CB_SORT|wx.BORDER_SIMPLE )
         sbSizer32.Add( self.boardVariantFieldBox, 0, wx.ALL|wx.EXPAND, 5 )
         
-        boardVariantListChoices = []
-        self.boardVariantList = wx.CheckListBox( sbSizer32.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, boardVariantListChoices, 0|wx.BORDER_SIMPLE )
-        sbSizer32.Add( self.boardVariantList, 1, wx.ALL|wx.EXPAND, 5 )
+        bSizer17 = wx.BoxSizer( wx.HORIZONTAL )
+        
+        bSizer18 = wx.BoxSizer( wx.VERTICAL )
+        
+        self.m_staticText6 = wx.StaticText( sbSizer32.GetStaticBox(), wx.ID_ANY, u"Whitelist", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText6.Wrap( -1 )
+        
+        bSizer18.Add( self.m_staticText6, 0, wx.ALL, 5 )
+        
+        boardVariantWhitelistChoices = []
+        self.boardVariantWhitelist = wx.CheckListBox( sbSizer32.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, boardVariantWhitelistChoices, 0|wx.BORDER_SIMPLE )
+        bSizer18.Add( self.boardVariantWhitelist, 1, wx.ALL|wx.EXPAND, 5 )
         
         
-        bSizer42.Add( sbSizer32, 1, wx.ALL|wx.EXPAND, 5 )
+        bSizer17.Add( bSizer18, 1, wx.EXPAND, 5 )
+        
+        bSizer19 = wx.BoxSizer( wx.VERTICAL )
+        
+        self.m_staticText7 = wx.StaticText( sbSizer32.GetStaticBox(), wx.ID_ANY, u"Blacklist", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText7.Wrap( -1 )
+        
+        bSizer19.Add( self.m_staticText7, 0, wx.ALL, 5 )
+        
+        boardVariantBlacklistChoices = []
+        self.boardVariantBlacklist = wx.CheckListBox( sbSizer32.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, boardVariantBlacklistChoices, 0|wx.BORDER_SIMPLE )
+        bSizer19.Add( self.boardVariantBlacklist, 1, wx.ALL|wx.EXPAND, 5 )
+        
+        
+        bSizer17.Add( bSizer19, 1, wx.EXPAND, 5 )
+        
+        
+        sbSizer32.Add( bSizer17, 1, wx.EXPAND, 5 )
+        
+        
+        bSizer42.Add( sbSizer32, 3, wx.ALL|wx.EXPAND, 5 )
         
         sbSizer8 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"DNP field name" ), wx.VERTICAL )
         

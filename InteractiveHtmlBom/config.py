@@ -1,7 +1,8 @@
 """Config object"""
 
-import dialog.settings_dialog
 import argparse
+
+import dialog.settings_dialog
 
 
 class Config:
@@ -43,7 +44,8 @@ class Config:
     netlist_initial_directory = ''  # This is relative to pcb file directory
     extra_fields = []
     board_variant_field = ''
-    board_variants = []
+    board_variant_whitelist = []
+    board_variant_blacklist = []
     dnp_field = ''
 
     def __init__(self):
@@ -75,9 +77,15 @@ class Config:
         self.netlist_file = dlg.extra.netlistFilePicker.Path
         self.extra_fields = list(dlg.extra.extraFieldsList.GetCheckedStrings())
         self.board_variant_field = dlg.extra.boardVariantFieldBox.Value
-        self.board_variants = list(
-                dlg.extra.boardVariantList.GetCheckedStrings())
+        if self.board_variant_field == dlg.extra.NONE_STRING:
+            self.board_variant_field = ''
+        self.board_variant_whitelist = list(
+                dlg.extra.boardVariantWhitelist.GetCheckedStrings())
+        self.board_variant_blacklist = list(
+                dlg.extra.boardVariantBlacklist.GetCheckedStrings())
         self.dnp_field = dlg.extra.dnpFieldBox.Value
+        if self.dnp_field == dlg.extra.NONE_STRING:
+            self.dnp_field = ''
 
     def transfer_to_dialog(self, dlg):
         # type: (dialog.settings_dialog.SettingsDialogPanel) -> None
@@ -103,7 +111,10 @@ class Config:
                 self.netlist_initial_directory)
         dlg.extra.extraFieldsList.SetCheckedStrings(self.extra_fields)
         dlg.extra.boardVariantFieldBox.Value = self.board_variant_field
-        dlg.extra.boardVariantList.SetCheckedStrings(self.board_variants)
+        dlg.extra.boardVariantWhitelist.SetCheckedStrings(
+            self.board_variant_whitelist)
+        dlg.extra.boardVariantBlacklist.SetCheckedStrings(
+                self.board_variant_blacklist)
         dlg.extra.dnpFieldBox.Value = self.dnp_field
 
     # noinspection PyTypeChecker
@@ -160,12 +171,15 @@ class Config:
         parser.add_argument('--extra-fields', default='',
                             help='Comma separated list of extra fields to '
                                  'pull from netlist or xml file.')
-        parser.add_argument('--board-variant-field',
+        parser.add_argument('--variant-field',
                             help='Name of the extra field that stores board '
                                  'variant for component.')
-        parser.add_argument('--board-variants', default='',
-                            help='Comma separated list of board variants to '
+        parser.add_argument('--variants-whitelist', default='', nargs='+',
+                            help='List of board variants to '
                                  'include in the BOM.')
+        parser.add_argument('--variants-blacklist', default='', nargs='+',
+                            help='List of board variants to '
+                                 'exclude from the BOM.')
         parser.add_argument('--dnp-field',
                             help='Name of the extra field that indicates '
                                  'do not populate status. Components with this '
@@ -195,8 +209,9 @@ class Config:
         # Extra
         self.netlist_file = args.netlist_file
         self.extra_fields = args.extra_fields.split(',')
-        self.board_variant_field = args.board_variant_field
-        self.board_variants = args.board_variants.split(',')
+        self.board_variant_field = args.variant_field
+        self.board_variant_whitelist = args.variants_whitelist
+        self.board_variant_blacklist = args.variants_blacklist
         self.dnp_field = args.dnp_field
 
     def get_html_config(self):
