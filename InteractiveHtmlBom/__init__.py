@@ -1,10 +1,13 @@
-from generate_interactive_bom import GenerateInteractiveBomPlugin
+import sys
+import threading
+import time
+
 import pcbnew
 import wx
 import wx.aui
-import threading
-import time
-import sys
+
+from generate_interactive_bom import GenerateInteractiveBomPlugin
+
 
 def check_for_bom_button():
     # From Miles McCoo's blog

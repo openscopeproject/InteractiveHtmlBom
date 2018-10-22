@@ -5,7 +5,7 @@ import re
 import wx
 
 import dialog_base
-from schematic_data import parse_schematic_data
+from ..schematic_data import parse_schematic_data
 
 
 def pop_error(msg):
