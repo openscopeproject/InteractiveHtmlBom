@@ -316,6 +316,21 @@ function populateBomHeader() {
     }
     return a[3].length - b[3].length;
   }));
+  // Extra fields
+  if (config.extra_fields.length > 0) {
+    var extraFieldCompareClosure = function(fieldIndex) {
+      return (a, b) => {
+        var fa = a[4][fieldIndex];
+        var fb = b[4][fieldIndex];
+        if (fa != fb) return fa > fb ? 1 : -1;
+        else return 0;
+      }
+    }
+    for (var i in config.extra_fields) {
+      tr.appendChild(createColumnHeader(
+        config.extra_fields[i], "extra", extraFieldCompareClosure(i)));
+    }
+  }
   tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
     if (a[1] != b[1]) return a[1] > b[1] ? 1 : -1;
     else return 0;
@@ -385,6 +400,12 @@ function populateBomBody() {
     td = document.createElement("TD");
     td.innerHTML = highlightFilter(references.join(", "));
     tr.appendChild(td);
+    // Extra fields
+    for (var i in config.extra_fields) {
+      td = document.createElement("TD");
+      td.innerHTML = highlightFilter(bomentry[4][i]);
+      tr.appendChild(td);
+    }
     // Value
     td = document.createElement("TD");
     td.innerHTML = highlightFilter(bomentry[1]);

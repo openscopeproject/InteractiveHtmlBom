@@ -3,7 +3,7 @@ import os
 from xmlparser import XmlParser
 
 PARSERS = {
-    'xml': XmlParser
+    '.xml': XmlParser
 }
 
 

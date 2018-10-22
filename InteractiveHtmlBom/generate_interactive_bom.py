@@ -133,26 +133,32 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
         if config.blacklist_virtual and attr == 'Virtual':
             continue
 
-        group_key = (norm_value, footprint, attr)
+        ref = m.GetReference()
+        extras = []
+        if config.extra_fields and ref in extra_data:
+            extras = [extra_data[ref].get(f, '') for f in config.extra_fields]
+
+        group_key = (norm_value, tuple(extras), footprint, attr)
         valrefs = part_groups.setdefault(group_key, [value, []])
-        valrefs[1].append(m.GetReference())
+        valrefs[1].append(ref)
 
     # build bom table, sort refs
     bom_table = []
-    for (norm_value, footprint, attr), valrefs in part_groups.items():
+    for (norm_value, extras, footprint, attr), valrefs in part_groups.items():
         bom_row = (
-            len(valrefs[1]), valrefs[0], footprint, natural_sort(valrefs[1]))
+            len(valrefs[1]), valrefs[0], footprint,
+            natural_sort(valrefs[1]), extras)
         bom_table.append(bom_row)
 
     # sort table by reference prefix, footprint and quantity
     def sort_func(row):
-        qty, _, fp, rf = row
+        qty, _, fp, rf, extras = row
         prefix = re.findall('^[A-Z]*', rf[0])[0]
         if prefix in config.component_sort_order:
             ref_ord = config.component_sort_order.index(prefix)
         else:
             ref_ord = config.component_sort_order.index('~')
-        return ref_ord, fp, -qty, alphanum_key(rf[0])
+        return ref_ord, extras, fp, -qty, alphanum_key(rf[0])
 
     if '~' not in config.component_sort_order:
         config.component_sort_order.append('~')
@@ -545,7 +551,7 @@ def main(pcb, config):
         },
         "bom": {},
     }
-    pcbdata["bom"]["both"] = generate_bom(pcb, extra_fields, config)
+    pcbdata["bom"]["both"] = generate_bom(pcb, config, extra_fields)
 
     # build BOM
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
