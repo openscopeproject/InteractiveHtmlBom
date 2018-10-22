@@ -12,36 +12,42 @@ def pop_error(msg):
     wx.MessageBox(msg, 'Error', wx.OK | wx.ICON_ERROR)
 
 
-# Implementing settings_dialog
 class SettingsDialog(dialog_base.SettingsDialogBase):
     def __init__(self, parent):
         dialog_base.SettingsDialogBase.__init__(self, parent)
-        self.html = HtmlSettingsPanel(self.notebook)
-        self.general = GeneralSettingsPanel(self.notebook)
-        self.extra = ExtraFieldsPanel(self.notebook)
-        self.notebook.AddPage(self.html, "Html")
-        self.notebook.AddPage(self.general, "General")
-        self.notebook.AddPage(self.extra, "Extra fields")
-        best_size = self.BestSize
+        self.panel = SettingsDialogPanel(self)
+        best_size = self.panel.BestSize
         # hack for some gtk themes that incorrectly calculate best size
         best_size.IncBy(dx=0, dy=30)
-        self.SetSize(best_size)
-        self.html.OnBoardRotationSlider(None)
+        self.SetClientSize(best_size)
 
     # hack for new wxFormBuilder generating code incompatible with old wxPython
     # noinspection PyMethodOverriding
     def SetSizeHints(self, sz1, sz2):
         self.SetSizeHintsSz(sz1, sz2)
 
+
+# Implementing settings_dialog
+class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
+    def __init__(self, parent):
+        dialog_base.SettingsDialogPanel.__init__(self, parent)
+        self.general = GeneralSettingsPanel(self.notebook)
+        self.html = HtmlSettingsPanel(self.notebook)
+        self.extra = ExtraFieldsPanel(self.notebook)
+        self.notebook.AddPage(self.general, "General")
+        self.notebook.AddPage(self.html, "Html")
+        self.notebook.AddPage(self.extra, "Extra fields")
+        self.html.OnBoardRotationSlider(None)
+
     def OnExit(self, event):
-        self.EndModal(wx.ID_CANCEL)
+        self.GetParent().EndModal(wx.ID_CANCEL)
 
     def OnSaveSettings(self, event):
         # TODO: implement OnSaveSettings
         pass
 
     def OnGenerateBom(self, event):
-        self.EndModal(wx.ID_OK)
+        self.GetParent().EndModal(wx.ID_OK)
 
     def init(self, extra_fields_box_wildcard):
         pass

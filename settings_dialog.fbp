@@ -102,6 +102,66 @@
             <event name="OnShow"></event>
             <event name="OnSize"></event>
             <event name="OnUpdateUI"></event>
+        </object>
+        <object class="Panel" expanded="1">
+            <property name="aui_managed">0</property>
+            <property name="aui_manager_style">wxAUI_MGR_DEFAULT</property>
+            <property name="bg"></property>
+            <property name="context_help"></property>
+            <property name="context_menu">1</property>
+            <property name="enabled">1</property>
+            <property name="event_handler">impl_virtual</property>
+            <property name="fg"></property>
+            <property name="font"></property>
+            <property name="hidden">0</property>
+            <property name="id">wxID_ANY</property>
+            <property name="maximum_size"></property>
+            <property name="minimum_size"></property>
+            <property name="name">SettingsDialogPanel</property>
+            <property name="pos"></property>
+            <property name="size">400,300</property>
+            <property name="subclass">; ; forward_declare</property>
+            <property name="tooltip"></property>
+            <property name="window_extra_style"></property>
+            <property name="window_name"></property>
+            <property name="window_style">wxTAB_TRAVERSAL</property>
+            <event name="OnAuiPaneActivated"></event>
+            <event name="OnAuiPaneButton"></event>
+            <event name="OnAuiPaneClose"></event>
+            <event name="OnAuiPaneMaximize"></event>
+            <event name="OnAuiPaneRestore"></event>
+            <event name="OnAuiRender"></event>
+            <event name="OnAux1DClick"></event>
+            <event name="OnAux1Down"></event>
+            <event name="OnAux1Up"></event>
+            <event name="OnAux2DClick"></event>
+            <event name="OnAux2Down"></event>
+            <event name="OnAux2Up"></event>
+            <event name="OnChar"></event>
+            <event name="OnCharHook"></event>
+            <event name="OnEnterWindow"></event>
+            <event name="OnEraseBackground"></event>
+            <event name="OnInitDialog"></event>
+            <event name="OnKeyDown"></event>
+            <event name="OnKeyUp"></event>
+            <event name="OnKillFocus"></event>
+            <event name="OnLeaveWindow"></event>
+            <event name="OnLeftDClick"></event>
+            <event name="OnLeftDown"></event>
+            <event name="OnLeftUp"></event>
+            <event name="OnMiddleDClick"></event>
+            <event name="OnMiddleDown"></event>
+            <event name="OnMiddleUp"></event>
+            <event name="OnMotion"></event>
+            <event name="OnMouseEvents"></event>
+            <event name="OnMouseWheel"></event>
+            <event name="OnPaint"></event>
+            <event name="OnRightDClick"></event>
+            <event name="OnRightDown"></event>
+            <event name="OnRightUp"></event>
+            <event name="OnSetFocus"></event>
+            <event name="OnSize"></event>
+            <event name="OnUpdateUI"></event>
             <object class="wxBoxSizer" expanded="1">
                 <property name="minimum_size"></property>
                 <property name="name">bSizer20</property>
@@ -121,7 +181,7 @@
                         <property name="aui_position"></property>
                         <property name="aui_row"></property>
                         <property name="best_size"></property>
-                        <property name="bg">wxSYS_COLOUR_BTNFACE</property>
+                        <property name="bg"></property>
                         <property name="bitmapsize"></property>
                         <property name="caption"></property>
                         <property name="caption_visible">1</property>
@@ -134,7 +194,7 @@
                         <property name="dock_fixed">0</property>
                         <property name="docking">Left</property>
                         <property name="enabled">1</property>
-                        <property name="fg">wxSYS_COLOUR_WINDOW</property>
+                        <property name="fg"></property>
                         <property name="floatable">1</property>
                         <property name="font"></property>
                         <property name="gripper">0</property>
@@ -236,7 +296,7 @@
                                 <property name="dock">Dock</property>
                                 <property name="dock_fixed">0</property>
                                 <property name="docking">Left</property>
-                                <property name="enabled">1</property>
+                                <property name="enabled">0</property>
                                 <property name="fg"></property>
                                 <property name="floatable">1</property>
                                 <property name="focus"></property>
@@ -276,7 +336,7 @@
                                 <property name="validator_variable"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style">wxBORDER_NONE</property>
+                                <property name="window_style">wxBORDER_DEFAULT</property>
                                 <event name="OnAux1DClick"></event>
                                 <event name="OnAux1Down"></event>
                                 <event name="OnAux1Up"></event>
@@ -389,7 +449,7 @@
                                 <property name="validator_variable"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style">wxBORDER_NONE</property>
+                                <property name="window_style">wxBORDER_DEFAULT</property>
                                 <event name="OnAux1DClick"></event>
                                 <event name="OnAux1Down"></event>
                                 <event name="OnAux1Up"></event>
@@ -492,7 +552,7 @@
                                 <property name="validator_variable"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style">wxBORDER_NONE</property>
+                                <property name="window_style">wxBORDER_DEFAULT</property>
                                 <event name="OnAux1DClick"></event>
                                 <event name="OnAux1Down"></event>
                                 <event name="OnAux1Up"></event>
@@ -2098,7 +2158,7 @@
                                                 <property name="validator_variable"></property>
                                                 <property name="window_extra_style"></property>
                                                 <property name="window_name"></property>
-                                                <property name="window_style">wxBORDER_NONE</property>
+                                                <property name="window_style">wxBORDER_DEFAULT</property>
                                                 <event name="OnAux1DClick"></event>
                                                 <event name="OnAux1Down"></event>
                                                 <event name="OnAux1Up"></event>
@@ -2201,7 +2261,7 @@
                                                 <property name="validator_variable"></property>
                                                 <property name="window_extra_style"></property>
                                                 <property name="window_name"></property>
-                                                <property name="window_style">wxBORDER_NONE</property>
+                                                <property name="window_style">wxBORDER_DEFAULT</property>
                                                 <event name="OnAux1DClick"></event>
                                                 <event name="OnAux1Down"></event>
                                                 <event name="OnAux1Up"></event>
@@ -2304,7 +2364,7 @@
                                                 <property name="validator_variable"></property>
                                                 <property name="window_extra_style"></property>
                                                 <property name="window_name"></property>
-                                                <property name="window_style">wxBORDER_NONE</property>
+                                                <property name="window_style">wxBORDER_DEFAULT</property>
                                                 <event name="OnAux1DClick"></event>
                                                 <event name="OnAux1Down"></event>
                                                 <event name="OnAux1Up"></event>
@@ -2407,7 +2467,7 @@
                                                 <property name="validator_variable"></property>
                                                 <property name="window_extra_style"></property>
                                                 <property name="window_name"></property>
-                                                <property name="window_style">wxBORDER_NONE</property>
+                                                <property name="window_style">wxBORDER_DEFAULT</property>
                                                 <event name="OnAux1DClick"></event>
                                                 <event name="OnAux1Down"></event>
                                                 <event name="OnAux1Up"></event>
@@ -2653,7 +2713,7 @@
                                                 <property name="validator_variable"></property>
                                                 <property name="window_extra_style"></property>
                                                 <property name="window_name"></property>
-                                                <property name="window_style">wxBORDER_NONE</property>
+                                                <property name="window_style">wxBORDER_DEFAULT</property>
                                                 <event name="OnAux1DClick"></event>
                                                 <event name="OnAux1Down"></event>
                                                 <event name="OnAux1Up"></event>
@@ -2756,7 +2816,7 @@
                                                 <property name="validator_variable"></property>
                                                 <property name="window_extra_style"></property>
                                                 <property name="window_name"></property>
-                                                <property name="window_style">wxBORDER_NONE</property>
+                                                <property name="window_style">wxBORDER_DEFAULT</property>
                                                 <event name="OnAux1DClick"></event>
                                                 <event name="OnAux1Down"></event>
                                                 <event name="OnAux1Up"></event>
@@ -3134,7 +3194,7 @@
                                 <event name="OnCharHook"></event>
                                 <event name="OnEnterWindow"></event>
                                 <event name="OnEraseBackground"></event>
-                                <event name="OnFileChanged"></event>
+                                <event name="OnFileChanged">OnNetlistFileChanged</event>
                                 <event name="OnKeyDown"></event>
                                 <event name="OnKeyUp"></event>
                                 <event name="OnKillFocus"></event>
@@ -3208,7 +3268,7 @@
                                                 <property name="caption"></property>
                                                 <property name="caption_visible">1</property>
                                                 <property name="center_pane">0</property>
-                                                <property name="choices">&quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot;</property>
+                                                <property name="choices"></property>
                                                 <property name="close_button">1</property>
                                                 <property name="context_help"></property>
                                                 <property name="context_menu">1</property>
@@ -3366,7 +3426,7 @@
                                                 <property name="validator_variable"></property>
                                                 <property name="window_extra_style"></property>
                                                 <property name="window_name"></property>
-                                                <property name="window_style">wxBORDER_NONE</property>
+                                                <property name="window_style">wxBORDER_DEFAULT</property>
                                                 <event name="OnAux1DClick"></event>
                                                 <event name="OnAux1Down"></event>
                                                 <event name="OnAux1Up"></event>
@@ -3469,7 +3529,7 @@
                                                 <property name="validator_variable"></property>
                                                 <property name="window_extra_style"></property>
                                                 <property name="window_name"></property>
-                                                <property name="window_style">wxBORDER_NONE</property>
+                                                <property name="window_style">wxBORDER_DEFAULT</property>
                                                 <event name="OnAux1DClick"></event>
                                                 <event name="OnAux1Down"></event>
                                                 <event name="OnAux1Up"></event>
@@ -3708,7 +3768,7 @@
                                 <event name="OnRightUp"></event>
                                 <event name="OnSetFocus"></event>
                                 <event name="OnSize"></event>
-                                <event name="OnText"></event>
+                                <event name="OnText">OnBoardVariantFieldChange</event>
                                 <event name="OnTextEnter"></event>
                                 <event name="OnUpdateUI"></event>
                             </object>

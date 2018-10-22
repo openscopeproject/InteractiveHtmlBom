@@ -589,9 +589,9 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
         dlg = dialog.SettingsDialog(None)
         config.netlist_initial_directory = os.path.dirname(
             pcbnew.GetBoard().GetFileName())
-        config.transfer_to_dialog(dlg)
+        config.transfer_to_dialog(dlg.panel)
         if dlg.ShowModal() == wx.ID_OK:
-            config.set_from_dialog(dlg)
+            config.set_from_dialog(dlg.panel)
             main(pcbnew.GetBoard(), config)
         dlg.Destroy()
 
@@ -618,9 +618,9 @@ if __name__ == "__main__":
         app = wx.App()
         dlg = dialog.SettingsDialog(None)
         config.netlist_initial_directory = os.path.dirname(args.file)
-        config.transfer_to_dialog(dlg)
+        config.transfer_to_dialog(dlg.panel)
         if dlg.ShowModal() == wx.ID_OK:
-            config.set_from_dialog(dlg)
+            config.set_from_dialog(dlg.panel)
             print config.get_html_config()
             main(board, config)
         dlg.Destroy()

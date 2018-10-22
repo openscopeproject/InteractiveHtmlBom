@@ -21,29 +21,44 @@ class SettingsDialogBase ( wx.Dialog ):
         
         self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
         
+        
+        self.Centre( wx.BOTH )
+    
+    def __del__( self ):
+        pass
+    
+
+###########################################################################
+## Class SettingsDialogPanel
+###########################################################################
+
+class SettingsDialogPanel ( wx.Panel ):
+    
+    def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 400,300 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
+        wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
+        
         bSizer20 = wx.BoxSizer( wx.VERTICAL )
         
         self.notebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_TOP|wx.BORDER_DEFAULT )
-        self.notebook.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
-        self.notebook.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNFACE ) )
-        
         
         bSizer20.Add( self.notebook, 1, wx.EXPAND |wx.ALL, 5 )
         
         bSizer39 = wx.BoxSizer( wx.HORIZONTAL )
         
-        self.m_button41 = wx.Button( self, wx.ID_ANY, u"Save current settings", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_NONE )
+        self.m_button41 = wx.Button( self, wx.ID_ANY, u"Save current settings", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
+        self.m_button41.Enable( False )
+        
         bSizer39.Add( self.m_button41, 0, wx.ALL, 5 )
         
         
         bSizer39.Add( ( 50, 0), 0, wx.EXPAND, 5 )
         
-        self.m_button42 = wx.Button( self, wx.ID_ANY, u"Generate BOM", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_NONE )
+        self.m_button42 = wx.Button( self, wx.ID_ANY, u"Generate BOM", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
         
         self.m_button42.SetDefault()
         bSizer39.Add( self.m_button42, 0, wx.ALL, 5 )
         
-        self.m_button43 = wx.Button( self, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_NONE )
+        self.m_button43 = wx.Button( self, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
         bSizer39.Add( self.m_button43, 0, wx.ALL, 5 )
         
         
@@ -52,8 +67,6 @@ class SettingsDialogBase ( wx.Dialog ):
         
         self.SetSizer( bSizer20 )
         self.Layout()
-        
-        self.Centre( wx.BOTH )
         
         # Connect Events
         self.m_button41.Bind( wx.EVT_BUTTON, self.OnSaveSettings )
@@ -202,16 +215,16 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
         
-        self.m_button1 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"Up", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
+        self.m_button1 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"Up", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_DEFAULT )
         bSizer5.Add( self.m_button1, 0, wx.ALL, 5 )
         
-        self.m_button2 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"Dn", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
+        self.m_button2 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"Dn", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_DEFAULT )
         bSizer5.Add( self.m_button2, 0, wx.ALL, 5 )
         
-        self.m_button3 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"+", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
+        self.m_button3 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"+", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_DEFAULT )
         bSizer5.Add( self.m_button3, 0, wx.ALL, 5 )
         
-        self.m_button4 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"-", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
+        self.m_button4 = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, u"-", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_DEFAULT )
         bSizer5.Add( self.m_button4, 0, wx.ALL, 5 )
         
         
@@ -238,10 +251,10 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         bSizer512 = wx.BoxSizer( wx.VERTICAL )
         
-        self.m_button112 = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"+", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
+        self.m_button112 = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"+", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_DEFAULT )
         bSizer512.Add( self.m_button112, 0, wx.ALL, 5 )
         
-        self.m_button212 = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"-", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
+        self.m_button212 = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"-", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_DEFAULT )
         bSizer512.Add( self.m_button212, 0, wx.ALL, 5 )
         
         
@@ -333,10 +346,10 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
         
-        self.m_button1 = wx.Button( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Up", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
+        self.m_button1 = wx.Button( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Up", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_DEFAULT )
         bSizer5.Add( self.m_button1, 0, wx.ALL, 5 )
         
-        self.m_button2 = wx.Button( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Dn", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_NONE )
+        self.m_button2 = wx.Button( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Dn", wx.DefaultPosition, wx.Size( 30,30 ), 0|wx.BORDER_DEFAULT )
         bSizer5.Add( self.m_button2, 0, wx.ALL, 5 )
         
         
