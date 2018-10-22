@@ -72,8 +72,8 @@ def skip_component(m, config, extra_data, filter_layer):
     # skip components with wrong variant field
     if config.board_variant_field and config.board_variants:
         if ref in extra_data:
-            ref_variant = extra_data[ref][config.board_variant_field]
-            if ref_variant not in config.board_variants:
+            ref_variant = extra_data[ref].get(config.board_variant_field, '')
+            if ref_variant and ref_variant not in config.board_variants:
                 return True
 
     return False
@@ -109,7 +109,6 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
                  2: 'Virtual'
                  }
 
-    # TODO: use extra_fields
     # build grouped part list
     part_groups = {}
     for m in pcb.GetModules():
@@ -588,6 +587,8 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
     def Run(self):
         config = Config()
         dlg = dialog.SettingsDialog(None)
+        config.netlist_initial_directory = os.path.dirname(
+            pcbnew.GetBoard().GetFileName())
         config.transfer_to_dialog(dlg)
         if dlg.ShowModal() == wx.ID_OK:
             config.set_from_dialog(dlg)
@@ -616,6 +617,7 @@ if __name__ == "__main__":
         # Create simple app to show config dialog, infer config.
         app = wx.App()
         dlg = dialog.SettingsDialog(None)
+        config.netlist_initial_directory = os.path.dirname(args.file)
         config.transfer_to_dialog(dlg)
         if dlg.ShowModal() == wx.ID_OK:
             config.set_from_dialog(dlg)

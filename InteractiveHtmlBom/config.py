@@ -99,15 +99,10 @@ class Config:
         dlg.general.blacklistVirtualCheckbox.Value = self.blacklist_virtual
 
         # Extra fields
-        if self.netlist_file is not None:
-            dlg.extra.netlistFilePicker.Path = self.netlist_file
-        else:
-            dlg.extra.netlistFilePicker.SetInitialDirectory(
-                    self.netlist_initial_directory)
-        # TODO: load netlist/xml and set strings
+        dlg.extra.netlistFilePicker.SetInitialDirectory(
+                self.netlist_initial_directory)
         dlg.extra.extraFieldsList.SetCheckedStrings(self.extra_fields)
         dlg.extra.boardVariantFieldBox.Value = self.board_variant_field
-        # TODO: load netlist/xml and set board variants
         dlg.extra.boardVariantList.SetCheckedStrings(self.board_variants)
         dlg.extra.dnpFieldBox.Value = self.dnp_field
 

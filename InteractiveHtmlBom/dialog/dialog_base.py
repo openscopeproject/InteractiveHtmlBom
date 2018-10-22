@@ -324,7 +324,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         
         bSizer6 = wx.BoxSizer( wx.VERTICAL )
         
-        extraFieldsListChoices = [u"a", u"b", u"c", u"d"]
+        extraFieldsListChoices = []
         self.extraFieldsList = wx.CheckListBox( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, extraFieldsListChoices, 0|wx.BORDER_SIMPLE )
         bSizer6.Add( self.extraFieldsList, 1, wx.ALL|wx.EXPAND, 5 )
         
@@ -386,18 +386,26 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         bSizer42.Fit( self )
         
         # Connect Events
+        self.netlistFilePicker.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnNetlistFileChanged )
         self.m_button1.Bind( wx.EVT_BUTTON, self.OnExtraFieldsUp )
         self.m_button2.Bind( wx.EVT_BUTTON, self.OnExtraFieldsDown )
+        self.boardVariantFieldBox.Bind( wx.EVT_TEXT, self.OnBoardVariantFieldChange )
     
     def __del__( self ):
         pass
     
     
     # Virtual event handlers, overide them in your derived class
+    def OnNetlistFileChanged( self, event ):
+        event.Skip()
+    
     def OnExtraFieldsUp( self, event ):
         event.Skip()
     
     def OnExtraFieldsDown( self, event ):
+        event.Skip()
+    
+    def OnBoardVariantFieldChange( self, event ):
         event.Skip()
     
 
