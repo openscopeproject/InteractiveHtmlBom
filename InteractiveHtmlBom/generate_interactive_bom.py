@@ -8,7 +8,6 @@ from datetime import datetime
 
 import pcbnew
 import wx
-from typing import Dict
 
 import dialog.settings_dialog as dialog
 import units
@@ -50,13 +49,43 @@ def logwarn(msg):
         logger.warn(msg)
 
 
-def generate_bom(pcb, config, extra_fields, filter_layer=None):
+def skip_component(m, config, extra_data, filter_layer):
+    # type: (pcbnew.MODULE, Config, dict, int) -> bool
+    # filter part by layer
+    if filter_layer is not None and filter_layer != m.GetLayer():
+        return True
+
+    # skip blacklisted components
+    ref = m.GetReference()
+    ref_prefix = re.findall('^[A-Z]*', ref)[0]
+    if ref in config.component_blacklist:
+        return True
+    if ref_prefix + '*' in config.component_blacklist:
+        return True
+
+    # skip components with dnp field not empty
+    if config.dnp_field and ref in extra_data \
+            and config.dnp_field in extra_data[ref] \
+            and extra_data[ref][config.dnp_field]:
+        return True
+
+    # skip components with wrong variant field
+    if config.board_variant_field and config.board_variants:
+        if ref in extra_data:
+            ref_variant = extra_data[ref][config.board_variant_field]
+            if ref_variant not in config.board_variants:
+                return True
+
+    return False
+
+
+def generate_bom(pcb, config, extra_data, filter_layer=None):
     # type: (pcbnew.BOARD, Config, Dict[str, dict], int) -> list
     """
     Generate BOM from pcb layout.
     :param pcb: pcbnew BOARD object
     :param config: Config object
-    :param extra_fields: Extra fields data
+    :param extra_data: Extra fields data
     :param filter_layer: include only parts for given layer
     :return: BOM table (qty, value, footprint, refs)
     """
@@ -84,22 +113,7 @@ def generate_bom(pcb, config, extra_fields, filter_layer=None):
     # build grouped part list
     part_groups = {}
     for m in pcb.GetModules():
-        # filter part by layer
-        if filter_layer is not None and filter_layer != m.GetLayer():
-            continue
-
-        # skip blacklisted components
-        ref = m.GetReference()
-        ref_prefix = re.findall('^[A-Z]*', ref)[0]
-        if ref in config.component_blacklist:
-            continue
-        if ref_prefix + '*' in config.component_blacklist:
-            continue
-
-        # skip components with dnp field not empty
-        if config.dnp_field and ref in extra_fields \
-                and config.dnp_field in extra_fields[ref] \
-                and extra_fields[ref][config.dnp_field]:
+        if skip_component(m, config, extra_data, filter_layer):
             continue
 
         # group part refs by value and footprint
@@ -581,7 +595,8 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-            description='KiCad PCB pick and place assistant')
+            description='KiCad PCB pick and place assistant',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('file', type=str, help="KiCad PCB file")
     config = Config()
     config.add_options(parser)

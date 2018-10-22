@@ -1,6 +1,3 @@
-from typing import Tuple
-
-
 class ParserBase:
     DEFAULT_FIELDS = []
 
@@ -11,7 +8,7 @@ class ParserBase:
         self.file_name = file_name
 
     def get_extra_field_data(self):
-        # type: () -> Tuple[list, dict]
+        # type: () -> tuple
         """
         Parses the file and returns a extra field data.
         :return: tuple of the format
