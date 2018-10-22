@@ -1,16 +1,20 @@
 #!/usr/bin/python2
-from datetime import datetime
-import pcbnew
-import wx
-import os
-import re
 import json
 import logging
+import os
+import re
 import sys
+from datetime import datetime
+
+import pcbnew
+import wx
+from typing import Dict
+
+import dialog.settings_dialog as dialog
 import units
 from config import Config
 from fontparser import FontParser
-import dialog.settings_dialog as dialog
+from schematic_data import parse_schematic_data
 
 
 def setup_logger():
@@ -46,11 +50,13 @@ def logwarn(msg):
         logger.warn(msg)
 
 
-def generate_bom(pcb, config, filter_layer=None):
+def generate_bom(pcb, config, extra_fields, filter_layer=None):
+    # type: (pcbnew.BOARD, Config, Dict[str, dict], int) -> list
     """
     Generate BOM from pcb layout.
     :param pcb: pcbnew BOARD object
     :param config: Config object
+    :param extra_fields: Extra fields data
     :param filter_layer: include only parts for given layer
     :return: BOM table (qty, value, footprint, refs)
     """
@@ -74,6 +80,7 @@ def generate_bom(pcb, config, filter_layer=None):
                  2: 'Virtual'
                  }
 
+    # TODO: use extra_fields
     # build grouped part list
     part_groups = {}
     for m in pcb.GetModules():
@@ -87,6 +94,12 @@ def generate_bom(pcb, config, filter_layer=None):
         if ref in config.component_blacklist:
             continue
         if ref_prefix + '*' in config.component_blacklist:
+            continue
+
+        # skip components with dnp field not empty
+        if config.dnp_field and ref in extra_fields \
+                and config.dnp_field in extra_fields[ref] \
+                and extra_fields[ref][config.dnp_field]:
             continue
 
         # group part refs by value and footprint
@@ -467,6 +480,19 @@ def main(pcb, config):
         logerror('Please save the board file before generating BOM.')
         return
 
+    # Get extra field data
+    extra_fields = None
+    if os.path.isfile(config.netlist_file):
+        extra_fields = parse_schematic_data(config.netlist_file)
+    need_extra_fields = \
+        config.extra_fields or config.board_variants or config.dnp_field
+
+    if extra_fields is None and need_extra_fields:
+        logerror('Failed parsing %s' % config.netlist_file)
+        return
+
+    extra_fields = extra_fields[1] if extra_fields else None
+
     pcb_file_dir = os.path.dirname(pcb_file_name)
 
     title_block = pcb.GetTitleBlock()
@@ -505,11 +531,11 @@ def main(pcb, config):
         },
         "bom": {},
     }
-    pcbdata["bom"]["both"] = generate_bom(pcb, config)
+    pcbdata["bom"]["both"] = generate_bom(pcb, extra_fields, config)
 
     # build BOM
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        bom_table = generate_bom(pcb, config, filter_layer=layer)
+        bom_table = generate_bom(pcb, config, extra_fields, filter_layer=layer)
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     pcbdata["font_data"] = font_parser.get_parsed_font()
