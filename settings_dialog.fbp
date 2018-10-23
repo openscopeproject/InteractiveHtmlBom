@@ -52,7 +52,7 @@
             <property name="tooltip"></property>
             <property name="window_extra_style"></property>
             <property name="window_name"></property>
-            <property name="window_style">wxBORDER_NONE</property>
+            <property name="window_style">wxBORDER_DEFAULT</property>
             <event name="OnActivate"></event>
             <event name="OnActivateApp"></event>
             <event name="OnAuiPaneActivated"></event>
