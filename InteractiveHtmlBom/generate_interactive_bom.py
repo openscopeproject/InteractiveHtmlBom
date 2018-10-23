@@ -9,7 +9,7 @@ from datetime import datetime
 import pcbnew
 import wx
 
-import dialog.settings_dialog as dialog
+import dialog
 import units
 from config import Config
 from fontparser import FontParser
@@ -140,8 +140,12 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
 
         ref = m.GetReference()
         extras = []
-        if config.extra_fields and ref in extra_data:
-            extras = [extra_data[ref].get(f, '') for f in config.extra_fields]
+        if config.extra_fields:
+            if ref in extra_data:
+                extras = [extra_data[ref].get(f, '')
+                          for f in config.extra_fields]
+            else:
+                extras = [''] * len(config.extra_fields)
 
         group_key = (norm_value, tuple(extras), footprint, attr)
         valrefs = part_groups.setdefault(group_key, [value, []])
@@ -592,9 +596,9 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
 
     def Run(self):
         config = Config()
-        dlg = dialog.SettingsDialog(None)
+        dlg = dialog.SettingsDialog(None, extra_data_func=parse_schematic_data)
         config.netlist_initial_directory = os.path.dirname(
-            pcbnew.GetBoard().GetFileName())
+                pcbnew.GetBoard().GetFileName())
         config.transfer_to_dialog(dlg.panel)
         if dlg.ShowModal() == wx.ID_OK:
             config.set_from_dialog(dlg.panel)
@@ -622,7 +626,7 @@ if __name__ == "__main__":
     if args.show_dialog:
         # Create simple app to show config dialog, infer config.
         app = wx.App()
-        dlg = dialog.SettingsDialog(None)
+        dlg = dialog.SettingsDialog(None, extra_data_func=parse_schematic_data)
         config.netlist_initial_directory = os.path.dirname(args.file)
         config.transfer_to_dialog(dlg.panel)
         if dlg.ShowModal() == wx.ID_OK:

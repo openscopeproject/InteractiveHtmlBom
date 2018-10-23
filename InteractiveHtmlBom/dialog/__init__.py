@@ -1,2 +1,1 @@
-import dialog_base
-import settings_dialog
+from settings_dialog import SettingsDialog

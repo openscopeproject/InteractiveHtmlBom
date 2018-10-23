@@ -5,7 +5,6 @@ import re
 import wx
 
 import dialog_base
-from ..schematic_data import parse_schematic_data
 
 
 def pop_error(msg):
@@ -13,9 +12,9 @@ def pop_error(msg):
 
 
 class SettingsDialog(dialog_base.SettingsDialogBase):
-    def __init__(self, parent):
+    def __init__(self, parent, extra_data_func):
         dialog_base.SettingsDialogBase.__init__(self, parent)
-        self.panel = SettingsDialogPanel(self)
+        self.panel = SettingsDialogPanel(self, extra_data_func)
         best_size = self.panel.BestSize
         # hack for some gtk themes that incorrectly calculate best size
         best_size.IncBy(dx=0, dy=30)
@@ -29,11 +28,11 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
 
 # Implementing settings_dialog
 class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
-    def __init__(self, parent):
+    def __init__(self, parent, extra_data_func):
         dialog_base.SettingsDialogPanel.__init__(self, parent)
         self.general = GeneralSettingsPanel(self.notebook)
         self.html = HtmlSettingsPanel(self.notebook)
-        self.extra = ExtraFieldsPanel(self.notebook)
+        self.extra = ExtraFieldsPanel(self.notebook, extra_data_func)
         self.notebook.AddPage(self.general, "General")
         self.notebook.AddPage(self.html, "Html")
         self.notebook.AddPage(self.extra, "Extra fields")
@@ -140,8 +139,9 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
 class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
     NONE_STRING = '<none>'
 
-    def __init__(self, parent):
+    def __init__(self, parent, extra_data_func):
         dialog_base.ExtraFieldsPanelBase.__init__(self, parent)
+        self.extra_data_func = extra_data_func
         self.extra_field_data = None
 
     # Handlers for ExtraFieldsPanelBase events.
@@ -172,7 +172,7 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
         netlist_file = self.netlistFilePicker.Path
         if not os.path.isfile(netlist_file):
             return
-        self.extra_field_data = parse_schematic_data(netlist_file)
+        self.extra_field_data = self.extra_data_func(netlist_file)
         if self.extra_field_data is not None:
             field_list = list(self.extra_field_data[0])
             self.extraFieldsList.SetItems(field_list)
