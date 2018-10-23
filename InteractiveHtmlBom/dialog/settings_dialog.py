@@ -34,7 +34,7 @@ class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
         self.html = HtmlSettingsPanel(self.notebook)
         self.extra = ExtraFieldsPanel(self.notebook, extra_data_func)
         self.notebook.AddPage(self.general, "General")
-        self.notebook.AddPage(self.html, "Html")
+        self.notebook.AddPage(self.html, "Html defaults")
         self.notebook.AddPage(self.extra, "Extra fields")
         self.html.OnBoardRotationSlider(None)
 
