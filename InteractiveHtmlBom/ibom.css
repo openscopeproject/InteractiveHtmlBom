@@ -86,6 +86,19 @@ button#copy:active {
     box-shadow: inset 0px 0px 5px #6c6c6c;
 }
 
+textarea.clipboard-temp {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 2em;
+  height: 2em;
+  padding: 0;
+  border: None;
+  outline: None;
+  box-shadow: None;
+  background: transparent;
+}
+
 .left-most-button {
   border-right: 0;
   border-top-left-radius: 6px;
@@ -573,4 +586,18 @@ mark.highlight {
   background: #0a0;
   cursor: pointer;
   margin: 0;
+}
+
+.shameless-plug {
+  font-size: 0.8em;
+  text-align: center;
+  display: block;
+}
+
+.shameless-plug a {
+  color: #0278a4;
+}
+
+.dark .shameless-plug a {
+  color: #00b9fd;
 }
