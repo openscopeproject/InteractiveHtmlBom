@@ -511,7 +511,7 @@ def main(pcb, config):
 
     # Get extra field data
     extra_fields = None
-    if os.path.isfile(config.netlist_file):
+    if config.netlist_file and os.path.isfile(config.netlist_file):
         extra_fields = parse_schematic_data(config.netlist_file)
     need_extra_fields = \
         config.extra_fields or config.board_variant_whitelist or config.dnp_field

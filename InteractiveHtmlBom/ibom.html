@@ -119,6 +119,10 @@
                oninput="updateRefLookup(this.value)">
         <input id="filter" class="searchbox filter hideonprint" type="text" placeholder="Filter"
                oninput="updateFilter(this.value)">
+        <div class="button-container hideonprint" style="float: left">
+          <button id="copy" title="Copy bom table to clipboard"
+               onclick="copyToClipboard()"></button>
+        </div>
       </div>
       <div id="dbg"></div>
       <table class="bom">

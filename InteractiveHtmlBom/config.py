@@ -208,7 +208,7 @@ class Config:
 
         # Extra
         self.netlist_file = args.netlist_file
-        self.extra_fields = args.extra_fields.split(',')
+        self.extra_fields = [f for f in args.extra_fields.split(',') if f]
         self.board_variant_field = args.variant_field
         self.board_variant_whitelist = args.variants_whitelist
         self.board_variant_blacklist = args.variants_blacklist
