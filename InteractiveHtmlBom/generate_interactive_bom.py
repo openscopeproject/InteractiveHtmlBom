@@ -362,7 +362,7 @@ def parse_pad(pad):
         layers.append("B")
     pos = normalize(pad.GetPosition())
     size = normalize(pad.GetSize())
-    is_pin1 = pad.GetPadName() == "1" or pad.GetPadName() == "A1"
+    is_pin1 = pad.GetPadName() in ['1', 'A', 'A1', 'P1', 'PAD1']
     angle = pad.GetOrientation() * -0.1
     shape_lookup = {
         pcbnew.PAD_SHAPE_RECT: "rect",
@@ -412,6 +412,7 @@ def parse_pad(pad):
 
 
 def parse_modules(pcb):
+    # type: (pcbnew.BOARD) -> dict
     modules = {}
     for m in pcb.GetModules():
         ref = m.GetReference()
@@ -445,7 +446,18 @@ def parse_modules(pcb):
         for p in m.Pads():
             pad_dict = parse_pad(p)
             if pad_dict is not None:
-                pads.append(pad_dict)
+                pads.append((p.GetPadName(), pad_dict))
+
+        # If no pads have common 'first' pad name then pick lexicographically.
+        pin1_pads = [p for p in pads if 'pin1' in p[1]]
+        if pads and not pin1_pads:
+            pads = sorted(pads)
+            for pad_name, pad_dict in pads:
+                if pad_name:
+                    pad_dict['pin1'] = 1
+                    break
+
+        pads = [p[1] for p in pads]
 
         # add module
         modules[ref] = {
