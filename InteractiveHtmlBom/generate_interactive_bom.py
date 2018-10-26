@@ -47,6 +47,8 @@ def logerror(msg):
 def logwarn(msg):
     if is_cli:
         logger.warn(msg)
+    else:
+        wx.LogWarning(msg)
 
 
 def skip_component(m, config, extra_data, filter_layer):
@@ -116,6 +118,7 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
                  }
 
     # build grouped part list
+    warning_shown = False
     part_groups = {}
     for m in pcb.GetModules():
         if skip_component(m, config, extra_data, filter_layer):
@@ -145,12 +148,21 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
                 extras = [extra_data[ref].get(f, '')
                           for f in config.extra_fields]
             else:
+                # Some components are on pcb but not in schematic data.
+                # Show a warning about possibly outdated netlist/xml file.
+                # Doing it only once when generating full bom is enough.
+                if filter_layer is None:
+                    logwarn(
+                        'Component %s is missing from schematic data.' % ref)
+                    warning_shown = True
                 extras = [''] * len(config.extra_fields)
 
         group_key = (norm_value, tuple(extras), footprint, attr)
         valrefs = part_groups.setdefault(group_key, [value, []])
         valrefs[1].append(ref)
 
+    if warning_shown:
+        logwarn('Netlist/xml file is likely out of date.')
     # build bom table, sort refs
     bom_table = []
     for (norm_value, extras, footprint, attr), valrefs in part_groups.items():
@@ -613,7 +625,7 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
             config.netlist_initial_directory = os.path.dirname(
                     pcbnew.GetBoard().GetFileName())
             extra_data_file = find_latest_schematic_data(
-                config.netlist_initial_directory)
+                    config.netlist_initial_directory)
             if extra_data_file is not None:
                 dlg.set_extra_data_path(extra_data_file)
             config.transfer_to_dialog(dlg.panel)

@@ -18,12 +18,11 @@ class XmlParser(ParserBase):
         field_set = set()
         comp_dict = {}
         for c in components:
+            ref_fields = comp_dict.setdefault(c.attributes['ref'].value, {})
             for f in c.getElementsByTagName('field'):
                 name = f.attributes['name'].value
                 if name not in self.DEFAULT_FIELDS:
                     field_set.add(name)
-                    ref_fields = comp_dict.setdefault(
-                            c.attributes['ref'].value, {})
                     ref_fields[name] = self.get_text(f.childNodes)
 
         return list(field_set), comp_dict

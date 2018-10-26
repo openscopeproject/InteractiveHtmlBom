@@ -24,13 +24,13 @@ class NetlistParser(ParserBase):
                     fields = f[1:]
             if ref is None:
                 return None
+            ref_fields = comp_dict.setdefault(ref, {})
             if fields is None:
                 continue
             for f in fields:
                 if len(f) > 1:
                     field_set.add(f[1][1])
                 if len(f) > 2:
-                    ref_fields = comp_dict.setdefault(ref, {})
                     ref_fields[f[1][1]] = f[2]
 
         return list(field_set), comp_dict
