@@ -13,7 +13,7 @@ import dialog
 import units
 from config import Config
 from fontparser import FontParser
-from schematic_data import parse_schematic_data
+from schematic_data import parse_schematic_data, find_latest_schematic_data
 
 
 def setup_logger():
@@ -609,13 +609,19 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
     def Run(self):
         config = Config()
         dlg = dialog.SettingsDialog(None, extra_data_func=parse_schematic_data)
-        config.netlist_initial_directory = os.path.dirname(
-                pcbnew.GetBoard().GetFileName())
-        config.transfer_to_dialog(dlg.panel)
-        if dlg.ShowModal() == wx.ID_OK:
-            config.set_from_dialog(dlg.panel)
-            main(pcbnew.GetBoard(), config)
-        dlg.Destroy()
+        try:
+            config.netlist_initial_directory = os.path.dirname(
+                    pcbnew.GetBoard().GetFileName())
+            extra_data_file = find_latest_schematic_data(
+                config.netlist_initial_directory)
+            if extra_data_file is not None:
+                dlg.set_extra_data_path(extra_data_file)
+            config.transfer_to_dialog(dlg.panel)
+            if dlg.ShowModal() == wx.ID_OK:
+                config.set_from_dialog(dlg.panel)
+                main(pcbnew.GetBoard(), config)
+        finally:
+            dlg.Destroy()
 
 
 if __name__ == "__main__":

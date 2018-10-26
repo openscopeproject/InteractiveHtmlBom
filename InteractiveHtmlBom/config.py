@@ -152,7 +152,7 @@ class Config:
                             action='store_true')
 
         # General
-        parser.add_argument('--dest-dir', default='./bom/',
+        parser.add_argument('--dest-dir', default='bom/',
                             help='Destination directory for bom file '
                                  'relative to pcb file directory.')
         parser.add_argument('--sort-order',

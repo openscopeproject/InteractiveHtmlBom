@@ -25,6 +25,11 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
     def SetSizeHints(self, sz1, sz2):
         self.SetSizeHintsSz(sz1, sz2)
 
+    def set_extra_data_path(self, extra_data_file):
+        print extra_data_file
+        self.panel.extra.netlistFilePicker.Path = extra_data_file
+        wx.CallAfter(self.panel.extra.OnNetlistFileChanged, None)
+
 
 # Implementing settings_dialog
 class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
@@ -47,9 +52,6 @@ class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
 
     def OnGenerateBom(self, event):
         self.GetParent().EndModal(wx.ID_OK)
-
-    def init(self, extra_fields_box_wildcard):
-        pass
 
 
 # Implementing HtmlSettingsPanelBase
