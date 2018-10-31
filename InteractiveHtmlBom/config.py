@@ -101,7 +101,12 @@ class Config:
         dlg.html.openBrowserCheckbox.Value = self.open_browser
 
         # General
-        dlg.general.bomDirPicker.Path = self.bom_dest_dir
+        import os.path
+        if os.path.isabs(self.bom_dest_dir):
+            dlg.general.bomDirPicker.Path = self.bom_dest_dir
+        else:
+            dlg.general.bomDirPicker.Path = os.path.join(
+                    self.netlist_initial_directory, self.bom_dest_dir)
         dlg.general.componentSortOrderBox.SetItems(self.component_sort_order)
         dlg.general.blacklistBox.SetItems(self.component_blacklist)
         dlg.general.blacklistVirtualCheckbox.Value = self.blacklist_virtual
@@ -112,7 +117,7 @@ class Config:
         dlg.extra.extraFieldsList.SetCheckedStrings(self.extra_fields)
         dlg.extra.boardVariantFieldBox.Value = self.board_variant_field
         dlg.extra.boardVariantWhitelist.SetCheckedStrings(
-            self.board_variant_whitelist)
+                self.board_variant_whitelist)
         dlg.extra.boardVariantBlacklist.SetCheckedStrings(
                 self.board_variant_blacklist)
         dlg.extra.dnpFieldBox.Value = self.dnp_field
