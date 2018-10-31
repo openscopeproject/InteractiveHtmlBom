@@ -298,6 +298,7 @@ canvas:active {
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
+  background-color: inherit;
 }
 
 .split.split-horizontal, .gutter.gutter-horizontal {
