@@ -26,7 +26,6 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
         self.SetSizeHintsSz(sz1, sz2)
 
     def set_extra_data_path(self, extra_data_file):
-        print extra_data_file
         self.panel.extra.netlistFilePicker.Path = extra_data_file
         wx.CallAfter(self.panel.extra.OnNetlistFileChanged, None)
 
