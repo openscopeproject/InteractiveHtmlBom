@@ -647,14 +647,14 @@ if __name__ == "__main__":
     config = Config()
     config.add_options(parser)
     args = parser.parse_args()
-    if not os.path.isfile(args.file):
+    if not os.path.isfile(args.file.decode('utf8')):
         print("File %s does not exist." % args.file)
         exit(1)
     print("Loading %s" % args.file)
-    board = pcbnew.LoadBoard(os.path.abspath(args.file))
+    app = wx.App()
+    board = pcbnew.LoadBoard(os.path.abspath(args.file).decode('utf8'))
     if args.show_dialog:
         # Create simple app to show config dialog, infer config.
-        app = wx.App()
         dlg = dialog.SettingsDialog(None, extra_data_func=parse_schematic_data)
         config.netlist_initial_directory = os.path.dirname(args.file)
         config.transfer_to_dialog(dlg.panel)
