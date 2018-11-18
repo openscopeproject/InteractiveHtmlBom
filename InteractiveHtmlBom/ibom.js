@@ -11,12 +11,12 @@ var currentSortColumn = null;
 var currentSortOrder = null;
 var currentHighlightedRowId;
 var highlightHandlers = [];
-var highlightedRefs = [];
+var highlightedModules = [];
 var checkboxes = [];
 var bomCheckboxes = "";
 var highlightpin1 = false;
 var storage;
-var lastClickedRef;
+var lastClicked;
 
 function initStorage(key) {
   try {
@@ -72,17 +72,30 @@ function setHighlightPin1(value) {
 }
 
 function getStoredCheckboxRefs(checkbox) {
+  function convert(ref) {
+    var intref = parseInt(ref);
+    if (isNaN(intref)) {
+      for (var i = 0; i < pcbdata.modules.length; i++) {
+        if (pcbdata.modules[i].ref == ref) {
+          return i;
+        }
+      }
+      return -1;
+    } else {
+      return intref;
+    }
+  }
   var existingRefs = readStorage("checkbox_" + checkbox);
   if (!existingRefs) {
     return new Set();
   } else {
-    return new Set(existingRefs.split(","));
+    return new Set(existingRefs.split(",").map(r => convert(r)));
   }
 }
 
 function getCheckboxState(checkbox, references) {
   var storedRefsSet = getStoredCheckboxRefs(checkbox);
-  var currentRefsSet = new Set(references);
+  var currentRefsSet = new Set(references.map(r => r[1]));
   // Get difference of current - stored
   var difference = new Set(currentRefsSet);
   for (ref of storedRefsSet) {
@@ -112,12 +125,12 @@ function createCheckboxChangeHandler(checkbox, references) {
     if (this.checked) {
       // checkbox ticked
       for (var ref of references) {
-        refsSet.add(ref);
+        refsSet.add(ref[1]);
       }
     } else {
       // checkbox unticked
       for (var ref of references) {
-        refsSet.delete(ref);
+        refsSet.delete(ref[1]);
       }
     }
     writeStorage("checkbox_" + checkbox, [...refsSet].join(","));
@@ -134,7 +147,7 @@ function createRowHighlightHandler(rowid, refs) {
     }
     document.getElementById(rowid).classList.add("highlighted");
     currentHighlightedRowId = rowid;
-    highlightedRefs = refs;
+    highlightedModules = refs.map(r => r[1]);
     drawHighlights();
   }
 }
@@ -142,7 +155,7 @@ function createRowHighlightHandler(rowid, refs) {
 function entryMatches(entry) {
   // check refs
   for (var ref of entry[3]) {
-    if (ref.toLowerCase().indexOf(filter) >= 0) {
+    if (ref[0].toLowerCase().indexOf(filter) >= 0) {
       return true;
     }
   }
@@ -158,12 +171,7 @@ function entryMatches(entry) {
 }
 
 function findRefInEntry(entry) {
-  for (var ref of entry[3]) {
-    if (ref.toLowerCase() == reflookup) {
-      return [ref];
-    }
-  }
-  return false;
+  return entry[3].filter(r => r[0].toLowerCase() == reflookup);
 }
 
 function highlightFilter(s) {
@@ -374,7 +382,7 @@ function populateBomBody() {
     var references = bomentry[3];
     if (reflookup) {
       references = findRefInEntry(bomentry);
-      if (!references) {
+      if (references.length == 0) {
         continue;
       }
     }
@@ -398,7 +406,7 @@ function populateBomBody() {
     }
     // References
     td = document.createElement("TD");
-    td.innerHTML = highlightFilter(references.join(", "));
+    td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
     tr.appendChild(td);
     // Extra fields
     for (var i in config.extra_fields) {
@@ -484,12 +492,12 @@ function populateBomTable() {
   populateBomBody();
 }
 
-function modulesClicked(references) {
-  var lastClickedIndex = references.indexOf(lastClickedRef);
-  var ref = references[(lastClickedIndex + 1) % references.length];
+function modulesClicked(moduleIndexes) {
+  var lastClickedIndex = moduleIndexes.indexOf(lastClicked);
+  var index = moduleIndexes[(lastClickedIndex + 1) % moduleIndexes.length];
   for (var handler of highlightHandlers) {
-    if (handler.refs.indexOf(ref) >= 0) {
-      lastClickedRef = ref;
+    if (handler.refs.map(r => r[1]).indexOf(index) >= 0) {
+      lastClicked = index;
       handler.handler();
       smoothScrollToRow(currentHighlightedRowId);
       break;

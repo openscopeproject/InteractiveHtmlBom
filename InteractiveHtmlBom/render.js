@@ -242,20 +242,20 @@ function drawEdges(canvas, scalefactor) {
   }
 }
 
-function drawModules(canvas, layer, scalefactor, highlightedRefs) {
+function drawModules(canvas, layer, scalefactor, highlightedModules) {
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 3 / scalefactor;
   var style = getComputedStyle(topmostdiv);
   var padcolor = style.getPropertyValue('--pad-color');
   var outlinecolor = style.getPropertyValue('--pin1-outline-color');
-  if (highlightedRefs.length > 0) {
+  if (highlightedModules.length > 0) {
     padcolor = style.getPropertyValue('--pad-color-highlight');
     outlinecolor = style.getPropertyValue('--pin1-outline-color-highlight');
   }
-  for (var i in pcbdata.modules) {
+  for (var i = 0; i < pcbdata.modules.length; i++) {
     var mod = pcbdata.modules[i];
-    var highlight = highlightedRefs.includes(mod.ref);
-    if (highlightedRefs.length == 0 || highlight) {
+    var highlight = highlightedModules.includes(i);
+    if (highlightedModules.length == 0 || highlight) {
       drawModule(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight);
     }
   }
@@ -285,7 +285,7 @@ function clearCanvas(canvas) {
 function drawHighlightsOnLayer(canvasdict) {
   clearCanvas(canvasdict.highlight);
   drawModules(canvasdict.highlight, canvasdict.layer,
-    canvasdict.transform.s, highlightedRefs);
+    canvasdict.transform.s, highlightedModules);
 }
 
 function drawHighlights() {
@@ -397,13 +397,13 @@ function resizeAll() {
 
 function bboxScan(layer, x, y) {
   var result = [];
-  for (var i in pcbdata.modules) {
+  for (var i = 0; i < pcbdata.modules.length; i++) {
     var module = pcbdata.modules[i];
     if (module.layer == layer) {
       var b = module.bbox;
       if (b.pos[0] <= x && b.pos[0] + b.size[0] >= x &&
         b.pos[1] <= y && b.pos[1] + b.size[1] >= y) {
-        result.push(module.ref);
+        result.push(i);
       }
     }
   }
@@ -434,9 +434,9 @@ function handleMouseClick(e, layerdict) {
   }
   y = (2 * y / t.zoom - t.y - t.pany) / t.s;
   var v = rotateVector([x, y], -boardRotation);
-  var reflist = bboxScan(layerdict.layer, v[0], v[1]);
-  if (reflist.length > 0) {
-    modulesClicked(reflist);
+  var modules = bboxScan(layerdict.layer, v[0], v[1]);
+  if (modules.length > 0) {
+    modulesClicked(modules);
     drawHighlights();
   }
 }

@@ -87,11 +87,11 @@ def skip_component(m, config, extra_data, filter_layer):
     return False
 
 
-def generate_bom(pcb, config, extra_data, filter_layer=None):
-    # type: (pcbnew.BOARD, Config, Dict[str, dict], int) -> list
+def generate_bom(pcb_modules, config, extra_data, filter_layer=None):
+    # type: (list, Config, Dict[str, dict], int) -> list
     """
     Generate BOM from pcb layout.
-    :param pcb: pcbnew BOARD object
+    :param pcb_modules: list of modules on the pcb
     :param config: Config object
     :param extra_data: Extra fields data
     :param filter_layer: include only parts for given layer
@@ -110,7 +110,7 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
         Natural sort for strings containing numbers
         """
 
-        return sorted(l, key=alphanum_key)
+        return sorted(l, key=lambda r: (alphanum_key(r[0]), r[1]))
 
     attr_dict = {0: 'Normal',
                  1: 'Normal+Insert',
@@ -120,7 +120,7 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
     # build grouped part list
     warning_shown = False
     part_groups = {}
-    for m in pcb.GetModules():
+    for i, m in enumerate(pcb_modules):
         if skip_component(m, config, extra_data, filter_layer):
             continue
 
@@ -159,7 +159,7 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
 
         group_key = (norm_value, tuple(extras), footprint, attr)
         valrefs = part_groups.setdefault(group_key, [value, []])
-        valrefs[1].append(ref)
+        valrefs[1].append((ref, i))
 
     if warning_shown:
         logwarn('Netlist/xml file is likely out of date.')
@@ -174,12 +174,12 @@ def generate_bom(pcb, config, extra_data, filter_layer=None):
     # sort table by reference prefix, footprint and quantity
     def sort_func(row):
         qty, _, fp, rf, extras = row
-        prefix = re.findall('^[A-Z]*', rf[0])[0]
+        prefix = re.findall('^[A-Z]*', rf[0][0])[0]
         if prefix in config.component_sort_order:
             ref_ord = config.component_sort_order.index(prefix)
         else:
             ref_ord = config.component_sort_order.index('~')
-        return ref_ord, extras, fp, -qty, alphanum_key(rf[0])
+        return ref_ord, extras, fp, -qty, alphanum_key(rf[0][0])
 
     if '~' not in config.component_sort_order:
         config.component_sort_order.append('~')
@@ -423,10 +423,10 @@ def parse_pad(pad):
     return pad_dict
 
 
-def parse_modules(pcb):
-    # type: (pcbnew.BOARD) -> dict
-    modules = {}
-    for m in pcb.GetModules():
+def parse_modules(pcb_modules):
+    # type: (list) -> list
+    modules = []
+    for m in pcb_modules:
         ref = m.GetReference()
         center = normalize(m.GetCenter())
 
@@ -472,7 +472,7 @@ def parse_modules(pcb):
         pads = [p[1] for p in pads]
 
         # add module
-        modules[ref] = {
+        modules.append({
             "ref": ref,
             "center": center,
             "bbox": bbox,
@@ -482,7 +482,7 @@ def parse_modules(pcb):
                 pcbnew.F_Cu: "F",
                 pcbnew.B_Cu: "B"
             }.get(m.GetLayer())
-        }
+        })
 
     return modules
 
@@ -567,11 +567,14 @@ def main(pcb, config):
         "maxx": bbox.GetRight() * 1e-6,
         "maxy": bbox.GetBottom() * 1e-6,
     }
+
+    pcb_modules = list(pcb.GetModules())
+
     pcbdata = {
         "edges_bbox": bbox,
         "edges": edges,
         "silkscreen": parse_silkscreen(pcb),
-        "modules": parse_modules(pcb),
+        "modules": parse_modules(pcb_modules),
         "metadata": {
             "title": title,
             "revision": title_block.GetRevision(),
@@ -580,11 +583,11 @@ def main(pcb, config):
         },
         "bom": {},
     }
-    pcbdata["bom"]["both"] = generate_bom(pcb, config, extra_fields)
+    pcbdata["bom"]["both"] = generate_bom(pcb_modules, config, extra_fields)
 
     # build BOM
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        bom_table = generate_bom(pcb, config, extra_fields, filter_layer=layer)
+        bom_table = generate_bom(pcb_modules, config, extra_fields, filter_layer=layer)
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     pcbdata["font_data"] = font_parser.get_parsed_font()
