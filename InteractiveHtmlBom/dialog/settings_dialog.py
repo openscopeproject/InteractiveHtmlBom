@@ -12,9 +12,10 @@ def pop_error(msg):
 
 
 class SettingsDialog(dialog_base.SettingsDialogBase):
-    def __init__(self, parent, extra_data_func):
-        dialog_base.SettingsDialogBase.__init__(self, parent)
-        self.panel = SettingsDialogPanel(self, extra_data_func)
+    def __init__(self, extra_data_func, config_save_func):
+        dialog_base.SettingsDialogBase.__init__(self, None)
+        self.panel = SettingsDialogPanel(
+                self, extra_data_func, config_save_func)
         best_size = self.panel.BestSize
         # hack for some gtk themes that incorrectly calculate best size
         best_size.IncBy(dx=0, dy=30)
@@ -27,12 +28,13 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
 
     def set_extra_data_path(self, extra_data_file):
         self.panel.extra.netlistFilePicker.Path = extra_data_file
-        wx.CallAfter(self.panel.extra.OnNetlistFileChanged, None)
+        self.panel.extra.OnNetlistFileChanged(None)
 
 
 # Implementing settings_dialog
 class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
-    def __init__(self, parent, extra_data_func):
+    def __init__(self, parent, extra_data_func, config_save_func):
+        self.config_save_func = config_save_func
         dialog_base.SettingsDialogPanel.__init__(self, parent)
         self.general = GeneralSettingsPanel(self.notebook)
         self.html = HtmlSettingsPanel(self.notebook)
@@ -40,17 +42,18 @@ class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
         self.notebook.AddPage(self.general, "General")
         self.notebook.AddPage(self.html, "Html defaults")
         self.notebook.AddPage(self.extra, "Extra fields")
-        self.html.OnBoardRotationSlider(None)
 
     def OnExit(self, event):
         self.GetParent().EndModal(wx.ID_CANCEL)
 
     def OnSaveSettings(self, event):
-        # TODO: implement OnSaveSettings
-        pass
+        self.config_save_func(self)
 
     def OnGenerateBom(self, event):
         self.GetParent().EndModal(wx.ID_OK)
+
+    def finish_init(self):
+        self.html.OnBoardRotationSlider(None)
 
 
 # Implementing HtmlSettingsPanelBase

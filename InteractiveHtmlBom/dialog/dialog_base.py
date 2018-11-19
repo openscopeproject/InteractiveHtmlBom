@@ -46,8 +46,6 @@ class SettingsDialogPanel ( wx.Panel ):
         bSizer39 = wx.BoxSizer( wx.HORIZONTAL )
         
         self.m_button41 = wx.Button( self, wx.ID_ANY, u"Save current settings", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
-        self.m_button41.Enable( False )
-        
         bSizer39.Add( self.m_button41, 0, wx.ALL, 5 )
         
         

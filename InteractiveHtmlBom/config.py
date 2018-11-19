@@ -1,12 +1,16 @@
 """Config object"""
 
 import argparse
+import os
+
+from wx import FileConfig
 
 import dialog.settings_dialog
 
 
 class Config:
     # Helper constants
+    config_file = os.path.join(os.path.dirname(__file__), 'config.ini')
     bom_view_choices = ['bom-only', 'left-right', 'top-bottom']
     layer_view_choices = ['F', 'FB', 'B']
     default_sort_order = [
@@ -29,8 +33,8 @@ class Config:
     redraw_on_drag = True
     board_rotation = 0
     checkboxes = ','.join(default_checkboxes)
-    bom_view = 1
-    layer_view = 1
+    bom_view = bom_view_choices[1]
+    layer_view = layer_view_choices[1]
     open_browser = True
 
     # General section
@@ -49,8 +53,88 @@ class Config:
     dnp_field = ''
 
     def __init__(self):
-        """Init with defaults"""
-        pass
+        """Init from config file if it exists."""
+        if not os.path.isfile(self.config_file):
+            return
+        f = FileConfig(localFilename=self.config_file)
+
+        f.SetPath('/html_defaults')
+        self.dark_mode = f.ReadBool('dark_mode', self.dark_mode)
+        self.show_silkscreen = f.ReadBool(
+                'show_silkscreen', self.show_silkscreen)
+        self.highlight_pin1 = f.ReadBool('highlight_pin1', self.highlight_pin1)
+        self.redraw_on_drag = f.ReadBool('redraw_on_drag', self.redraw_on_drag)
+        self.board_rotation = f.ReadInt('board_rotation', self.board_rotation)
+        self.checkboxes = f.Read('checkboxes', self.checkboxes)
+        self.bom_view = f.Read('bom_view', self.bom_view)
+        self.layer_view = f.Read('layer_view', self.layer_view)
+        self.open_browser = f.ReadBool('open_browser', self.open_browser)
+
+        f.SetPath('/general')
+        self.bom_dest_dir = f.Read('bom_dest_dir', self.bom_dest_dir)
+        self.component_sort_order = f.Read(
+                'component_sort_order',
+                ','.join(self.component_sort_order)
+        ).split(',')
+        self.component_blacklist = f.Read(
+                'component_blacklist',
+                ','.join(self.component_blacklist)
+        ).split(',')
+        self.blacklist_virtual = f.ReadBool(
+                'blacklist_virtual', self.blacklist_virtual)
+
+        f.SetPath('/extra_fields')
+        self.extra_fields = f.Read(
+                'extra_fields',
+                ','.join(self.extra_fields)
+        ).split(',')
+        self.board_variant_field = f.Read(
+                'board_variant_field', self.board_variant_field)
+        self.board_variant_whitelist = f.Read(
+                'board_variant_whitelist',
+                ','.join(self.board_variant_whitelist)
+        ).split(',')
+        self.board_variant_blacklist = f.Read(
+                'board_variant_blacklist',
+                ','.join(self.board_variant_blacklist)
+        ).split(',')
+        self.dnp_field = f.Read('dnp_field', self.dnp_field)
+
+    def save(self):
+        f = FileConfig(localFilename=self.config_file)
+
+        f.SetPath('/html_defaults')
+        f.WriteBool('dark_mode', self.dark_mode)
+        f.WriteBool('show_silkscreen', self.show_silkscreen)
+        f.WriteBool('highlight_pin1', self.highlight_pin1)
+        f.WriteBool('redraw_on_drag', self.redraw_on_drag)
+        f.WriteInt('board_rotation', self.board_rotation)
+        f.Write('checkboxes', self.checkboxes)
+        f.Write('bom_view', self.bom_view)
+        f.Write('layer_view', self.layer_view)
+        f.WriteBool('open_browser', self.open_browser)
+
+        f.SetPath('/general')
+        bom_dest_dir = self.bom_dest_dir
+        if bom_dest_dir.startswith(self.netlist_initial_directory):
+            bom_dest_dir = os.path.relpath(
+                    bom_dest_dir, self.netlist_initial_directory)
+        f.Write('bom_dest_dir', bom_dest_dir)
+        f.Write('component_sort_order',
+                ','.join(self.component_sort_order))
+        f.Write('component_blacklist',
+                ','.join(self.component_blacklist))
+        f.WriteBool('blacklist_virtual', self.blacklist_virtual)
+
+        f.SetPath('/extra_fields')
+        f.Write('extra_fields', ','.join(self.extra_fields))
+        f.Write('board_variant_field', self.board_variant_field)
+        f.Write('board_variant_whitelist',
+                ','.join(self.board_variant_whitelist))
+        f.Write('board_variant_blacklist',
+                ','.join(self.board_variant_blacklist))
+        f.Write('dnp_field', self.dnp_field)
+        f.Flush()
 
     def set_from_dialog(self, dlg):
         # type: (dialog.settings_dialog.SettingsDialogPanel) -> None
@@ -96,8 +180,10 @@ class Config:
         dlg.html.continuousRedrawCheckbox.value = self.redraw_on_drag
         dlg.html.boardRotationSlider.Value = self.board_rotation
         dlg.html.bomCheckboxesCtrl.Value = self.checkboxes
-        dlg.html.bomDefaultView.Selection = self.bom_view
-        dlg.html.layerDefaultView.Selection = self.layer_view
+        dlg.html.bomDefaultView.Selection = self.bom_view_choices.index(
+                self.bom_view)
+        dlg.html.layerDefaultView.Selection = self.layer_view_choices.index(
+                self.layer_view)
         dlg.html.openBrowserCheckbox.Value = self.open_browser
 
         # General
@@ -114,13 +200,21 @@ class Config:
         # Extra fields
         dlg.extra.netlistFilePicker.SetInitialDirectory(
                 self.netlist_initial_directory)
-        dlg.extra.extraFieldsList.SetCheckedStrings(self.extra_fields)
+
+        def safe_set_checked_strings(clb, strings):
+            safe_strings = list(clb.GetStrings())
+            clb.SetCheckedStrings([s for s in strings if s in safe_strings])
+
+        safe_set_checked_strings(dlg.extra.extraFieldsList, self.extra_fields)
         dlg.extra.boardVariantFieldBox.Value = self.board_variant_field
-        dlg.extra.boardVariantWhitelist.SetCheckedStrings(
-                self.board_variant_whitelist)
-        dlg.extra.boardVariantBlacklist.SetCheckedStrings(
-                self.board_variant_blacklist)
+        dlg.extra.OnBoardVariantFieldChange(None)
+        safe_set_checked_strings(dlg.extra.boardVariantWhitelist,
+                                 self.board_variant_whitelist)
+        safe_set_checked_strings(dlg.extra.boardVariantBlacklist,
+                                 self.board_variant_blacklist)
         dlg.extra.dnpFieldBox.Value = self.dnp_field
+
+        dlg.finish_init()
 
     # noinspection PyTypeChecker
     @classmethod

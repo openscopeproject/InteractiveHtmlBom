@@ -598,6 +598,29 @@ def main(pcb, config):
         open_file(bom_file)
 
 
+def run_with_dialog(board, config):
+    def save_config(dialog_panel):
+        config.set_from_dialog(dialog_panel)
+        config.save()
+
+    dlg = dialog.SettingsDialog(
+            extra_data_func=parse_schematic_data,
+            config_save_func=save_config
+    )
+    try:
+        pcb_file_name = board.GetFileName()
+        config.netlist_initial_directory = os.path.dirname(pcb_file_name)
+        extra_data_file = find_latest_schematic_data(pcb_file_name)
+        if extra_data_file is not None:
+            dlg.set_extra_data_path(extra_data_file)
+        config.transfer_to_dialog(dlg.panel)
+        if dlg.ShowModal() == wx.ID_OK:
+            config.set_from_dialog(dlg.panel)
+            main(board, config)
+    finally:
+        dlg.Destroy()
+
+
 class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
 
     def defaults(self):
@@ -624,22 +647,12 @@ class GenerateInteractiveBomPlugin(pcbnew.ActionPlugin):
             logerror('Please save the board file before generating BOM.')
             return
 
-        dlg = dialog.SettingsDialog(None, extra_data_func=parse_schematic_data)
-        try:
-            config.netlist_initial_directory = os.path.dirname(pcb_file_name)
-            extra_data_file = find_latest_schematic_data(pcb_file_name)
-            if extra_data_file is not None:
-                dlg.set_extra_data_path(extra_data_file)
-            config.transfer_to_dialog(dlg.panel)
-            if dlg.ShowModal() == wx.ID_OK:
-                config.set_from_dialog(dlg.panel)
-                main(pcbnew.GetBoard(), config)
-        finally:
-            dlg.Destroy()
+        run_with_dialog(pcbnew.GetBoard(), config)
 
 
 if __name__ == "__main__":
     is_cli = True
+    app = wx.App()
 
     import argparse
 
@@ -654,18 +667,9 @@ if __name__ == "__main__":
         print("File %s does not exist." % args.file)
         exit(1)
     print("Loading %s" % args.file)
-    app = wx.App()
     board = pcbnew.LoadBoard(os.path.abspath(args.file).decode('utf8'))
     if args.show_dialog:
-        # Create simple app to show config dialog, infer config.
-        dlg = dialog.SettingsDialog(None, extra_data_func=parse_schematic_data)
-        config.netlist_initial_directory = os.path.dirname(args.file)
-        config.transfer_to_dialog(dlg.panel)
-        if dlg.ShowModal() == wx.ID_OK:
-            config.set_from_dialog(dlg.panel)
-            print config.get_html_config()
-            main(board, config)
-        dlg.Destroy()
+        run_with_dialog(board, config)
     else:
         config.set_from_args(args)
         main(board, config)
