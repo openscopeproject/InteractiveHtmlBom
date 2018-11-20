@@ -52,6 +52,11 @@ class Config:
     board_variant_blacklist = []
     dnp_field = ''
 
+    @staticmethod
+    def _split(s):
+        """Splits string by ',' and drops empty strings from resulting array."""
+        return [a for a in s.split(',') if a]
+
     def __init__(self):
         """Init from config file if it exists."""
         if not os.path.isfile(self.config_file):
@@ -72,32 +77,27 @@ class Config:
 
         f.SetPath('/general')
         self.bom_dest_dir = f.Read('bom_dest_dir', self.bom_dest_dir)
-        self.component_sort_order = f.Read(
+        self.component_sort_order = self._split(f.Read(
                 'component_sort_order',
-                ','.join(self.component_sort_order)
-        ).split(',')
-        self.component_blacklist = f.Read(
+                ','.join(self.component_sort_order)))
+        self.component_blacklist = self._split(f.Read(
                 'component_blacklist',
-                ','.join(self.component_blacklist)
-        ).split(',')
+                ','.join(self.component_blacklist)))
         self.blacklist_virtual = f.ReadBool(
                 'blacklist_virtual', self.blacklist_virtual)
 
         f.SetPath('/extra_fields')
-        self.extra_fields = f.Read(
+        self.extra_fields = self._split(f.Read(
                 'extra_fields',
-                ','.join(self.extra_fields)
-        ).split(',')
+                ','.join(self.extra_fields)))
         self.board_variant_field = f.Read(
                 'board_variant_field', self.board_variant_field)
-        self.board_variant_whitelist = f.Read(
+        self.board_variant_whitelist = self._split(f.Read(
                 'board_variant_whitelist',
-                ','.join(self.board_variant_whitelist)
-        ).split(',')
-        self.board_variant_blacklist = f.Read(
+                ','.join(self.board_variant_whitelist)))
+        self.board_variant_blacklist = self._split(f.Read(
                 'board_variant_blacklist',
-                ','.join(self.board_variant_blacklist)
-        ).split(',')
+                ','.join(self.board_variant_blacklist)))
         self.dnp_field = f.Read('dnp_field', self.dnp_field)
 
     def save(self):
@@ -217,8 +217,7 @@ class Config:
         dlg.finish_init()
 
     # noinspection PyTypeChecker
-    @classmethod
-    def add_options(cls, parser):
+    def add_options(self, parser):
         # type: (argparse.ArgumentParser) -> None
         parser.add_argument('--show-dialog', action='store_true',
                             help='Shows config dialog. All other flags '
@@ -235,30 +234,32 @@ class Config:
         parser.add_argument('--no-redraw-on-drag',
                             help='Do not redraw pcb on drag by default.',
                             action='store_true')
-        parser.add_argument('--board-rotation', type=int, default=0,
+        parser.add_argument('--board-rotation', type=int,
+                            default=self.board_rotation * 5,
                             help='Board rotation in degrees (-180 to 180). '
                                  'Will be rounded to multiple of 5.')
         parser.add_argument('--checkboxes',
-                            default=','.join(cls.default_checkboxes),
+                            default=self.checkboxes,
                             help='Comma separated list of checkbox columns.')
-        parser.add_argument('--bom-view', default='left-right',
-                            choices=cls.bom_view_choices,
+        parser.add_argument('--bom-view', default=self.bom_view,
+                            choices=self.bom_view_choices,
                             help='Default BOM view.')
-        parser.add_argument('--layer-view', default='FB',
-                            choices=cls.layer_view_choices,
+        parser.add_argument('--layer-view', default=self.layer_view,
+                            choices=self.layer_view_choices,
                             help='Default layer view.')
         parser.add_argument('--no-browser', help='Do not launch browser.',
                             action='store_true')
 
         # General
-        parser.add_argument('--dest-dir', default='bom/',
+        parser.add_argument('--dest-dir', default=self.bom_dest_dir,
                             help='Destination directory for bom file '
                                  'relative to pcb file directory.')
         parser.add_argument('--sort-order',
                             help='Default sort order for components. '
                                  'Must contain "~" once.',
-                            default=','.join(cls.default_sort_order))
-        parser.add_argument('--blacklist', default='',
+                            default=','.join(self.component_sort_order))
+        parser.add_argument('--blacklist',
+                            default=','.join(self.component_blacklist),
                             help='List of comma separated blacklisted '
                                  'components or prefixes with *. E.g. "X1,MH*"')
         parser.add_argument('--no-blacklist-virtual', action='store_true',
@@ -267,7 +268,8 @@ class Config:
         # Extra fields section
         parser.add_argument('--netlist-file',
                             help='Path to netlist or xml file.')
-        parser.add_argument('--extra-fields', default='',
+        parser.add_argument('--extra-fields',
+                            default=','.join(self.extra_fields),
                             help='Comma separated list of extra fields to '
                                  'pull from netlist or xml file.')
         parser.add_argument('--variant-field',
@@ -279,7 +281,7 @@ class Config:
         parser.add_argument('--variants-blacklist', default='', nargs='+',
                             help='List of board variants to '
                                  'exclude from the BOM.')
-        parser.add_argument('--dnp-field',
+        parser.add_argument('--dnp-field', default=self.dnp_field,
                             help='Name of the extra field that indicates '
                                  'do not populate status. Components with this '
                                  'field not empty will be blacklisted.')
@@ -301,13 +303,13 @@ class Config:
 
         # General
         self.bom_dest_dir = args.dest_dir
-        self.component_sort_order = args.sort_order.split(',')
-        self.component_blacklist = args.blacklist.split(',')
+        self.component_sort_order = self._split(args.sort_order)
+        self.component_blacklist = self._split(args.blacklist)
         self.blacklist_virtual = not args.no_blacklist_virtual
 
         # Extra
         self.netlist_file = args.netlist_file
-        self.extra_fields = [f for f in args.extra_fields.split(',') if f]
+        self.extra_fields = self._split(args.extra_fields)
         self.board_variant_field = args.variant_field
         self.board_variant_whitelist = args.variants_whitelist
         self.board_variant_blacklist = args.variants_blacklist
