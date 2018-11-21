@@ -533,8 +533,20 @@ def main(pcb, config):
     extra_fields = None
     if config.netlist_file and os.path.isfile(config.netlist_file):
         extra_fields = parse_schematic_data(config.netlist_file)
-    need_extra_fields = \
-        config.extra_fields or config.board_variant_whitelist or config.dnp_field
+
+    need_extra_fields = (config.extra_fields or
+                         config.board_variant_whitelist or
+                         config.board_variant_blacklist or
+                         config.dnp_field)
+
+    if not config.netlist_file and need_extra_fields:
+        logwarn('Ignoring extra fields related config parameters '
+                'since no netlist/xml file was specified.')
+        config.extra_fields = []
+        config.board_variant_whitelist = []
+        config.board_variant_blacklist = []
+        config.dnp_field = ''
+        need_extra_fields = False
 
     if extra_fields is None and need_extra_fields:
         logerror('Failed parsing %s' % config.netlist_file)
@@ -657,7 +669,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-            description='KiCad PCB pick and place assistant',
+            description='KiCad InteractiveHtmlBom plugin CLI.',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('file', type=str, help="KiCad PCB file")
     config = Config()
