@@ -518,6 +518,7 @@ def generate_file(pcb_file_dir, pcbdata, config):
     html = html.replace('///SPLITJS///', get_file_content('split.js'))
     html = html.replace('///CONFIG///', config_js)
     html = html.replace('///PCBDATA///', pcbdata_js)
+    html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
     with open(bom_file_name, "wt") as bom:
