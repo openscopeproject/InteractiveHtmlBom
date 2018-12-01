@@ -289,8 +289,7 @@ function populateBomHeader() {
     }
   }
   tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
-    if (a[1] != b[1]) return a[1] > b[1] ? 1 : -1;
-    else return 0;
+    return valueCompare(a[5], b[5], a[1], b[1]);
   }));
   tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
     if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
@@ -747,6 +746,7 @@ function initDefaults() {
 }
 
 window.onload = function(e) {
+  initUtils();
   initRender();
   initStorage();
   initDefaults();
