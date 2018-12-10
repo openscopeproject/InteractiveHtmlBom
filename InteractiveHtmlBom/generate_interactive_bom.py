@@ -65,6 +65,10 @@ def skip_component(m, config, extra_data, filter_layer):
     if ref_prefix + '*' in config.component_blacklist:
         return True
 
+    val = m.GetValue()
+    if config.blacklist_empty_val and val in ['', '~']:
+        return True
+
     # skip components with dnp field not empty
     if config.dnp_field and ref in extra_data \
             and config.dnp_field in extra_data[ref] \

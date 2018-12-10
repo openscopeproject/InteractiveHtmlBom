@@ -42,6 +42,7 @@ class Config:
     component_sort_order = default_sort_order
     component_blacklist = []
     blacklist_virtual = True
+    blacklist_empty_val = False
 
     # Extra fields section
     netlist_file = None
@@ -85,6 +86,8 @@ class Config:
                 ','.join(self.component_blacklist)))
         self.blacklist_virtual = f.ReadBool(
                 'blacklist_virtual', self.blacklist_virtual)
+        self.blacklist_empty_val = f.ReadBool(
+                'blacklist_empty_val', self.blacklist_empty_val)
 
         f.SetPath('/extra_fields')
         self.extra_fields = self._split(f.Read(
@@ -125,6 +128,7 @@ class Config:
         f.Write('component_blacklist',
                 ','.join(self.component_blacklist))
         f.WriteBool('blacklist_virtual', self.blacklist_virtual)
+        f.WriteBool('blacklist_empty_val', self.blacklist_empty_val)
 
         f.SetPath('/extra_fields')
         f.Write('extra_fields', ','.join(self.extra_fields))
@@ -156,6 +160,8 @@ class Config:
         self.component_blacklist = dlg.general.blacklistBox.GetItems()
         self.blacklist_virtual = \
             dlg.general.blacklistVirtualCheckbox.IsChecked()
+        self.blacklist_empty_val = \
+            dlg.general.blacklistEmptyValCheckbox.IsChecked()
 
         # Extra fields
         self.netlist_file = dlg.extra.netlistFilePicker.Path
@@ -196,6 +202,7 @@ class Config:
         dlg.general.componentSortOrderBox.SetItems(self.component_sort_order)
         dlg.general.blacklistBox.SetItems(self.component_blacklist)
         dlg.general.blacklistVirtualCheckbox.Value = self.blacklist_virtual
+        dlg.general.blacklistEmptyValCheckbox.Value = self.blacklist_empty_val
 
         # Extra fields
         dlg.extra.netlistFilePicker.SetInitialDirectory(
@@ -264,6 +271,8 @@ class Config:
                                  'components or prefixes with *. E.g. "X1,MH*"')
         parser.add_argument('--no-blacklist-virtual', action='store_true',
                             help='Do not blacklist virtual components.')
+        parser.add_argument('--blacklist-empty-val', action='store_true',
+                            help='Blacklist components with empty value.')
 
         # Extra fields section
         parser.add_argument('--netlist-file',
@@ -306,6 +315,7 @@ class Config:
         self.component_sort_order = self._split(args.sort_order)
         self.component_blacklist = self._split(args.blacklist)
         self.blacklist_virtual = not args.no_blacklist_virtual
+        self.blacklist_empty_val = args.blacklist_empty_val
 
         # Extra
         self.netlist_file = args.netlist_file

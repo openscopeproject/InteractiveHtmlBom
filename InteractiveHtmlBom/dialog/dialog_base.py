@@ -270,6 +270,9 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         self.blacklistVirtualCheckbox.SetValue(True) 
         blacklistSizer.Add( self.blacklistVirtualCheckbox, 0, wx.ALL, 5 )
         
+        self.blacklistEmptyValCheckbox = wx.CheckBox( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"Blacklist components with empty value", wx.DefaultPosition, wx.DefaultSize, 0 )
+        blacklistSizer.Add( self.blacklistEmptyValCheckbox, 0, wx.ALL, 5 )
+        
         
         bSizer32.Add( blacklistSizer, 1, wx.ALL|wx.EXPAND|wx.TOP, 5 )
         
