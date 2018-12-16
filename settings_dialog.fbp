@@ -3839,7 +3839,7 @@
                                 <event name="OnAux2Up"></event>
                                 <event name="OnChar"></event>
                                 <event name="OnCharHook"></event>
-                                <event name="OnCombobox"></event>
+                                <event name="OnCombobox">OnBoardVariantFieldChange</event>
                                 <event name="OnComboboxCloseup"></event>
                                 <event name="OnComboboxDropdown"></event>
                                 <event name="OnEnterWindow"></event>
@@ -3863,7 +3863,7 @@
                                 <event name="OnRightUp"></event>
                                 <event name="OnSetFocus"></event>
                                 <event name="OnSize"></event>
-                                <event name="OnText">OnBoardVariantFieldChange</event>
+                                <event name="OnText"></event>
                                 <event name="OnTextEnter"></event>
                                 <event name="OnUpdateUI"></event>
                             </object>

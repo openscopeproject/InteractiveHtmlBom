@@ -432,7 +432,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         self.netlistFilePicker.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnNetlistFileChanged )
         self.m_button1.Bind( wx.EVT_BUTTON, self.OnExtraFieldsUp )
         self.m_button2.Bind( wx.EVT_BUTTON, self.OnExtraFieldsDown )
-        self.boardVariantFieldBox.Bind( wx.EVT_TEXT, self.OnBoardVariantFieldChange )
+        self.boardVariantFieldBox.Bind( wx.EVT_COMBOBOX, self.OnBoardVariantFieldChange )
     
     def __del__( self ):
         pass
