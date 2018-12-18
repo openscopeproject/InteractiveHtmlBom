@@ -6,7 +6,7 @@ import pcbnew
 import wx
 import wx.aui
 
-from generate_interactive_bom import GenerateInteractiveBomPlugin
+from .generate_interactive_bom import GenerateInteractiveBomPlugin
 
 
 def check_for_bom_button():

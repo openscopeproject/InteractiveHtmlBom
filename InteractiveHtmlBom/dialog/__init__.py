@@ -1,1 +1,1 @@
-from settings_dialog import SettingsDialog
+from .settings_dialog import SettingsDialog

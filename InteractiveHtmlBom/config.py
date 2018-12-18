@@ -5,7 +5,7 @@ import os
 
 from wx import FileConfig
 
-import dialog.settings_dialog
+from .dialog import settings_dialog
 
 
 class Config:

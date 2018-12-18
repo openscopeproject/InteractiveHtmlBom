@@ -1,4 +1,4 @@
-from newstroke_font import NEWSTROKE_FONT
+from .newstroke_font import NEWSTROKE_FONT
 
 
 class FontParser:

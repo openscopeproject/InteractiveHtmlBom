@@ -9,11 +9,11 @@ from datetime import datetime
 import pcbnew
 import wx
 
-import dialog
-import units
-from config import Config
-from fontparser import FontParser
-from schematic_data import parse_schematic_data, find_latest_schematic_data
+from . import dialog
+from . import units
+from .config import Config
+from .fontparser import FontParser
+from .schematic_data import parse_schematic_data, find_latest_schematic_data
 
 
 def setup_logger():

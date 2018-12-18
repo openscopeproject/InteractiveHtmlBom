@@ -4,7 +4,7 @@ import re
 
 import wx
 
-import dialog_base
+from . import dialog_base
 
 
 def pop_error(msg):
@@ -24,7 +24,12 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
     # hack for new wxFormBuilder generating code incompatible with old wxPython
     # noinspection PyMethodOverriding
     def SetSizeHints(self, sz1, sz2):
-        self.SetSizeHintsSz(sz1, sz2)
+        try:
+            # wxPython 3
+            self.SetSizeHintsSz(sz1, sz2)
+        except TypeError:
+            # wxPython 4
+            super(SettingsDialog, self).SetSizeHints(sz1, sz2)
 
     def set_extra_data_path(self, extra_data_file):
         self.panel.extra.netlistFilePicker.Path = extra_data_file

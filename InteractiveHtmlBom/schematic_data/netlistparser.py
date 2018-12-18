@@ -1,5 +1,5 @@
-from parser_base import ParserBase
-from sexpressions import parse_sexpression
+from .parser_base import ParserBase
+from .sexpressions import parse_sexpression
 
 
 class NetlistParser(ParserBase):

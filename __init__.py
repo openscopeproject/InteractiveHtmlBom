@@ -1,1 +1,1 @@
-import InteractiveHtmlBom
+from . import InteractiveHtmlBom

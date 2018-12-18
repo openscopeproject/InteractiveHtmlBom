@@ -1,6 +1,6 @@
 from xml.dom import minidom
 
-from parser_base import ParserBase
+from .parser_base import ParserBase
 
 
 class XmlParser(ParserBase):

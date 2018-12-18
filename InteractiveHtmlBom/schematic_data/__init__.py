@@ -1,7 +1,7 @@
 import os
 
-from xmlparser import XmlParser
-from netlistparser import NetlistParser
+from .xmlparser import XmlParser
+from .netlistparser import NetlistParser
 
 PARSERS = {
     '.xml': XmlParser,
