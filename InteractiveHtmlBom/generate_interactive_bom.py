@@ -510,7 +510,8 @@ def open_file(filename):
 
 def generate_file(pcb_file_dir, pcbdata, config):
     def get_file_content(file_name):
-        with open(os.path.join(os.path.dirname(__file__), file_name), "r") as f:
+        path = os.path.join(os.path.dirname(__file__), "web", file_name)
+        with open(path, "r") as f:
             return f.read()
 
     loginfo("Dumping pcb json data")
