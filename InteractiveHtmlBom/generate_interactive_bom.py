@@ -9,6 +9,13 @@ from datetime import datetime
 import pcbnew
 import wx
 
+if __name__ == "__main__":
+    # Circumvent the "scripts can't do relative imports because they are not
+    # packages" restriction by exerting dominance and making it a package!
+    __package__ = os.path.basename(os.path.dirname(__file__))
+    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+    __import__(__package__)
+
 from . import dialog
 from . import units
 from .config import Config

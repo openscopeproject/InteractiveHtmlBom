@@ -5,8 +5,6 @@ import os
 
 from wx import FileConfig
 
-from .dialog import settings_dialog
-
 
 class Config:
     # Helper constants
