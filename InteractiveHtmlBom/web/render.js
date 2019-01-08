@@ -287,7 +287,7 @@ function clearCanvas(canvas) {
 function drawHighlightsOnLayer(canvasdict) {
   clearCanvas(canvasdict.highlight);
   drawModules(canvasdict.highlight, canvasdict.layer,
-    canvasdict.transform.s, highlightedModules);
+    canvasdict.transform.s * canvasdict.transform.zoom, highlightedModules);
 }
 
 function drawHighlights() {
@@ -299,7 +299,8 @@ function drawBackground(canvasdict) {
   clearCanvas(canvasdict.bg);
   clearCanvas(canvasdict.silk);
   drawEdges(canvasdict.bg, canvasdict.transform.s);
-  drawModules(canvasdict.bg, canvasdict.layer, canvasdict.transform.s, []);
+  drawModules(canvasdict.bg, canvasdict.layer,
+    canvasdict.transform.s * canvasdict.transform.zoom, []);
   drawSilkscreen(canvasdict.silk, canvasdict.layer, canvasdict.transform.s);
 }
 
@@ -378,7 +379,6 @@ function recalcLayerScale(canvasdict) {
     canvas.style.width = (width / 2) + "px";
     canvas.style.height = (height / 2) + "px";
   }
-  console.log("Scale factor " + canvasdivid + ": ", canvasdict.transform);
 }
 
 function redrawCanvas(layerdict) {
@@ -507,7 +507,6 @@ function handleMouseWheel(e, layerdict) {
   t.panx += 2 * e.offsetX * zoomd;
   t.pany += 2 * e.offsetY * zoomd;
   redrawCanvas(layerdict);
-  console.log(layerdict.transform.zoom);
 }
 
 function addMouseHandlers(div, layerdict) {
