@@ -244,20 +244,19 @@ function drawEdges(canvas, scalefactor) {
   }
 }
 
-function drawModules(canvas, layer, scalefactor, highlightedModules) {
+function drawModules(canvas, layer, scalefactor, highlight) {
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 3 / scalefactor;
   var style = getComputedStyle(topmostdiv);
   var padcolor = style.getPropertyValue('--pad-color');
   var outlinecolor = style.getPropertyValue('--pin1-outline-color');
-  if (highlightedModules.length > 0) {
+  if (highlight > 0) {
     padcolor = style.getPropertyValue('--pad-color-highlight');
     outlinecolor = style.getPropertyValue('--pin1-outline-color-highlight');
   }
   for (var i = 0; i < pcbdata.modules.length; i++) {
     var mod = pcbdata.modules[i];
-    var highlight = highlightedModules.includes(i);
-    if (highlightedModules.length == 0 || highlight) {
+    if (!highlight || highlightedModules.includes(i)) {
       drawModule(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight);
     }
   }
@@ -287,7 +286,7 @@ function clearCanvas(canvas) {
 function drawHighlightsOnLayer(canvasdict) {
   clearCanvas(canvasdict.highlight);
   drawModules(canvasdict.highlight, canvasdict.layer,
-    canvasdict.transform.s * canvasdict.transform.zoom, highlightedModules);
+    canvasdict.transform.s * canvasdict.transform.zoom, true);
 }
 
 function drawHighlights() {
@@ -300,7 +299,7 @@ function drawBackground(canvasdict) {
   clearCanvas(canvasdict.silk);
   drawEdges(canvasdict.bg, canvasdict.transform.s);
   drawModules(canvasdict.bg, canvasdict.layer,
-    canvasdict.transform.s * canvasdict.transform.zoom, []);
+    canvasdict.transform.s * canvasdict.transform.zoom, false);
   drawSilkscreen(canvasdict.silk, canvasdict.layer, canvasdict.transform.s);
 }
 
@@ -439,7 +438,6 @@ function handleMouseClick(e, layerdict) {
   var modules = bboxScan(layerdict.layer, v[0], v[1]);
   if (modules.length > 0) {
     modulesClicked(modules);
-    drawHighlights();
   }
 }
 

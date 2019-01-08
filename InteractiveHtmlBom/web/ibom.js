@@ -4,6 +4,7 @@ var bomsplit;
 var canvassplit;
 var canvaslayout = "default";
 var bomlayout = "default";
+var initDone = false;
 var bomSortFunction = null;
 var currentSortColumn = null;
 var currentSortOrder = null;
@@ -26,15 +27,19 @@ function setDarkMode(value) {
     topmostdiv.classList.remove("dark");
   }
   writeStorage("darkmode", value);
-  redrawCanvas(allcanvas.front);
-  redrawCanvas(allcanvas.back);
+  if (initDone) {
+    redrawCanvas(allcanvas.front);
+    redrawCanvas(allcanvas.back);
+  }
 }
 
 function setHighlightPin1(value) {
   writeStorage("highlightpin1", value);
   highlightpin1 = value;
-  redrawCanvas(allcanvas.front);
-  redrawCanvas(allcanvas.back);
+  if (initDone) {
+    redrawCanvas(allcanvas.front);
+    redrawCanvas(allcanvas.back);
+  }
 }
 
 function getStoredCheckboxRefs(checkbox) {
@@ -757,6 +762,7 @@ window.onload = function(e) {
   bomhead = document.getElementById("bomhead");
   filter = "";
   reflookup = "";
+  initDone = true;
   // Triggers render
   changeBomLayout(bomlayout);
 }
