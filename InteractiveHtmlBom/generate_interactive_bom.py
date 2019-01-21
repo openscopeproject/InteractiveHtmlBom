@@ -511,7 +511,22 @@ def open_file(filename):
         logwarn('Failed to open browser: {}'.format(oe.message))
 
 
-def generate_file(pcb_file_dir, pcbdata, config):
+def process_substitutions(bom_name_format, pcb_file_name, metadata):
+    # type: (str, str, dict)->str
+    name = bom_name_format.replace('%f', os.path.splitext(pcb_file_name)[0])
+    name = name.replace('%p', metadata['title'])
+    name = name.replace('%c', metadata['company'])
+    name = name.replace('%r', metadata['revision'])
+    name = name.replace('%d', metadata['date'].replace(':', '-'))
+    now = datetime.now()
+    name = name.replace('%D', now.strftime('%Y-%m-%d'))
+    name = name.replace('%T', now.strftime('%H-%M-%S'))
+    # sanitize the name to avoid characters illegal in file systems
+    name = re.sub(r'[/\\?%*:|"<>]', '_', name)
+    return name + '.html'
+
+
+def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     def get_file_content(file_name):
         path = os.path.join(os.path.dirname(__file__), "web", file_name)
         with open(path, "r") as f:
@@ -520,12 +535,14 @@ def generate_file(pcb_file_dir, pcbdata, config):
     loginfo("Dumping pcb json data")
 
     if os.path.isabs(config.bom_dest_dir):
-        bom_file_name = config.bom_dest_dir
+        bom_file_dir = config.bom_dest_dir
     else:
-        bom_file_name = os.path.join(pcb_file_dir, config.bom_dest_dir)
-    if not os.path.isdir(bom_file_name):
-        os.makedirs(bom_file_name)
-    bom_file_name = os.path.join(bom_file_name, "ibom.html")
+        bom_file_dir = os.path.join(pcb_file_dir, config.bom_dest_dir)
+    if not os.path.isdir(bom_file_dir):
+        os.makedirs(bom_file_dir)
+    bom_file_name = process_substitutions(
+            config.bom_name_format, pcb_file_name, pcbdata['metadata'])
+    bom_file_name = os.path.join(bom_file_dir, bom_file_name)
     pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
     config_js = "var config = " + config.get_html_config()
     html = get_file_content("ibom.html")
@@ -579,10 +596,10 @@ def main(pcb, config):
         file_date = datetime.fromtimestamp(file_mtime).strftime(
                 '%Y-%m-%d %H:%M:%S')
     title = title_block.GetTitle()
+    pcb_file_name = os.path.basename(pcb_file_name)
     if not title:
-        title = os.path.basename(pcb_file_name)
         # remove .kicad_pcb extension
-        title = os.path.splitext(title)[0]
+        title = os.path.splitext(pcb_file_name)[0]
     edges, bbox = parse_edges(pcb)
     if bbox is None:
         logerror('Please draw pcb outline on the edges '
@@ -619,7 +636,7 @@ def main(pcb, config):
         pcbdata["bom"]["F" if layer == pcbnew.F_Cu else "B"] = bom_table
 
     pcbdata["font_data"] = font_parser.get_parsed_font()
-    bom_file = generate_file(pcb_file_dir, pcbdata, config)
+    bom_file = generate_file(pcb_file_dir, pcb_file_name, pcbdata, config)
 
     if config.open_browser:
         loginfo("Opening file in browser")
@@ -689,7 +706,8 @@ if __name__ == "__main__":
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('file', type=str, help="KiCad PCB file")
     config = Config()
-    config.add_options(parser)
+    config.add_options(
+            parser, dialog.GeneralSettingsPanel.FILE_NAME_FORMAT_HINT)
     args = parser.parse_args()
     if not os.path.isfile(args.file.decode('utf8')):
         print("File %s does not exist." % args.file)

@@ -74,6 +74,21 @@ class HtmlSettingsPanel(dialog_base.HtmlSettingsPanelBase):
 
 # Implementing GeneralSettingsPanelBase
 class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
+    FILE_NAME_FORMAT_HINT = (
+        'Output file name format supports substitutions:\n' +
+        '\n' +
+        '    %f : original pcb file name without extension.\n' +
+        '    %p : pcb/project title from pcb metadata.\n' +
+        '    %c : company from pcb metadata.\n' +
+        '    %r : revision from pcb metadata.\n' +
+        '    %d : pcb date from metadata if available, ' +
+        'file modification date otherwise.\n' +
+        '    %D : bom generation date.\n' +
+        '    %T : bom generation time.\n' +
+        '\n' +
+        'Extension .html will be added automatically.'
+    )  # type: str
+
     def __init__(self, parent):
         dialog_base.GeneralSettingsPanelBase.__init__(self, parent)
 
@@ -142,6 +157,10 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
             self.blacklistBox.Delete(selection)
             if self.blacklistBox.Count > 0:
                 self.blacklistBox.SetSelection(max(selection - 1, 0))
+
+    def OnNameFormatHintClick(self, event):
+        wx.MessageBox(self.FILE_NAME_FORMAT_HINT, 'File name format help',
+                      style=wx.ICON_NONE|wx.OK)
 
 
 # Implementing ExtraFieldsPanelBase

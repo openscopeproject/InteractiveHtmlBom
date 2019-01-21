@@ -190,10 +190,39 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         bSizer32 = wx.BoxSizer( wx.VERTICAL )
         
-        sbSizer6 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Bom destination directory" ), wx.VERTICAL )
+        sbSizer6 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Bom destination" ), wx.VERTICAL )
+        
+        fgSizer1 = wx.FlexGridSizer( 0, 2, 0, 0 )
+        fgSizer1.AddGrowableCol( 1 )
+        fgSizer1.SetFlexibleDirection( wx.BOTH )
+        fgSizer1.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+        
+        self.m_staticText8 = wx.StaticText( sbSizer6.GetStaticBox(), wx.ID_ANY, u"Directory", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText8.Wrap( -1 )
+        
+        fgSizer1.Add( self.m_staticText8, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         
         self.bomDirPicker = wx.DirPickerCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select bom folder", wx.DefaultPosition, wx.DefaultSize, wx.DIRP_SMALL|wx.DIRP_USE_TEXTCTRL|wx.BORDER_SIMPLE )
-        sbSizer6.Add( self.bomDirPicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+        fgSizer1.Add( self.bomDirPicker, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
+        
+        self.m_staticText9 = wx.StaticText( sbSizer6.GetStaticBox(), wx.ID_ANY, u"Name format", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText9.Wrap( -1 )
+        
+        fgSizer1.Add( self.m_staticText9, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        
+        bSizer20 = wx.BoxSizer( wx.HORIZONTAL )
+        
+        self.fileNameFormatTextControl = wx.TextCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer20.Add( self.fileNameFormatTextControl, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
+        
+        self.m_button12 = wx.Button( sbSizer6.GetStaticBox(), wx.ID_ANY, u"?", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        bSizer20.Add( self.m_button12, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 4 )
+        
+        
+        fgSizer1.Add( bSizer20, 1, wx.EXPAND, 5 )
+        
+        
+        sbSizer6.Add( fgSizer1, 1, wx.EXPAND, 5 )
         
         
         bSizer32.Add( sbSizer6, 0, wx.ALL|wx.EXPAND, 5 )
@@ -282,6 +311,7 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         bSizer32.Fit( self )
         
         # Connect Events
+        self.m_button12.Bind( wx.EVT_BUTTON, self.OnNameFormatHintClick )
         self.m_button1.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderUp )
         self.m_button2.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderDown )
         self.m_button3.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderAdd )
@@ -294,6 +324,9 @@ class GeneralSettingsPanelBase ( wx.Panel ):
     
     
     # Virtual event handlers, overide them in your derived class
+    def OnNameFormatHintClick( self, event ):
+        event.Skip()
+    
     def OnComponentSortOrderUp( self, event ):
         event.Skip()
     

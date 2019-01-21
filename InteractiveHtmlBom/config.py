@@ -37,6 +37,7 @@ class Config:
 
     # General section
     bom_dest_dir = 'bom/'  # This is relative to pcb file directory
+    bom_name_format = 'ibom'
     component_sort_order = default_sort_order
     component_blacklist = []
     blacklist_virtual = True
@@ -76,6 +77,7 @@ class Config:
 
         f.SetPath('/general')
         self.bom_dest_dir = f.Read('bom_dest_dir', self.bom_dest_dir)
+        self.bom_name_format = f.Read('bom_name_format', self.bom_name_format)
         self.component_sort_order = self._split(f.Read(
                 'component_sort_order',
                 ','.join(self.component_sort_order)))
@@ -121,6 +123,7 @@ class Config:
             bom_dest_dir = os.path.relpath(
                     bom_dest_dir, self.netlist_initial_directory)
         f.Write('bom_dest_dir', bom_dest_dir)
+        f.Write('bom_name_format', self.bom_name_format)
         f.Write('component_sort_order',
                 ','.join(self.component_sort_order))
         f.Write('component_blacklist',
@@ -154,6 +157,7 @@ class Config:
 
         # General
         self.bom_dest_dir = dlg.general.bomDirPicker.Path
+        self.bom_name_format = dlg.general.fileNameFormatTextControl.Value
         self.component_sort_order = dlg.general.componentSortOrderBox.GetItems()
         self.component_blacklist = dlg.general.blacklistBox.GetItems()
         self.blacklist_virtual = \
@@ -197,6 +201,7 @@ class Config:
         else:
             dlg.general.bomDirPicker.Path = os.path.join(
                     self.netlist_initial_directory, self.bom_dest_dir)
+        dlg.general.fileNameFormatTextControl.Value = self.bom_name_format
         dlg.general.componentSortOrderBox.SetItems(self.component_sort_order)
         dlg.general.blacklistBox.SetItems(self.component_blacklist)
         dlg.general.blacklistVirtualCheckbox.Value = self.blacklist_virtual
@@ -222,8 +227,8 @@ class Config:
         dlg.finish_init()
 
     # noinspection PyTypeChecker
-    def add_options(self, parser):
-        # type: (argparse.ArgumentParser) -> None
+    def add_options(self, parser, file_name_format_hint):
+        # type: (argparse.ArgumentParser, str) -> None
         parser.add_argument('--show-dialog', action='store_true',
                             help='Shows config dialog. All other flags '
                                  'will be ignored.')
@@ -259,6 +264,8 @@ class Config:
         parser.add_argument('--dest-dir', default=self.bom_dest_dir,
                             help='Destination directory for bom file '
                                  'relative to pcb file directory.')
+        parser.add_argument('--name-format', default=self.bom_name_format,
+                            help=file_name_format_hint.replace('%', '%%'))
         parser.add_argument('--sort-order',
                             help='Default sort order for components. '
                                  'Must contain "~" once.',
@@ -310,6 +317,7 @@ class Config:
 
         # General
         self.bom_dest_dir = args.dest_dir
+        self.bom_name_format = args.name_format
         self.component_sort_order = self._split(args.sort_order)
         self.component_blacklist = self._split(args.blacklist)
         self.blacklist_virtual = not args.no_blacklist_virtual
