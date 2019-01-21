@@ -500,12 +500,15 @@ def parse_modules(pcb_modules):
 
 def open_file(filename):
     import subprocess
-    if sys.platform.startswith('win'):
-        os.startfile(filename)
-    elif sys.platform.startswith('darwin'):
-        subprocess.call(('open', filename))
-    elif sys.platform.startswith('linux'):
-        subprocess.call(('xdg-open', filename))
+    try:
+        if sys.platform.startswith('win'):
+            os.startfile(filename)
+        elif sys.platform.startswith('darwin'):
+            subprocess.call(('open', filename))
+        elif sys.platform.startswith('linux'):
+            subprocess.call(('xdg-open', filename))
+    except OSError as oe:
+        logwarn('Failed to open browser: {}'.format(oe.message))
 
 
 def generate_file(pcb_file_dir, pcbdata, config):
