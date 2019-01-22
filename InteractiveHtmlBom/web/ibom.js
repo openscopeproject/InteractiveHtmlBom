@@ -130,6 +130,12 @@ function entryMatches(entry) {
       return true;
     }
   }
+  // check extra fields
+  for (var i in config.extra_fields) {
+    if (entry[4][i].toLowerCase().indexOf(filter) >= 0) {
+      return true;
+    }
+  }
   // check value
   if (entry[1].toLowerCase().indexOf(filter) >= 0) {
     return true;
