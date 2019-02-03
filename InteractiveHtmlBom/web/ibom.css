@@ -598,10 +598,10 @@ mark.highlight {
   display: block;
 }
 
-.shameless-plug a {
+a {
   color: #0278a4;
 }
 
-.dark .shameless-plug a {
+.dark a {
   color: #00b9fd;
 }
