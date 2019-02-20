@@ -8,7 +8,7 @@ from wx import FileConfig
 
 class Config:
     # Helper constants
-    config_file = os.path.join(os.path.dirname(__file__), 'config.ini')
+    config_file = os.path.join(os.path.dirname(__file__), '..', 'config.ini')
     bom_view_choices = ['bom-only', 'left-right', 'top-bottom']
     layer_view_choices = ['F', 'FB', 'B']
     default_sort_order = [

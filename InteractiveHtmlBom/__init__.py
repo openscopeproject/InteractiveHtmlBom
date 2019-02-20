@@ -6,6 +6,8 @@ import pcbnew
 import wx
 import wx.aui
 
+from .generate_interactive_bom import InteractiveHtmlBomPlugin
+
 
 def check_for_bom_button():
     # From Miles McCoo's blog
@@ -22,6 +24,8 @@ def check_for_bom_button():
 
     import os
     path = os.path.dirname(__file__)
+    while not wx.GetApp():
+        time.sleep(1)
     bm = wx.Bitmap(path + '/icon.png', wx.BITMAP_TYPE_PNG)
     button_wx_item_id = 0
     while True:
@@ -40,15 +44,12 @@ def check_for_bom_button():
             top_tb.Realize()
 
 
-if wx.GetApp():
-    from .generate_interactive_bom import GenerateInteractiveBomPlugin
+plugin = InteractiveHtmlBomPlugin()
+plugin.register()
 
-    plugin = GenerateInteractiveBomPlugin()
-    plugin.register()
-
-    # Add a button the hacky way if plugin button is not supported
-    # in pcbnew, unless this is linux.
-    if not plugin.pcbnew_icon_support and not sys.platform.startswith('linux'):
-        t = threading.Thread(target=check_for_bom_button)
-        t.daemon = True
-        t.start()
+# Add a button the hacky way if plugin button is not supported
+# in pcbnew, unless this is linux.
+if not plugin.pcbnew_icon_support and not sys.platform.startswith('linux'):
+    t = threading.Thread(target=check_for_bom_button)
+    t.daemon = True
+    t.start()
