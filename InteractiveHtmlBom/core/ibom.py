@@ -467,7 +467,7 @@ def parse_modules(pcb_modules):
         # If no pads have common 'first' pad name then pick lexicographically.
         pin1_pads = [p for p in pads if 'pin1' in p[1]]
         if pads and not pin1_pads:
-            pads = sorted(pads)
+            pads = sorted(pads, key=lambda el: el[0])
             for pad_name, pad_dict in pads:
                 if pad_name:
                     pad_dict['pin1'] = 1
