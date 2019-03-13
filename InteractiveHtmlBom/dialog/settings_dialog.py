@@ -162,6 +162,13 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
         wx.MessageBox(self.FILE_NAME_FORMAT_HINT, 'File name format help',
                       style=wx.ICON_NONE|wx.OK)
 
+    def OnSize(self, event):
+        # Trick the listCheckBox best size calculations
+        tmp = self.componentSortOrderBox.GetStrings()
+        self.componentSortOrderBox.SetItems([])
+        self.Layout()
+        self.componentSortOrderBox.SetItems(tmp)
+
 
 # Implementing ExtraFieldsPanelBase
 class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
@@ -225,3 +232,10 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
                 variant_set.add(field_dict[selection])
         self.boardVariantWhitelist.SetItems(list(variant_set))
         self.boardVariantBlacklist.SetItems(list(variant_set))
+
+    def OnSize(self, event):
+        # Trick the listCheckBox best size calculations
+        tmp = self.extraFieldsList.GetStrings()
+        self.extraFieldsList.SetItems([])
+        self.Layout()
+        self.extraFieldsList.SetItems(tmp)

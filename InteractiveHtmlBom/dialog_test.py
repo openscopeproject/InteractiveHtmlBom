@@ -5,7 +5,7 @@ class MyApp(wx.App):
     def OnInit(self):
         frame = SettingsDialog(None, lambda x: None)
         if frame.ShowModal() == wx.ID_OK:
-            print "Should generate bom"
+            print("Should generate bom")
         frame.Destroy()
         return True
 

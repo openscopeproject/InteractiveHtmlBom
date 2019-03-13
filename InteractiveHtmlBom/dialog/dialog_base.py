@@ -311,6 +311,7 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         bSizer32.Fit( self )
         
         # Connect Events
+        self.Bind( wx.EVT_SIZE, self.OnSize )
         self.m_button12.Bind( wx.EVT_BUTTON, self.OnNameFormatHintClick )
         self.m_button1.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderUp )
         self.m_button2.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderDown )
@@ -324,6 +325,9 @@ class GeneralSettingsPanelBase ( wx.Panel ):
     
     
     # Virtual event handlers, overide them in your derived class
+    def OnSize( self, event ):
+        event.Skip()
+    
     def OnNameFormatHintClick( self, event ):
         event.Skip()
     
@@ -462,6 +466,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         bSizer42.Fit( self )
         
         # Connect Events
+        self.Bind( wx.EVT_SIZE, self.OnSize )
         self.netlistFilePicker.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnNetlistFileChanged )
         self.m_button1.Bind( wx.EVT_BUTTON, self.OnExtraFieldsUp )
         self.m_button2.Bind( wx.EVT_BUTTON, self.OnExtraFieldsDown )
@@ -472,6 +477,9 @@ class ExtraFieldsPanelBase ( wx.Panel ):
     
     
     # Virtual event handlers, overide them in your derived class
+    def OnSize( self, event ):
+        event.Skip()
+    
     def OnNetlistFileChanged( self, event ):
         event.Skip()
     
