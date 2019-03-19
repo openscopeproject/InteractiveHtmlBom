@@ -721,6 +721,8 @@ function initDefaults() {
   var b = readStorage("silkscreenVisible");
   if (b === null) {
     b = config.show_silkscreen;
+  } else {
+    b = (b == "true");
   }
   document.getElementById("silkscreenCheckbox").checked = b;
   silkscreenVisible(b);
@@ -728,6 +730,8 @@ function initDefaults() {
   b = readStorage("redrawOnDrag");
   if (b === null) {
     b = config.redraw_on_drag;
+  } else {
+    b = (b == "true");
   }
   document.getElementById("dragCheckbox").checked = b;
   setRedrawOnDrag(b);
@@ -735,6 +739,8 @@ function initDefaults() {
   b = readStorage("darkmode");
   if (b === null) {
     b = config.dark_mode;
+  } else {
+    b = (b == "true");
   }
   document.getElementById("darkmodeCheckbox").checked = b;
   setDarkMode(b);
@@ -742,6 +748,8 @@ function initDefaults() {
   b = readStorage("highlightpin1");
   if (b === null) {
     b = config.highlight_pin1;
+  } else {
+    b = (b == "true");
   }
   document.getElementById("highlightpin1Checkbox").checked = b;
   setHighlightPin1(b);
