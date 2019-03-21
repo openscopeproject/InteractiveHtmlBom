@@ -14,7 +14,7 @@ def check_for_bom_button():
     # https://kicad.mmccoo.com/2017/03/05/adding-your-own-command-buttons-to-the-pcbnew-gui/
     def find_pcbnew_window():
         windows = wx.GetTopLevelWindows()
-        pcbneww = [w for w in windows if "Pcbnew" in w.GetTitle()]
+        pcbneww = [w for w in windows if "pcbnew" in w.GetTitle().lower()]
         if len(pcbneww) != 1:
             return None
         return pcbneww[0]
