@@ -522,7 +522,7 @@ def process_substitutions(bom_name_format, pcb_file_name, metadata):
 def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     def get_file_content(file_name):
         path = os.path.join(os.path.dirname(__file__), "..", "web", file_name)
-        with open(path, "r") as f:
+        with open(path, "r", encoding='UTF-8') as f:
             return f.read()
 
     loginfo("Dumping pcb json data")
@@ -546,7 +546,7 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
-    with open(bom_file_name, "wt") as bom:
+    with open(bom_file_name, "wt", encoding='UTF-8') as bom:
         bom.write(html)
     loginfo("Created file %s", bom_file_name)
     return bom_file_name
