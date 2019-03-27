@@ -10,6 +10,7 @@ var currentSortColumn = null;
 var currentSortOrder = null;
 var currentHighlightedRowId;
 var highlightHandlers = [];
+var moduleIndexToHandler = {};
 var highlightedModules = [];
 var checkboxes = [];
 var bomCheckboxes = "";
@@ -317,6 +318,7 @@ function populateBomBody() {
     bom.removeChild(bom.firstChild);
   }
   highlightHandlers = [];
+  moduleIndexToHandler = {};
   currentHighlightedRowId = null;
   var first = true;
   switch (canvaslayout) {
@@ -393,6 +395,9 @@ function populateBomBody() {
       handler: handler,
       refs: references
     });
+    for (var refIndex of references.map(r => r[1])) {
+      moduleIndexToHandler[refIndex] = handler;
+    }
     if ((filter || reflookup) && first) {
       handler();
       first = false;
@@ -445,11 +450,11 @@ function populateBomTable() {
 
 function modulesClicked(moduleIndexes) {
   var lastClickedIndex = moduleIndexes.indexOf(lastClicked);
-  var index = moduleIndexes[(lastClickedIndex + 1) % moduleIndexes.length];
-  for (var handler of highlightHandlers) {
-    if (handler.refs.map(r => r[1]).indexOf(index) >= 0) {
-      lastClicked = index;
-      handler.handler();
+  for (var i = 1; i <= moduleIndexes.length; i++) {
+    var refIndex = moduleIndexes[(lastClickedIndex + i) % moduleIndexes.length];
+    if (refIndex in moduleIndexToHandler) {
+      lastClicked = refIndex;
+      moduleIndexToHandler[refIndex]();
       smoothScrollToRow(currentHighlightedRowId);
       break;
     }
