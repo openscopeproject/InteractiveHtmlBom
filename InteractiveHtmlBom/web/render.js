@@ -33,7 +33,7 @@ function drawtext(ctx, text, color, flip) {
   var interline = (text.height * 1.5 + text.thickness) / 2;
   var txt = text.text.split("\n");
   // KiCad ignores last empty line.
-  if (txt[txt.length-1] == '') txt.pop();
+  if (txt[txt.length - 1] == '') txt.pop();
   ctx.rotate(deg2rad(angle));
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
@@ -262,15 +262,15 @@ function drawModules(canvas, layer, scalefactor, highlight) {
   }
 }
 
-function drawSilkscreen(canvas, layer, scalefactor) {
+function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonColor, textColor) {
   var ctx = canvas.getContext("2d");
-  for (var d of pcbdata.silkscreen[layer]) {
+  for (var d of pcbdata[layername][layer]) {
     if (["segment", "arc", "circle"].includes(d.type)) {
-      drawedge(ctx, scalefactor, d, "#aa4");
+      drawedge(ctx, scalefactor, d, edgeColor);
     } else if (d.type == "polygon") {
-      drawPolygonShape(ctx, d, "#4aa");
+      drawPolygonShape(ctx, d, polygonColor);
     } else {
-      drawtext(ctx, d, "#4aa", layer == "B");
+      drawtext(ctx, d, textColor, layer == "B");
     }
   }
 }
@@ -296,11 +296,26 @@ function drawHighlights() {
 
 function drawBackground(canvasdict) {
   clearCanvas(canvasdict.bg);
+  clearCanvas(canvasdict.fab);
   clearCanvas(canvasdict.silk);
   drawEdges(canvasdict.bg, canvasdict.transform.s);
   drawModules(canvasdict.bg, canvasdict.layer,
     canvasdict.transform.s * canvasdict.transform.zoom, false);
-  drawSilkscreen(canvasdict.silk, canvasdict.layer, canvasdict.transform.s);
+
+  var style = getComputedStyle(topmostdiv);
+  var edgeColor = style.getPropertyValue('--silkscreen-edge-color');
+  var polygonColor = style.getPropertyValue('--silkscreen-polygon-color');
+  var textColor = style.getPropertyValue('--silkscreen-text-color');
+  drawBgLayer(
+    "silkscreen", canvasdict.silk, canvasdict.layer, canvasdict.transform.s,
+    edgeColor, polygonColor, textColor);
+
+  edgeColor = style.getPropertyValue('--fabrication-edge-color');
+  polygonColor = style.getPropertyValue('--fabrication-polygon-color');
+  textColor = style.getPropertyValue('--fabrication-text-color');
+  drawBgLayer(
+    "fabrication", canvasdict.fab, canvasdict.layer, canvasdict.transform.s,
+    edgeColor, polygonColor, textColor);
 }
 
 function prepareCanvas(canvas, flip, transform) {
@@ -319,7 +334,7 @@ function prepareCanvas(canvas, flip, transform) {
 
 function prepareLayer(canvasdict) {
   var flip = (canvasdict.layer == "B");
-  for (var c of ["bg", "silk", "highlight"]) {
+  for (var c of ["bg", "fab", "silk", "highlight"]) {
     prepareCanvas(canvasdict[c], flip, canvasdict.transform);
   }
 }
@@ -371,7 +386,7 @@ function recalcLayerScale(canvasdict) {
     canvasdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor - width) * 0.5;
   }
   canvasdict.transform.y = -((bbox.maxy + bbox.miny) * scalefactor - height) * 0.5;
-  for (var c of ["bg", "silk", "highlight"]) {
+  for (var c of ["bg", "fab", "silk", "highlight"]) {
     canvas = canvasdict[c];
     canvas.width = width;
     canvas.height = height;
@@ -523,7 +538,7 @@ function addMouseHandlers(div, layerdict) {
   div.onwheel = function(e) {
     handleMouseWheel(e, layerdict);
   }
-  for (var element of [div, layerdict.bg, layerdict.silk, layerdict.highlight]) {
+  for (var element of [div, layerdict.bg, layerdict.fab, layerdict.silk, layerdict.highlight]) {
     element.addEventListener("contextmenu", function(e) {
       e.preventDefault();
     }, false);
@@ -557,6 +572,7 @@ function initRender() {
         mousedown: false,
       },
       bg: document.getElementById("F_bg"),
+      fab: document.getElementById("F_fab"),
       silk: document.getElementById("F_slk"),
       highlight: document.getElementById("F_hl"),
       layer: "F",
@@ -574,6 +590,7 @@ function initRender() {
         mousedown: false,
       },
       bg: document.getElementById("B_bg"),
+      fab: document.getElementById("B_fab"),
       silk: document.getElementById("B_slk"),
       highlight: document.getElementById("B_hl"),
       layer: "B",

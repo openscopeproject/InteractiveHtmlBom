@@ -34,6 +34,26 @@ function setDarkMode(value) {
   }
 }
 
+function layerVisible(visible, frontCavnas, backCanvas, storageString) {
+  if (visible) {
+    frontCavnas.style.display = "";
+    backCanvas.style.display = "";
+    writeStorage(storageString, true);
+  } else {
+    frontCavnas.style.display = "none";
+    backCanvas.style.display = "none";
+    writeStorage(storageString, false);
+  }
+}
+
+function fabricationVisible(visible) {
+  layerVisible(visible, allcanvas.front.fab, allcanvas.back.fab, "fabricationVisible");
+}
+
+function silkscreenVisible(visible) {
+  layerVisible(visible, allcanvas.front.silk, allcanvas.back.silk, "silkscreenVisible");
+}
+
 function setHighlightPin1(value) {
   writeStorage("highlightpin1", value);
   highlightpin1 = value;
@@ -471,18 +491,6 @@ function updateRefLookup(input) {
   populateBomTable();
 }
 
-function silkscreenVisible(visible) {
-  if (visible) {
-    allcanvas.front.silk.style.display = "";
-    allcanvas.back.silk.style.display = "";
-    writeStorage("silkscreenVisible", true);
-  } else {
-    allcanvas.front.silk.style.display = "none";
-    allcanvas.back.silk.style.display = "none";
-    writeStorage("silkscreenVisible", false);
-  }
-}
-
 function changeCanvasLayout(layout) {
   document.getElementById("fl-btn").classList.remove("depressed");
   document.getElementById("fb-btn").classList.remove("depressed");
@@ -723,7 +731,16 @@ function initDefaults() {
   }
   document.getElementById("bomCheckboxes").value = bomCheckboxes;
 
-  var b = readStorage("silkscreenVisible");
+  var b = readStorage("fabricationVisible");
+  if (b === null) {
+    b = config.show_fabrication;
+  } else {
+    b = (b == "true");
+  }
+  document.getElementById("fabricationCheckbox").checked = b;
+  fabricationVisible(b);
+
+  b = readStorage("silkscreenVisible");
   if (b === null) {
     b = config.show_silkscreen;
   } else {

@@ -5,6 +5,8 @@ import os
 
 from wx import FileConfig
 
+from .. import dialog
+
 
 class Config:
     # Helper constants
@@ -18,14 +20,16 @@ class Config:
     ]
     default_checkboxes = ['Sourced', 'Placed']
     html_config_fields = [
-        'dark_mode', 'show_silkscreen', 'highlight_pin1', 'redraw_on_drag',
-        'board_rotation', 'checkboxes', 'bom_view', 'layer_view', 'extra_fields'
+        'dark_mode', 'show_fabrication', 'show_silkscreen', 'highlight_pin1',
+        'redraw_on_drag', 'board_rotation', 'checkboxes', 'bom_view',
+        'layer_view', 'extra_fields'
     ]
 
     # Defaults
 
     # HTML section
     dark_mode = False
+    show_fabrication = False
     show_silkscreen = True
     highlight_pin1 = False
     redraw_on_drag = True
@@ -65,6 +69,8 @@ class Config:
 
         f.SetPath('/html_defaults')
         self.dark_mode = f.ReadBool('dark_mode', self.dark_mode)
+        self.show_fabrication = f.ReadBool(
+                'show_fabrication', self.show_fabrication)
         self.show_silkscreen = f.ReadBool(
                 'show_silkscreen', self.show_silkscreen)
         self.highlight_pin1 = f.ReadBool('highlight_pin1', self.highlight_pin1)
@@ -108,6 +114,7 @@ class Config:
 
         f.SetPath('/html_defaults')
         f.WriteBool('dark_mode', self.dark_mode)
+        f.WriteBool('show_fabrication', self.show_fabrication)
         f.WriteBool('show_silkscreen', self.show_silkscreen)
         f.WriteBool('highlight_pin1', self.highlight_pin1)
         f.WriteBool('redraw_on_drag', self.redraw_on_drag)
@@ -145,6 +152,7 @@ class Config:
         # type: (dialog.settings_dialog.SettingsDialogPanel) -> None
         # Html
         self.dark_mode = dlg.html.darkModeCheckbox.IsChecked()
+        self.show_fabrication = dlg.html.showFabricationCheckbox.IsChecked()
         self.show_silkscreen = dlg.html.showSilkscreenCheckbox.IsChecked()
         self.highlight_pin1 = dlg.html.highlightPin1Checkbox.IsChecked()
         self.redraw_on_drag = dlg.html.continuousRedrawCheckbox.IsChecked()
@@ -183,6 +191,7 @@ class Config:
         # type: (dialog.settings_dialog.SettingsDialogPanel) -> None
         # Html
         dlg.html.darkModeCheckbox.Value = self.dark_mode
+        dlg.html.showFabricationCheckbox.Value = self.show_fabrication
         dlg.html.showSilkscreenCheckbox.Value = self.show_silkscreen
         dlg.html.highlightPin1Checkbox.Value = self.highlight_pin1
         dlg.html.continuousRedrawCheckbox.value = self.redraw_on_drag
@@ -234,6 +243,9 @@ class Config:
                                  'will be ignored.')
         # Html
         parser.add_argument('--dark-mode', help='Default to dark mode.',
+                            action='store_true')
+        parser.add_argument('--show-fabrication',
+                            help='Show fabrication layer by default.',
                             action='store_true')
         parser.add_argument('--hide-silkscreen',
                             help='Hide silkscreen by default.',
@@ -306,6 +318,7 @@ class Config:
 
         # Html
         self.dark_mode = args.dark_mode
+        self.show_fabrication = args.show_fabrication
         self.show_silkscreen = not args.hide_silkscreen
         self.highlight_pin1 = args.highlight_pin1
         self.redraw_on_drag = not args.no_redraw_on_drag

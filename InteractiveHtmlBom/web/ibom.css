@@ -4,6 +4,12 @@
   --pad-color-highlight: #D04040;
   --pin1-outline-color: #ffb629;
   --pin1-outline-color-highlight: #b4ff03;
+  --silkscreen-edge-color: #aa4;
+  --silkscreen-polygon-color: #4aa;
+  --silkscreen-text-color: #4aa;
+  --fabrication-edge-color: #907651;
+  --fabrication-polygon-color: #907651;
+  --fabrication-text-color: #a27c24;
 }
 
 html, body {

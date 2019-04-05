@@ -342,23 +342,17 @@ def parse_edges(pcb):
     return edges, bbox
 
 
-def parse_silkscreen(pcb):
+def parse_drawings_on_layers(drawings, f_layer, b_layer):
     front = []
     back = []
-    drawings = list(pcb.GetDrawings())
-    for m in pcb.GetModules():
-        drawings.append(m.Reference())
-        drawings.append(m.Value())
-        for d in m.GraphicalItems():
-            drawings.append(d)
 
     for d in drawings:
-        if d.GetLayer() not in [pcbnew.F_SilkS, pcbnew.B_SilkS]:
+        if d.GetLayer() not in [f_layer, b_layer]:
             continue
         drawing = parse_drawing(d)
         if not drawing:
             continue
-        if d.GetLayer() == pcbnew.F_SilkS:
+        if d.GetLayer() == f_layer:
             front.append(drawing)
         else:
             back.append(drawing)
@@ -367,6 +361,16 @@ def parse_silkscreen(pcb):
         "F": front,
         "B": back
     }
+
+
+def get_all_drawings(pcb):
+    drawings = list(pcb.GetDrawings())
+    for m in pcb.GetModules():
+        drawings.append(m.Reference())
+        drawings.append(m.Value())
+        for d in m.GraphicalItems():
+            drawings.append(d)
+    return drawings
 
 
 def parse_pad(pad):
@@ -609,11 +613,15 @@ def main(pcb, config, parse_schematic_data, cli=False):
     }
 
     pcb_modules = list(pcb.GetModules())
+    drawings = get_all_drawings(pcb)
 
     pcbdata = {
         "edges_bbox": bbox,
         "edges": edges,
-        "silkscreen": parse_silkscreen(pcb),
+        "silkscreen": parse_drawings_on_layers(
+                drawings, pcbnew.F_SilkS, pcbnew.B_SilkS),
+        "fabrication": parse_drawings_on_layers(
+                drawings, pcbnew.F_Fab, pcbnew.B_Fab),
         "modules": parse_modules(pcb_modules),
         "metadata": {
             "title": title,
