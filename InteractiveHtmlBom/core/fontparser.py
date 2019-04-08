@@ -12,7 +12,10 @@ class FontParser:
         lines = []
         line = []
         glyph_x = 0
-        glyph_str = NEWSTROKE_FONT[ord(chr) - ord(' ')]
+        index = ord(chr) - ord(' ')
+        if index >= len(NEWSTROKE_FONT):
+            index = ord('?') - ord(' ')
+        glyph_str = NEWSTROKE_FONT[index]
         for i in range(0, len(glyph_str), 2):
             coord = glyph_str[i:i + 2]
 
