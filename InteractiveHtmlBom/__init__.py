@@ -45,6 +45,7 @@ def check_for_bom_button():
 
 
 plugin = InteractiveHtmlBomPlugin()
+plugin.defaults()
 plugin.register()
 
 # Add a button the hacky way if plugin button is not supported
