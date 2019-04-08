@@ -2,6 +2,7 @@
 
 var redrawOnDrag = true;
 var boardRotation = 0;
+var renderPads = true;
 
 function deg2rad(deg) {
   return deg * Math.PI / 180;
@@ -226,11 +227,13 @@ function drawModule(ctx, layer, scalefactor, module, padcolor, outlinecolor, hig
     }
   }
   // draw pads
-  for (var pad of module.pads) {
-    if (pad.layers.includes(layer)) {
-      drawPad(ctx, pad, padcolor, false);
-      if (pad.pin1 && highlightpin1) {
-        drawPad(ctx, pad, outlinecolor, true);
+  if (renderPads) {
+    for (var pad of module.pads) {
+      if (pad.layers.includes(layer)) {
+        drawPad(ctx, pad, padcolor, false);
+        if (pad.pin1 && highlightpin1) {
+          drawPad(ctx, pad, outlinecolor, true);
+        }
       }
     }
   }

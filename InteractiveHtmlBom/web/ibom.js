@@ -21,6 +21,14 @@ function dbg(html) {
   dbgdiv.innerHTML = html;
 }
 
+function padsVisible(value) {
+  renderPads = value;
+  if (initDone) {
+    redrawCanvas(allcanvas.front);
+    redrawCanvas(allcanvas.back);
+  }
+}
+
 function setDarkMode(value) {
   if (value) {
     topmostdiv.classList.add("dark");
@@ -35,15 +43,10 @@ function setDarkMode(value) {
 }
 
 function layerVisible(visible, frontCavnas, backCanvas, storageString) {
-  if (visible) {
-    frontCavnas.style.display = "";
-    backCanvas.style.display = "";
-    writeStorage(storageString, true);
-  } else {
-    frontCavnas.style.display = "none";
-    backCanvas.style.display = "none";
-    writeStorage(storageString, false);
-  }
+  var display = (visible) ? "" : "none";
+  frontCavnas.style.display = display;
+  backCanvas.style.display = display;
+  writeStorage(storageString, visible);
 }
 
 function fabricationVisible(visible) {
@@ -713,6 +716,16 @@ document.onkeydown = function(e) {
   }
 }
 
+function getStorageBooleanOrDefault(storageString, def) {
+  var b = readStorage(storageString);
+  if (b === null) {
+    b = def;
+  } else {
+    b = (b == "true");
+  }
+  return b;
+}
+
 function initDefaults() {
   bomlayout = readStorage("bomlayout");
   if (bomlayout === null) {
@@ -731,48 +744,27 @@ function initDefaults() {
   }
   document.getElementById("bomCheckboxes").value = bomCheckboxes;
 
-  var b = readStorage("fabricationVisible");
-  if (b === null) {
-    b = config.show_fabrication;
-  } else {
-    b = (b == "true");
-  }
+  var b = getStorageBooleanOrDefault("padsVisible", config.show_pads);
+  document.getElementById("fabricationCheckbox").checked = b;
+  padsVisible(b);
+
+  b = getStorageBooleanOrDefault("fabricationVisible", config.show_fabrication);
   document.getElementById("fabricationCheckbox").checked = b;
   fabricationVisible(b);
 
-  b = readStorage("silkscreenVisible");
-  if (b === null) {
-    b = config.show_silkscreen;
-  } else {
-    b = (b == "true");
-  }
+  b = getStorageBooleanOrDefault("silkscreenVisible", config.show_silkscreen);
   document.getElementById("silkscreenCheckbox").checked = b;
   silkscreenVisible(b);
 
-  b = readStorage("redrawOnDrag");
-  if (b === null) {
-    b = config.redraw_on_drag;
-  } else {
-    b = (b == "true");
-  }
+  b = getStorageBooleanOrDefault("redrawOnDrag", config.redraw_on_drag);
   document.getElementById("dragCheckbox").checked = b;
   setRedrawOnDrag(b);
 
-  b = readStorage("darkmode");
-  if (b === null) {
-    b = config.dark_mode;
-  } else {
-    b = (b == "true");
-  }
+  b = getStorageBooleanOrDefault("darkmode", config.dark_mode);
   document.getElementById("darkmodeCheckbox").checked = b;
   setDarkMode(b);
 
-  b = readStorage("highlightpin1");
-  if (b === null) {
-    b = config.highlight_pin1;
-  } else {
-    b = (b == "true");
-  }
+  b = getStorageBooleanOrDefault("highlightpin1", config.highlight_pin1);
   document.getElementById("highlightpin1Checkbox").checked = b;
   setHighlightPin1(b);
 
