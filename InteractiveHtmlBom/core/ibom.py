@@ -545,6 +545,7 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     html = get_file_content("ibom.html")
     html = html.replace('///CSS///', get_file_content('ibom.css'))
     html = html.replace('///SPLITJS///', get_file_content('split.js'))
+    html = html.replace('///POINTER_EVENTS_POLYFILL///', get_file_content('pep.js'))
     html = html.replace('///CONFIG///', config_js)
     html = html.replace('///PCBDATA///', pcbdata_js)
     html = html.replace('///UTILJS///', get_file_content('util.js'))

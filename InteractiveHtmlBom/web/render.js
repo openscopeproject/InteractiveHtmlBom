@@ -435,6 +435,13 @@ function handlePointerDown(e, layerdict) {
   }
   e.preventDefault();
   e.stopPropagation();
+
+  if (!e.hasOwnProperty("offsetX")) {
+    // The polyfill doesn't set this properly
+    e.offsetX = e.pageX - e.currentTarget.offsetLeft;
+    e.offsetY = e.pageY - e.currentTarget.offsetTop;
+  }
+
   layerdict.pointerStates[e.pointerId] = {
     distanceTravelled: 0,
     lastX: e.offsetX,
@@ -443,6 +450,12 @@ function handlePointerDown(e, layerdict) {
 }
 
 function handleMouseClick(e, layerdict) {
+  if (!e.hasOwnProperty("offsetX")) {
+    // The polyfill doesn't set this properly
+    e.offsetX = e.pageX - e.currentTarget.offsetLeft;
+    e.offsetY = e.pageY - e.currentTarget.offsetTop;
+  }
+
   var x = e.offsetX;
   var y = e.offsetY;
   var t = layerdict.transform;
@@ -457,6 +470,17 @@ function handleMouseClick(e, layerdict) {
   if (modules.length > 0) {
     modulesClicked(modules);
   }
+}
+
+function handlePointerLeave(e, layerdict) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (!redrawOnDrag) {
+    redrawCanvas(layerdict);
+  }
+
+  delete layerdict.pointerStates[e.pointerId];
 }
 
 function handlePointerUp(e, layerdict) {
@@ -485,6 +509,12 @@ function handlePointerMove(e, layerdict) {
   }
   e.preventDefault();
   e.stopPropagation();
+
+  if (!e.hasOwnProperty("offsetX")) {
+    // The polyfill doesn't set this properly
+    e.offsetX = e.pageX - e.currentTarget.offsetLeft;
+    e.offsetY = e.pageY - e.currentTarget.offsetTop;
+  }
 
   var thisPtr = layerdict.pointerStates[e.pointerId];
 
@@ -554,15 +584,22 @@ function handleMouseWheel(e, layerdict) {
 }
 
 function addMouseHandlers(div, layerdict) {
-  div.onpointerdown = function(e) {
+  div.addEventListener("pointerdown", function(e) {
     handlePointerDown(e, layerdict);
-  };
-  div.onpointermove = function(e) {
+  });
+  div.addEventListener("pointermove", function(e) {
     handlePointerMove(e, layerdict);
-  };
-  div.onpointerup = div.onpointercancel = div.onpointerleave = div.onpointerout = function(e) {
+  });
+  div.addEventListener("pointerup", function(e) {
     handlePointerUp(e, layerdict);
+  });
+  var pointerleave = function(e) {
+    handlePointerLeave(e, layerdict);
   };
+  div.addEventListener("pointercancel", pointerleave);
+  div.addEventListener("pointerleave", pointerleave);
+  div.addEventListener("pointerout", pointerleave);
+
   div.onwheel = function(e) {
     handleMouseWheel(e, layerdict);
   };
