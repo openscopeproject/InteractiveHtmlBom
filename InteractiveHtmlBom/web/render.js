@@ -429,17 +429,17 @@ function bboxScan(layer, x, y) {
   return result;
 }
 
-function handleMouseDown(e, layerdict) {
-  if (e.which != 1) {
+function handlePointerDown(e, layerdict) {
+  if (e.button != 0) {
     return;
   }
   e.preventDefault();
   e.stopPropagation();
-  layerdict.transform.mousestartx = e.offsetX;
-  layerdict.transform.mousestarty = e.offsetY;
-  layerdict.transform.mousedownx = e.offsetX;
-  layerdict.transform.mousedowny = e.offsetY;
-  layerdict.transform.mousedown = true;
+  layerdict.pointerStates[e.pointerId] = {
+    distanceTravelled: 0,
+    lastX: e.offsetX,
+    lastY: e.offsetY,
+  };
 }
 
 function handleMouseClick(e, layerdict) {
@@ -459,19 +459,14 @@ function handleMouseClick(e, layerdict) {
   }
 }
 
-function handleMouseUp(e, layerdict) {
+function handlePointerUp(e, layerdict) {
   e.preventDefault();
   e.stopPropagation();
-  if (e.which == 1 &&
-    layerdict.transform.mousedown &&
-    layerdict.transform.mousedownx == e.offsetX &&
-    layerdict.transform.mousedowny == e.offsetY) {
+
+  if (e.button == 0 && layerdict.pointerStates.hasOwnProperty(e.pointerId) && layerdict.pointerStates[e.pointerId].distanceTravelled < 10) {
     // This is just a click
     handleMouseClick(e, layerdict);
-    layerdict.transform.mousedown = false;
-    return;
-  }
-  if (e.which == 3) {
+  } else if (e.button == 2) {
     // Reset pan and zoom on right click.
     layerdict.transform.panx = 0;
     layerdict.transform.pany = 0;
@@ -480,21 +475,54 @@ function handleMouseUp(e, layerdict) {
   } else if (!redrawOnDrag) {
     redrawCanvas(layerdict);
   }
-  layerdict.transform.mousedown = false;
+
+  delete layerdict.pointerStates[e.pointerId];
 }
 
-function handleMouseMove(e, layerdict) {
-  if (!layerdict.transform.mousedown) {
+function handlePointerMove(e, layerdict) {
+  if (!layerdict.pointerStates.hasOwnProperty(e.pointerId)) {
     return;
   }
   e.preventDefault();
   e.stopPropagation();
-  var dx = e.offsetX - layerdict.transform.mousestartx;
-  var dy = e.offsetY - layerdict.transform.mousestarty;
-  layerdict.transform.panx += devicePixelRatio * dx / layerdict.transform.zoom;
-  layerdict.transform.pany += devicePixelRatio * dy / layerdict.transform.zoom;
-  layerdict.transform.mousestartx = e.offsetX;
-  layerdict.transform.mousestarty = e.offsetY;
+
+  var thisPtr = layerdict.pointerStates[e.pointerId];
+
+  if (Object.keys(layerdict.pointerStates).length == 1) {
+    // This is a simple drag
+    var dx = e.offsetX - thisPtr.lastX;
+    var dy = e.offsetY - thisPtr.lastY;
+
+    // If this number is low on pointer up, we count the action as a click
+    thisPtr.distanceTravelled += Math.abs(dx);
+    thisPtr.distanceTravelled += Math.abs(dy);
+
+    layerdict.transform.panx += devicePixelRatio * dx / layerdict.transform.zoom;
+    layerdict.transform.pany += devicePixelRatio * dy / layerdict.transform.zoom;
+  } else if (Object.keys(layerdict.pointerStates).length == 2) {
+    var otherPtr = layerdict.pointerStates[Object.keys(layerdict.pointerStates).filter((id) => id != e.pointerId)[0]];
+
+    // There's a multi-touch interaction happening, so neither pointer should be counted as doing a click
+    thisPtr.distanceTravelled = Infinity;
+    otherPtr.distanceTravelled = Infinity;
+
+    var oldDist = Math.sqrt(Math.pow(thisPtr.lastX - otherPtr.lastX, 2) + Math.pow(thisPtr.lastY - otherPtr.lastY, 2));
+    var newDist = Math.sqrt(Math.pow(e.offsetX - otherPtr.lastX, 2)     + Math.pow(e.offsetY - otherPtr.lastY, 2));
+
+    var scaleFactor = newDist/oldDist;
+
+    if (scaleFactor != NaN) {
+      layerdict.transform.zoom *= scaleFactor;
+
+      var zoomd = (1 - scaleFactor) / layerdict.transform.zoom;
+      layerdict.transform.panx += devicePixelRatio * otherPtr.lastX * zoomd;
+      layerdict.transform.pany += devicePixelRatio * otherPtr.lastY * zoomd;
+    }
+  }
+
+  thisPtr.lastX = e.offsetX;
+  thisPtr.lastY = e.offsetY;
+
   if (redrawOnDrag) {
     redrawCanvas(layerdict);
   }
@@ -526,21 +554,18 @@ function handleMouseWheel(e, layerdict) {
 }
 
 function addMouseHandlers(div, layerdict) {
-  div.onmousedown = function(e) {
-    handleMouseDown(e, layerdict);
+  div.onpointerdown = function(e) {
+    handlePointerDown(e, layerdict);
   };
-  div.onmousemove = function(e) {
-    handleMouseMove(e, layerdict);
+  div.onpointermove = function(e) {
+    handlePointerMove(e, layerdict);
   };
-  div.onmouseup = function(e) {
-    handleMouseUp(e, layerdict);
+  div.onpointerup = div.onpointercancel = div.onpointerleave = div.onpointerout = function(e) {
+    handlePointerUp(e, layerdict);
   };
-  div.onmouseout = function(e) {
-    handleMouseUp(e, layerdict);
-  }
   div.onwheel = function(e) {
     handleMouseWheel(e, layerdict);
-  }
+  };
   for (var element of [div, layerdict.bg, layerdict.fab, layerdict.silk, layerdict.highlight]) {
     element.addEventListener("contextmenu", function(e) {
       e.preventDefault();
@@ -570,10 +595,8 @@ function initRender() {
         panx: 0,
         pany: 0,
         zoom: 1,
-        mousestartx: 0,
-        mousestarty: 0,
-        mousedown: false,
       },
+      pointerStates: {},
       bg: document.getElementById("F_bg"),
       fab: document.getElementById("F_fab"),
       silk: document.getElementById("F_slk"),
@@ -588,10 +611,8 @@ function initRender() {
         panx: 0,
         pany: 0,
         zoom: 1,
-        mousestartx: 0,
-        mousestarty: 0,
-        mousedown: false,
       },
+      pointerStates: {},
       bg: document.getElementById("B_bg"),
       fab: document.getElementById("B_fab"),
       silk: document.getElementById("B_slk"),
