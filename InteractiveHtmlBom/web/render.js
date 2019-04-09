@@ -371,8 +371,8 @@ function recalcLayerScale(canvasdict) {
     "F": "frontcanvas",
     "B": "backcanvas"
   } [canvasdict.layer];
-  var width = document.getElementById(canvasdivid).clientWidth * 2;
-  var height = document.getElementById(canvasdivid).clientHeight * 2;
+  var width = document.getElementById(canvasdivid).clientWidth * devicePixelRatio;
+  var height = document.getElementById(canvasdivid).clientHeight * devicePixelRatio;
   var bbox = applyRotation(pcbdata.edges_bbox);
   var scalefactor = 0.98 * Math.min(
     width / (bbox.maxx - bbox.minx),
@@ -393,8 +393,8 @@ function recalcLayerScale(canvasdict) {
     canvas = canvasdict[c];
     canvas.width = width;
     canvas.height = height;
-    canvas.style.width = (width / 2) + "px";
-    canvas.style.height = (height / 2) + "px";
+    canvas.style.width = (width / devicePixelRatio) + "px";
+    canvas.style.height = (height / devicePixelRatio) + "px";
   }
 }
 
@@ -447,11 +447,11 @@ function handleMouseClick(e, layerdict) {
   var y = e.offsetY;
   var t = layerdict.transform;
   if (layerdict.layer == "B") {
-    x = (2 * x / t.zoom - t.panx + t.x) / -t.s;
+    x = (devicePixelRatio * x / t.zoom - t.panx + t.x) / -t.s;
   } else {
-    x = (2 * x / t.zoom - t.panx - t.x) / t.s;
+    x = (devicePixelRatio * x / t.zoom - t.panx - t.x) / t.s;
   }
-  y = (2 * y / t.zoom - t.y - t.pany) / t.s;
+  y = (devicePixelRatio * y / t.zoom - t.y - t.pany) / t.s;
   var v = rotateVector([x, y], -boardRotation);
   var modules = bboxScan(layerdict.layer, v[0], v[1]);
   if (modules.length > 0) {
@@ -491,8 +491,8 @@ function handleMouseMove(e, layerdict) {
   e.stopPropagation();
   var dx = e.offsetX - layerdict.transform.mousestartx;
   var dy = e.offsetY - layerdict.transform.mousestarty;
-  layerdict.transform.panx += 2 * dx / layerdict.transform.zoom;
-  layerdict.transform.pany += 2 * dy / layerdict.transform.zoom;
+  layerdict.transform.panx += devicePixelRatio * dx / layerdict.transform.zoom;
+  layerdict.transform.pany += devicePixelRatio * dy / layerdict.transform.zoom;
   layerdict.transform.mousestartx = e.offsetX;
   layerdict.transform.mousestarty = e.offsetY;
   if (redrawOnDrag) {
@@ -520,8 +520,8 @@ function handleMouseWheel(e, layerdict) {
   }
   t.zoom *= m;
   var zoomd = (1 - m) / t.zoom;
-  t.panx += 2 * e.offsetX * zoomd;
-  t.pany += 2 * e.offsetY * zoomd;
+  t.panx += devicePixelRatio * e.offsetX * zoomd;
+  t.pany += devicePixelRatio * e.offsetY * zoomd;
   redrawCanvas(layerdict);
 }
 
