@@ -446,6 +446,7 @@ function handlePointerDown(e, layerdict) {
     distanceTravelled: 0,
     lastX: e.offsetX,
     lastY: e.offsetY,
+    downTime: Date.now(),
   };
 }
 
@@ -483,21 +484,53 @@ function handlePointerLeave(e, layerdict) {
   delete layerdict.pointerStates[e.pointerId];
 }
 
+function resetTransform(layerdict) {
+  layerdict.transform.panx = 0;
+  layerdict.transform.pany = 0;
+  layerdict.transform.zoom = 1;
+  redrawCanvas(layerdict);
+}
+
 function handlePointerUp(e, layerdict) {
+  if (!e.hasOwnProperty("offsetX")) {
+    // The polyfill doesn't set this properly
+    e.offsetX = e.pageX - e.currentTarget.offsetLeft;
+    e.offsetY = e.pageY - e.currentTarget.offsetTop;
+  }
+
   e.preventDefault();
   e.stopPropagation();
 
-  if (e.button == 0 && layerdict.pointerStates.hasOwnProperty(e.pointerId) && layerdict.pointerStates[e.pointerId].distanceTravelled < 10) {
-    // This is just a click
-    handleMouseClick(e, layerdict);
+  if (layerdict.pointerStates.hasOwnProperty(e.pointerId)) {
+    // We haven't necessarily had a pointermove event since the interaction started, so make sure we update this now
+    var ptr = layerdict.pointerStates[e.pointerId];
+    ptr.distanceTravelled += Math.abs(e.offsetX - ptr.lastX);
+    ptr.distanceTravelled += Math.abs(e.offsetY - ptr.lastY);
+  }
+
+  if (e.button == 0 && layerdict.pointerStates.hasOwnProperty(e.pointerId) && layerdict.pointerStates[e.pointerId].distanceTravelled < 10 && Date.now() - layerdict.pointerStates[e.pointerId].downTime <= 500) {
+    if (Object.keys(layerdict.pointerStates).length == 1) {
+      if (layerdict.anotherPointerTapped) {
+        // This is the second pointer coming off of a two-finger tap
+        resetTransform(layerdict);
+      } else {
+        // This is just a regular tap
+        handleMouseClick(e, layerdict);
+      }
+      layerdict.anotherPointerTapped = false;
+    } else {
+      // This is the first finger coming off of what could become a two-finger tap
+      layerdict.anotherPointerTapped = true;
+    }
   } else if (e.button == 2) {
     // Reset pan and zoom on right click.
-    layerdict.transform.panx = 0;
-    layerdict.transform.pany = 0;
-    layerdict.transform.zoom = 1;
-    redrawCanvas(layerdict);
-  } else if (!redrawOnDrag) {
-    redrawCanvas(layerdict);
+    resetTransform(layerdict);
+    layerdict.anotherPointerTapped = false;
+  } else {
+    if (!redrawOnDrag) {
+      redrawCanvas(layerdict);
+    }
+    layerdict.anotherPointerTapped = false;
   }
 
   delete layerdict.pointerStates[e.pointerId];
@@ -518,23 +551,19 @@ function handlePointerMove(e, layerdict) {
 
   var thisPtr = layerdict.pointerStates[e.pointerId];
 
+  var dx = e.offsetX - thisPtr.lastX;
+  var dy = e.offsetY - thisPtr.lastY;
+
+  // If this number is low on pointer up, we count the action as a click
+  thisPtr.distanceTravelled += Math.abs(dx);
+  thisPtr.distanceTravelled += Math.abs(dy);
+
   if (Object.keys(layerdict.pointerStates).length == 1) {
     // This is a simple drag
-    var dx = e.offsetX - thisPtr.lastX;
-    var dy = e.offsetY - thisPtr.lastY;
-
-    // If this number is low on pointer up, we count the action as a click
-    thisPtr.distanceTravelled += Math.abs(dx);
-    thisPtr.distanceTravelled += Math.abs(dy);
-
     layerdict.transform.panx += devicePixelRatio * dx / layerdict.transform.zoom;
     layerdict.transform.pany += devicePixelRatio * dy / layerdict.transform.zoom;
   } else if (Object.keys(layerdict.pointerStates).length == 2) {
     var otherPtr = Object.values(layerdict.pointerStates).filter((ptr) => ptr != thisPtr)[0];
-
-    // There's a multi-touch interaction happening, so neither pointer should be counted as doing a click
-    thisPtr.distanceTravelled = Infinity;
-    otherPtr.distanceTravelled = Infinity;
 
     var oldDist = Math.sqrt(Math.pow(thisPtr.lastX - otherPtr.lastX, 2) + Math.pow(thisPtr.lastY - otherPtr.lastY, 2));
     var newDist = Math.sqrt(Math.pow(e.offsetX - otherPtr.lastX, 2)     + Math.pow(e.offsetY - otherPtr.lastY, 2));
@@ -634,6 +663,7 @@ function initRender() {
         zoom: 1,
       },
       pointerStates: {},
+      anotherPointerTapped: false,
       bg: document.getElementById("F_bg"),
       fab: document.getElementById("F_fab"),
       silk: document.getElementById("F_slk"),
@@ -650,6 +680,7 @@ function initRender() {
         zoom: 1,
       },
       pointerStates: {},
+      anotherPointerTapped: false,
       bg: document.getElementById("B_bg"),
       fab: document.getElementById("B_fab"),
       silk: document.getElementById("B_slk"),
