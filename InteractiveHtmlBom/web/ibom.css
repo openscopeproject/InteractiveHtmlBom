@@ -611,3 +611,7 @@ a {
 .dark a {
   color: #00b9fd;
 }
+
+#frontcanvas, #backcanvas {
+    touch-action: none;
+}

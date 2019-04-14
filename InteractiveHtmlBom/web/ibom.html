@@ -14,6 +14,10 @@
 ///////////////////////////////////////////////
 
 ///////////////////////////////////////////////
+///POINTER_EVENTS_POLYFILL///
+///////////////////////////////////////////////
+
+///////////////////////////////////////////////
 ///CONFIG///
 ///////////////////////////////////////////////
 
@@ -151,7 +155,7 @@
       </table>
     </div>
     <div id="canvasdiv" class="split split-horizontal">
-      <div id="frontcanvas" class="split" style="overflow: hidden">
+      <div id="frontcanvas" class="split" touch-action="none" style="overflow: hidden">
         <div style="position: relative; width: 100%; height: 100%;">
           <canvas id="F_bg" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
           <canvas id="F_fab" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
@@ -159,7 +163,7 @@
           <canvas id="F_hl" style="position: absolute; left: 0; top: 0; z-index: 3;"></canvas>
         </div>
       </div>
-      <div id="backcanvas" class="split" style="overflow: hidden">
+      <div id="backcanvas" class="split" touch-action="none" style="overflow: hidden">
         <div style="position: relative; width: 100%; height: 100%;">
           <canvas id="B_bg" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
           <canvas id="B_fab" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>

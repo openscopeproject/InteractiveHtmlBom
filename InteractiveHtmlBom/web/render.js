@@ -429,20 +429,34 @@ function bboxScan(layer, x, y) {
   return result;
 }
 
-function handleMouseDown(e, layerdict) {
-  if (e.which != 1) {
+function handlePointerDown(e, layerdict) {
+  if (e.button != 0) {
     return;
   }
   e.preventDefault();
   e.stopPropagation();
-  layerdict.transform.mousestartx = e.offsetX;
-  layerdict.transform.mousestarty = e.offsetY;
-  layerdict.transform.mousedownx = e.offsetX;
-  layerdict.transform.mousedowny = e.offsetY;
-  layerdict.transform.mousedown = true;
+
+  if (!e.hasOwnProperty("offsetX")) {
+    // The polyfill doesn't set this properly
+    e.offsetX = e.pageX - e.currentTarget.offsetLeft;
+    e.offsetY = e.pageY - e.currentTarget.offsetTop;
+  }
+
+  layerdict.pointerStates[e.pointerId] = {
+    distanceTravelled: 0,
+    lastX: e.offsetX,
+    lastY: e.offsetY,
+    downTime: Date.now(),
+  };
 }
 
 function handleMouseClick(e, layerdict) {
+  if (!e.hasOwnProperty("offsetX")) {
+    // The polyfill doesn't set this properly
+    e.offsetX = e.pageX - e.currentTarget.offsetLeft;
+    e.offsetY = e.pageY - e.currentTarget.offsetTop;
+  }
+
   var x = e.offsetX;
   var y = e.offsetY;
   var t = layerdict.transform;
@@ -459,42 +473,111 @@ function handleMouseClick(e, layerdict) {
   }
 }
 
-function handleMouseUp(e, layerdict) {
+function handlePointerLeave(e, layerdict) {
   e.preventDefault();
   e.stopPropagation();
-  if (e.which == 1 &&
-    layerdict.transform.mousedown &&
-    layerdict.transform.mousedownx == e.offsetX &&
-    layerdict.transform.mousedowny == e.offsetY) {
-    // This is just a click
-    handleMouseClick(e, layerdict);
-    layerdict.transform.mousedown = false;
-    return;
-  }
-  if (e.which == 3) {
-    // Reset pan and zoom on right click.
-    layerdict.transform.panx = 0;
-    layerdict.transform.pany = 0;
-    layerdict.transform.zoom = 1;
-    redrawCanvas(layerdict);
-  } else if (!redrawOnDrag) {
+
+  if (!redrawOnDrag) {
     redrawCanvas(layerdict);
   }
-  layerdict.transform.mousedown = false;
+
+  delete layerdict.pointerStates[e.pointerId];
 }
 
-function handleMouseMove(e, layerdict) {
-  if (!layerdict.transform.mousedown) {
+function resetTransform(layerdict) {
+  layerdict.transform.panx = 0;
+  layerdict.transform.pany = 0;
+  layerdict.transform.zoom = 1;
+  redrawCanvas(layerdict);
+}
+
+function handlePointerUp(e, layerdict) {
+  if (!e.hasOwnProperty("offsetX")) {
+    // The polyfill doesn't set this properly
+    e.offsetX = e.pageX - e.currentTarget.offsetLeft;
+    e.offsetY = e.pageY - e.currentTarget.offsetTop;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  // We haven't necessarily had a pointermove event since the interaction started, so make sure we update this now
+  var ptr = layerdict.pointerStates[e.pointerId];
+  ptr.distanceTravelled += Math.abs(e.offsetX - ptr.lastX) + Math.abs(e.offsetY - ptr.lastY);
+
+  if (e.button == 0 && ptr.distanceTravelled < 10 && Date.now() - ptr.downTime <= 500) {
+    if (Object.keys(layerdict.pointerStates).length == 1) {
+      if (layerdict.anotherPointerTapped) {
+        // This is the second pointer coming off of a two-finger tap
+        resetTransform(layerdict);
+      } else {
+        // This is just a regular tap
+        handleMouseClick(e, layerdict);
+      }
+      layerdict.anotherPointerTapped = false;
+    } else {
+      // This is the first finger coming off of what could become a two-finger tap
+      layerdict.anotherPointerTapped = true;
+    }
+  } else if (e.button == 2) {
+    // Reset pan and zoom on right click.
+    resetTransform(layerdict);
+    layerdict.anotherPointerTapped = false;
+  } else {
+    if (!redrawOnDrag) {
+      redrawCanvas(layerdict);
+    }
+    layerdict.anotherPointerTapped = false;
+  }
+
+  delete layerdict.pointerStates[e.pointerId];
+}
+
+function handlePointerMove(e, layerdict) {
+  if (!layerdict.pointerStates.hasOwnProperty(e.pointerId)) {
     return;
   }
   e.preventDefault();
   e.stopPropagation();
-  var dx = e.offsetX - layerdict.transform.mousestartx;
-  var dy = e.offsetY - layerdict.transform.mousestarty;
-  layerdict.transform.panx += devicePixelRatio * dx / layerdict.transform.zoom;
-  layerdict.transform.pany += devicePixelRatio * dy / layerdict.transform.zoom;
-  layerdict.transform.mousestartx = e.offsetX;
-  layerdict.transform.mousestarty = e.offsetY;
+
+  if (!e.hasOwnProperty("offsetX")) {
+    // The polyfill doesn't set this properly
+    e.offsetX = e.pageX - e.currentTarget.offsetLeft;
+    e.offsetY = e.pageY - e.currentTarget.offsetTop;
+  }
+
+  var thisPtr = layerdict.pointerStates[e.pointerId];
+
+  var dx = e.offsetX - thisPtr.lastX;
+  var dy = e.offsetY - thisPtr.lastY;
+
+  // If this number is low on pointer up, we count the action as a click
+  thisPtr.distanceTravelled += Math.abs(dx) + Math.abs(dy);
+
+  if (Object.keys(layerdict.pointerStates).length == 1) {
+    // This is a simple drag
+    layerdict.transform.panx += devicePixelRatio * dx / layerdict.transform.zoom;
+    layerdict.transform.pany += devicePixelRatio * dy / layerdict.transform.zoom;
+  } else if (Object.keys(layerdict.pointerStates).length == 2) {
+    var otherPtr = Object.values(layerdict.pointerStates).filter((ptr) => ptr != thisPtr)[0];
+
+    var oldDist = Math.sqrt(Math.pow(thisPtr.lastX - otherPtr.lastX, 2) + Math.pow(thisPtr.lastY - otherPtr.lastY, 2));
+    var newDist = Math.sqrt(Math.pow(e.offsetX - otherPtr.lastX, 2)     + Math.pow(e.offsetY - otherPtr.lastY, 2));
+
+    var scaleFactor = newDist/oldDist;
+
+    if (scaleFactor != NaN) {
+      layerdict.transform.zoom *= scaleFactor;
+
+      var zoomd = (1 - scaleFactor) / layerdict.transform.zoom;
+      layerdict.transform.panx += devicePixelRatio * otherPtr.lastX * zoomd;
+      layerdict.transform.pany += devicePixelRatio * otherPtr.lastY * zoomd;
+    }
+  }
+
+  thisPtr.lastX = e.offsetX;
+  thisPtr.lastY = e.offsetY;
+
   if (redrawOnDrag) {
     redrawCanvas(layerdict);
   }
@@ -526,18 +609,22 @@ function handleMouseWheel(e, layerdict) {
 }
 
 function addMouseHandlers(div, layerdict) {
-  div.onmousedown = function(e) {
-    handleMouseDown(e, layerdict);
-  };
-  div.onmousemove = function(e) {
-    handleMouseMove(e, layerdict);
-  };
-  div.onmouseup = function(e) {
-    handleMouseUp(e, layerdict);
-  };
-  div.onmouseout = function(e) {
-    handleMouseUp(e, layerdict);
+  div.addEventListener("pointerdown", function(e) {
+    handlePointerDown(e, layerdict);
+  });
+  div.addEventListener("pointermove", function(e) {
+    handlePointerMove(e, layerdict);
+  });
+  div.addEventListener("pointerup", function(e) {
+    handlePointerUp(e, layerdict);
+  });
+  var pointerleave = function(e) {
+    handlePointerLeave(e, layerdict);
   }
+  div.addEventListener("pointercancel", pointerleave);
+  div.addEventListener("pointerleave", pointerleave);
+  div.addEventListener("pointerout", pointerleave);
+
   div.onwheel = function(e) {
     handleMouseWheel(e, layerdict);
   }
@@ -570,10 +657,9 @@ function initRender() {
         panx: 0,
         pany: 0,
         zoom: 1,
-        mousestartx: 0,
-        mousestarty: 0,
-        mousedown: false,
       },
+      pointerStates: {},
+      anotherPointerTapped: false,
       bg: document.getElementById("F_bg"),
       fab: document.getElementById("F_fab"),
       silk: document.getElementById("F_slk"),
@@ -588,10 +674,9 @@ function initRender() {
         panx: 0,
         pany: 0,
         zoom: 1,
-        mousestartx: 0,
-        mousestarty: 0,
-        mousedown: false,
       },
+      pointerStates: {},
+      anotherPointerTapped: false,
       bg: document.getElementById("B_bg"),
       fab: document.getElementById("B_fab"),
       silk: document.getElementById("B_slk"),
