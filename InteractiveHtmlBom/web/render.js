@@ -501,14 +501,11 @@ function handlePointerUp(e, layerdict) {
   e.preventDefault();
   e.stopPropagation();
 
-  if (layerdict.pointerStates.hasOwnProperty(e.pointerId)) {
-    // We haven't necessarily had a pointermove event since the interaction started, so make sure we update this now
-    var ptr = layerdict.pointerStates[e.pointerId];
-    ptr.distanceTravelled += Math.abs(e.offsetX - ptr.lastX);
-    ptr.distanceTravelled += Math.abs(e.offsetY - ptr.lastY);
-  }
+  // We haven't necessarily had a pointermove event since the interaction started, so make sure we update this now
+  var ptr = layerdict.pointerStates[e.pointerId];
+  ptr.distanceTravelled += Math.abs(e.offsetX - ptr.lastX) + Math.abs(e.offsetY - ptr.lastY);
 
-  if (e.button == 0 && layerdict.pointerStates.hasOwnProperty(e.pointerId) && layerdict.pointerStates[e.pointerId].distanceTravelled < 10 && Date.now() - layerdict.pointerStates[e.pointerId].downTime <= 500) {
+  if (e.button == 0 && ptr.distanceTravelled < 10 && Date.now() - ptr.downTime <= 500) {
     if (Object.keys(layerdict.pointerStates).length == 1) {
       if (layerdict.anotherPointerTapped) {
         // This is the second pointer coming off of a two-finger tap
@@ -555,8 +552,7 @@ function handlePointerMove(e, layerdict) {
   var dy = e.offsetY - thisPtr.lastY;
 
   // If this number is low on pointer up, we count the action as a click
-  thisPtr.distanceTravelled += Math.abs(dx);
-  thisPtr.distanceTravelled += Math.abs(dy);
+  thisPtr.distanceTravelled += Math.abs(dx) + Math.abs(dy);
 
   if (Object.keys(layerdict.pointerStates).length == 1) {
     // This is a simple drag
