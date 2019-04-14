@@ -745,7 +745,7 @@ function initDefaults() {
   document.getElementById("bomCheckboxes").value = bomCheckboxes;
 
   var b = getStorageBooleanOrDefault("padsVisible", config.show_pads);
-  document.getElementById("fabricationCheckbox").checked = b;
+  document.getElementById("padsCheckbox").checked = b;
   padsVisible(b);
 
   b = getStorageBooleanOrDefault("fabricationVisible", config.show_fabrication);
