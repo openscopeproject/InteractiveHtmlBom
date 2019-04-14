@@ -530,7 +530,7 @@ function handlePointerMove(e, layerdict) {
     layerdict.transform.panx += devicePixelRatio * dx / layerdict.transform.zoom;
     layerdict.transform.pany += devicePixelRatio * dy / layerdict.transform.zoom;
   } else if (Object.keys(layerdict.pointerStates).length == 2) {
-    var otherPtr = layerdict.pointerStates[Object.keys(layerdict.pointerStates).filter((id) => id != e.pointerId)[0]];
+    var otherPtr = Object.values(layerdict.pointerStates).filter((ptr) => ptr != thisPtr)[0];
 
     // There's a multi-touch interaction happening, so neither pointer should be counted as doing a click
     thisPtr.distanceTravelled = Infinity;
@@ -595,14 +595,14 @@ function addMouseHandlers(div, layerdict) {
   });
   var pointerleave = function(e) {
     handlePointerLeave(e, layerdict);
-  };
+  }
   div.addEventListener("pointercancel", pointerleave);
   div.addEventListener("pointerleave", pointerleave);
   div.addEventListener("pointerout", pointerleave);
 
   div.onwheel = function(e) {
     handleMouseWheel(e, layerdict);
-  };
+  }
   for (var element of [div, layerdict.bg, layerdict.fab, layerdict.silk, layerdict.highlight]) {
     element.addEventListener("contextmenu", function(e) {
       e.preventDefault();
