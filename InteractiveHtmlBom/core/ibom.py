@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import io
 import json
 import logging
 import os
@@ -526,7 +527,7 @@ def process_substitutions(bom_name_format, pcb_file_name, metadata):
 def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     def get_file_content(file_name):
         path = os.path.join(os.path.dirname(__file__), "..", "web", file_name)
-        with open(path, "r") as f:
+        with io.open(path, 'r', encoding='utf-8') as f:
             return f.read()
 
     loginfo("Dumping pcb json data")
@@ -545,13 +546,14 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     html = get_file_content("ibom.html")
     html = html.replace('///CSS///', get_file_content('ibom.css'))
     html = html.replace('///SPLITJS///', get_file_content('split.js'))
-    html = html.replace('///POINTER_EVENTS_POLYFILL///', get_file_content('pep.js'))
+    html = html.replace('///POINTER_EVENTS_POLYFILL///',
+                        get_file_content('pep.js'))
     html = html.replace('///CONFIG///', config_js)
     html = html.replace('///PCBDATA///', pcbdata_js)
     html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
-    with open(bom_file_name, "wt") as bom:
+    with io.open(bom_file_name, 'wt', encoding='utf-8') as bom:
         bom.write(html)
     loginfo("Created file %s", bom_file_name)
     return bom_file_name

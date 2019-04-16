@@ -1,10 +1,12 @@
+import io
+
 from .parser_base import ParserBase
 from .sexpressions import parse_sexpression
 
 
 class NetlistParser(ParserBase):
     def get_extra_field_data(self):
-        with open(self.file_name, 'r') as f:
+        with io.open(self.file_name, 'r', encoding='utf-8') as f:
             sexpression = parse_sexpression(f.read())
         components = None
         for s in sexpression:
