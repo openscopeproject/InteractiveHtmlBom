@@ -501,6 +501,13 @@ function handlePointerUp(e, layerdict) {
   e.preventDefault();
   e.stopPropagation();
 
+  if (e.button == 2) {
+    // Reset pan and zoom on right click.
+    resetTransform(layerdict);
+    layerdict.anotherPointerTapped = false;
+    return;
+  }
+
   // We haven't necessarily had a pointermove event since the interaction started, so make sure we update this now
   var ptr = layerdict.pointerStates[e.pointerId];
   ptr.distanceTravelled += Math.abs(e.offsetX - ptr.lastX) + Math.abs(e.offsetY - ptr.lastY);
@@ -519,10 +526,6 @@ function handlePointerUp(e, layerdict) {
       // This is the first finger coming off of what could become a two-finger tap
       layerdict.anotherPointerTapped = true;
     }
-  } else if (e.button == 2) {
-    // Reset pan and zoom on right click.
-    resetTransform(layerdict);
-    layerdict.anotherPointerTapped = false;
   } else {
     if (!redrawOnDrag) {
       redrawCanvas(layerdict);
