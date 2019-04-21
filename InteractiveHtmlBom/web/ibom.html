@@ -63,6 +63,14 @@
             <input id="silkscreenCheckbox" type="checkbox" checked onchange="silkscreenVisible(this.checked)">
             Show silkscreen
           </label>
+          <label class="menu-label" style="width: calc(50% - 18px)">
+            <input id="referencesCheckbox" type="checkbox" checked onchange="referencesVisible(this.checked)">
+            References
+          </label><!-- This comment eats space! All of it!
+          --><label class="menu-label" style="width: calc(50% - 18px); border-left: 0;">
+            <input id="valuesCheckbox" type="checkbox" checked onchange="valuesVisible(this.checked)">
+            Values
+          </label>
           <label class="menu-label">
             <input id="highlightpin1Checkbox" type="checkbox" onchange="setHighlightPin1(this.checked)">
             Highlight first pin

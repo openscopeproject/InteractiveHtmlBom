@@ -271,7 +271,7 @@ def parse_poly_set(polygon_set):
     return result
 
 
-def parse_text(d):
+def parse_text(d, ref_val=None):
     pos = normalize(d.GetPosition())
     if not d.IsVisible():
         return None
@@ -348,12 +348,14 @@ def parse_drawings_on_layers(drawings, f_layer, b_layer):
     back = []
 
     for d in drawings:
-        if d.GetLayer() not in [f_layer, b_layer]:
+        if d[1].GetLayer() not in [f_layer, b_layer]:
             continue
-        drawing = parse_drawing(d)
+        drawing = parse_drawing(d[1])
         if not drawing:
             continue
-        if d.GetLayer() == f_layer:
+        if d[0] in ["ref", "val"]:
+            drawing[d[0]] = 1
+        if d[1].GetLayer() == f_layer:
             front.append(drawing)
         else:
             back.append(drawing)
@@ -365,12 +367,12 @@ def parse_drawings_on_layers(drawings, f_layer, b_layer):
 
 
 def get_all_drawings(pcb):
-    drawings = list(pcb.GetDrawings())
+    drawings = [(d.GetClass(), d) for d in list(pcb.GetDrawings())]
     for m in pcb.GetModules():
-        drawings.append(m.Reference())
-        drawings.append(m.Value())
+        drawings.append(("ref", m.Reference()))
+        drawings.append(("val", m.Value()))
         for d in m.GraphicalItems():
-            drawings.append(d)
+            drawings.append((d.GetClass(), d))
     return drawings
 
 

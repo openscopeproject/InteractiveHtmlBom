@@ -3,6 +3,8 @@
 var redrawOnDrag = true;
 var boardRotation = 0;
 var renderPads = true;
+var renderReferences = true;
+var renderValues = true;
 
 function deg2rad(deg) {
   return deg * Math.PI / 180;
@@ -20,6 +22,8 @@ function calcFontPoint(linepoint, text, offsetx, offsety, tilt) {
 }
 
 function drawtext(ctx, text, color, flip) {
+  if ("ref" in text && !renderReferences) return;
+  if ("val" in text && !renderValues) return;
   ctx.save();
   ctx.translate(...text.pos);
   var angle = -text.angle;

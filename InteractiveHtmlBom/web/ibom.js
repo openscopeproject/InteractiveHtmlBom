@@ -21,12 +21,29 @@ function dbg(html) {
   dbgdiv.innerHTML = html;
 }
 
-function padsVisible(value) {
-  renderPads = value;
+function redrawIfInitDone() {
   if (initDone) {
     redrawCanvas(allcanvas.front);
     redrawCanvas(allcanvas.back);
   }
+}
+
+function padsVisible(value) {
+  writeStorage("padsVisible", value);
+  renderPads = value;
+  redrawIfInitDone();
+}
+
+function referencesVisible(value) {
+  writeStorage("referencesVisible", value);
+  renderReferences = value;
+  redrawIfInitDone();
+}
+
+function valuesVisible(value) {
+  writeStorage("valuesVisible", value);
+  renderValues = value;
+  redrawIfInitDone();
 }
 
 function setDarkMode(value) {
@@ -36,10 +53,7 @@ function setDarkMode(value) {
     topmostdiv.classList.remove("dark");
   }
   writeStorage("darkmode", value);
-  if (initDone) {
-    redrawCanvas(allcanvas.front);
-    redrawCanvas(allcanvas.back);
-  }
+  redrawIfInitDone();
 }
 
 function layerVisible(visible, frontCavnas, backCanvas, storageString) {
@@ -60,10 +74,7 @@ function silkscreenVisible(visible) {
 function setHighlightPin1(value) {
   writeStorage("highlightpin1", value);
   highlightpin1 = value;
-  if (initDone) {
-    redrawCanvas(allcanvas.front);
-    redrawCanvas(allcanvas.back);
-  }
+  redrawIfInitDone();
 }
 
 function getStoredCheckboxRefs(checkbox) {
@@ -755,6 +766,14 @@ function initDefaults() {
   b = getStorageBooleanOrDefault("silkscreenVisible", config.show_silkscreen);
   document.getElementById("silkscreenCheckbox").checked = b;
   silkscreenVisible(b);
+
+  b = getStorageBooleanOrDefault("referencesVisible", true);
+  document.getElementById("referencesCheckbox").checked = b;
+  referencesVisible(b);
+
+  b = getStorageBooleanOrDefault("valuesVisible", true);
+  document.getElementById("valuesCheckbox").checked = b;
+  valuesVisible(b);
 
   b = getStorageBooleanOrDefault("redrawOnDrag", config.redraw_on_drag);
   document.getElementById("dragCheckbox").checked = b;

@@ -147,7 +147,11 @@ attribute.
     // may include none, one or both
     "italic", "mirrored"
   ],
-  "angle": angle
+  "angle": angle,
+  // Present only if text is reference designator
+  "ref": 1,
+  // Present only if text is component value
+  "val": 1,
 }
 ```
 
