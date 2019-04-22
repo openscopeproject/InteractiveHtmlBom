@@ -52,6 +52,7 @@ class Config:
     netlist_file = None
     netlist_initial_directory = ''  # This is relative to pcb file directory
     extra_fields = []
+    normalize_field_case = False
     board_variant_field = ''
     board_variant_whitelist = []
     board_variant_blacklist = []
@@ -101,6 +102,8 @@ class Config:
         self.extra_fields = self._split(f.Read(
                 'extra_fields',
                 ','.join(self.extra_fields)))
+        self.normalize_field_case = f.ReadBool(
+                'normalize_field_case', self.normalize_field_case)
         self.board_variant_field = f.Read(
                 'board_variant_field', self.board_variant_field)
         self.board_variant_whitelist = self._split(f.Read(
@@ -143,6 +146,7 @@ class Config:
 
         f.SetPath('/extra_fields')
         f.Write('extra_fields', ','.join(self.extra_fields))
+        f.WriteBool('normalize_field_case', self.normalize_field_case)
         f.Write('board_variant_field', self.board_variant_field)
         f.Write('board_variant_whitelist',
                 ','.join(self.board_variant_whitelist))
@@ -180,6 +184,7 @@ class Config:
         # Extra fields
         self.netlist_file = dlg.extra.netlistFilePicker.Path
         self.extra_fields = list(dlg.extra.extraFieldsList.GetCheckedStrings())
+        self.normalize_field_case = dlg.extra.normalizeCaseCheckbox.Value
         self.board_variant_field = dlg.extra.boardVariantFieldBox.Value
         if self.board_variant_field == dlg.extra.NONE_STRING:
             self.board_variant_field = ''
@@ -230,6 +235,7 @@ class Config:
             clb.SetCheckedStrings([s for s in strings if s in safe_strings])
 
         safe_set_checked_strings(dlg.extra.extraFieldsList, self.extra_fields)
+        dlg.extra.normalizeCaseCheckbox.Value = self.normalize_field_case
         dlg.extra.boardVariantFieldBox.Value = self.board_variant_field
         dlg.extra.OnBoardVariantFieldChange(None)
         safe_set_checked_strings(dlg.extra.boardVariantWhitelist,
@@ -306,6 +312,10 @@ class Config:
                             default=','.join(self.extra_fields),
                             help='Comma separated list of extra fields to '
                                  'pull from netlist or xml file.')
+        parser.add_argument('--normalize-field-case',
+                            help='Normalize extra field name case. E.g. "MPN" '
+                                 'and "mpn" will be considered the same field.',
+                            action='store_true')
         parser.add_argument('--variant-field',
                             help='Name of the extra field that stores board '
                                  'variant for component.')
@@ -348,6 +358,7 @@ class Config:
         # Extra
         self.netlist_file = args.netlist_file
         self.extra_fields = self._split(args.extra_fields)
+        self.normalize_field_case = args.normalize_field_case
         self.board_variant_field = args.variant_field
         self.board_variant_whitelist = args.variants_whitelist
         self.board_variant_blacklist = args.variants_blacklist
@@ -355,7 +366,5 @@ class Config:
 
     def get_html_config(self):
         import json
-        d = {}
-        for f in self.html_config_fields:
-            d[f] = getattr(self, f)
+        d = {f: getattr(self, f) for f in self.html_config_fields}
         return json.dumps(d)

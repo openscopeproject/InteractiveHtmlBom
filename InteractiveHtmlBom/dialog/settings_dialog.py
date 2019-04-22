@@ -207,7 +207,8 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
         netlist_file = self.netlistFilePicker.Path
         if not os.path.isfile(netlist_file):
             return
-        self.extra_field_data = self.extra_data_func(netlist_file)
+        self.extra_field_data = self.extra_data_func(
+                netlist_file, self.normalizeCaseCheckbox.Value)
         if self.extra_field_data is not None:
             field_list = list(self.extra_field_data[0])
             self.extraFieldsList.SetItems(field_list)

@@ -569,7 +569,8 @@ def main(pcb, config, parse_schematic_data, cli=False):
     # Get extra field data
     extra_fields = None
     if config.netlist_file and os.path.isfile(config.netlist_file):
-        extra_fields = parse_schematic_data(config.netlist_file)
+        extra_fields = parse_schematic_data(
+                config.netlist_file, config.normalize_field_case)
 
     need_extra_fields = (config.extra_fields or
                          config.board_variant_whitelist or

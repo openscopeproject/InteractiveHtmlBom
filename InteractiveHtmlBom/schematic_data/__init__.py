@@ -9,7 +9,7 @@ PARSERS = {
 }
 
 
-def parse_schematic_data(file_name):
+def parse_schematic_data(file_name, normalize_case):
     if not os.path.isfile(file_name):
         return None
     extension = os.path.splitext(file_name)[1]
@@ -17,7 +17,7 @@ def parse_schematic_data(file_name):
         return None
     else:
         parser = PARSERS[extension](file_name)
-        return parser.get_extra_field_data()
+        return parser.parse(normalize_case)
 
 
 def find_latest_schematic_data(pcb_file):

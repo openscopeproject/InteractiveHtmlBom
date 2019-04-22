@@ -403,6 +403,9 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         
         extraFieldsSizer.Add( bSizer4, 1, wx.EXPAND, 5 )
         
+        self.normalizeCaseCheckbox = wx.CheckBox( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Normalize field name case", wx.DefaultPosition, wx.DefaultSize, 0 )
+        extraFieldsSizer.Add( self.normalizeCaseCheckbox, 0, wx.ALL|wx.EXPAND, 5 )
+        
         
         bSizer42.Add( extraFieldsSizer, 2, wx.ALL|wx.EXPAND, 5 )
         
@@ -477,6 +480,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         self.netlistFilePicker.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnNetlistFileChanged )
         self.m_button1.Bind( wx.EVT_BUTTON, self.OnExtraFieldsUp )
         self.m_button2.Bind( wx.EVT_BUTTON, self.OnExtraFieldsDown )
+        self.normalizeCaseCheckbox.Bind( wx.EVT_CHECKBOX, self.OnNetlistFileChanged )
         self.boardVariantFieldBox.Bind( wx.EVT_COMBOBOX, self.OnBoardVariantFieldChange )
     
     def __del__( self ):
@@ -495,6 +499,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
     
     def OnExtraFieldsDown( self, event ):
         event.Skip()
+    
     
     def OnBoardVariantFieldChange( self, event ):
         event.Skip()
