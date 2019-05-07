@@ -243,7 +243,7 @@ function drawModule(ctx, layer, scalefactor, module, padcolor, outlinecolor, hig
   }
 }
 
-function drawEdges(canvas, scalefactor) {
+function drawEdgeCuts(canvas, scalefactor) {
   var ctx = canvas.getContext("2d");
   var edgecolor = getComputedStyle(topmostdiv).getPropertyValue('--pcb-edge-color');
   for (var edge of pcbdata.edges) {
@@ -305,7 +305,7 @@ function drawBackground(canvasdict) {
   clearCanvas(canvasdict.bg);
   clearCanvas(canvasdict.fab);
   clearCanvas(canvasdict.silk);
-  drawEdges(canvasdict.bg, canvasdict.transform.s);
+  drawEdgeCuts(canvasdict.bg, canvasdict.transform.s);
   drawModules(canvasdict.bg, canvasdict.layer,
     canvasdict.transform.s * canvasdict.transform.zoom, false);
 
@@ -314,14 +314,16 @@ function drawBackground(canvasdict) {
   var polygonColor = style.getPropertyValue('--silkscreen-polygon-color');
   var textColor = style.getPropertyValue('--silkscreen-text-color');
   drawBgLayer(
-    "silkscreen", canvasdict.silk, canvasdict.layer, canvasdict.transform.s,
+    "silkscreen", canvasdict.silk, canvasdict.layer,
+    canvasdict.transform.s * canvasdict.transform.zoom,
     edgeColor, polygonColor, textColor);
 
   edgeColor = style.getPropertyValue('--fabrication-edge-color');
   polygonColor = style.getPropertyValue('--fabrication-polygon-color');
   textColor = style.getPropertyValue('--fabrication-text-color');
   drawBgLayer(
-    "fabrication", canvasdict.fab, canvasdict.layer, canvasdict.transform.s,
+    "fabrication", canvasdict.fab, canvasdict.layer,
+    canvasdict.transform.s * canvasdict.transform.zoom,
     edgeColor, polygonColor, textColor);
 }
 
