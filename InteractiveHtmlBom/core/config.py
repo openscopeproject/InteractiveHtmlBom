@@ -9,6 +9,21 @@ from .. import dialog
 
 
 class Config:
+    FILE_NAME_FORMAT_HINT = (
+            'Output file name format supports substitutions:\n'
+            '\n'
+            '    %f : original pcb file name without extension.\n'
+            '    %p : pcb/project title from pcb metadata.\n'
+            '    %c : company from pcb metadata.\n'
+            '    %r : revision from pcb metadata.\n'
+            '    %d : pcb date from metadata if available, '
+            'file modification date otherwise.\n'
+            '    %D : bom generation date.\n'
+            '    %T : bom generation time.\n'
+            '\n'
+            'Extension .html will be added automatically.'
+    )  # type: str
+
     # Helper constants
     config_file = os.path.join(os.path.dirname(__file__), '..', 'config.ini')
     bom_view_choices = ['bom-only', 'left-right', 'top-bottom']

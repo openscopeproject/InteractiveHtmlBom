@@ -12,10 +12,11 @@ def pop_error(msg):
 
 
 class SettingsDialog(dialog_base.SettingsDialogBase):
-    def __init__(self, extra_data_func, config_save_func):
+    def __init__(self, extra_data_func, config_save_func,
+                 file_name_format_hint):
         dialog_base.SettingsDialogBase.__init__(self, None)
         self.panel = SettingsDialogPanel(
-                self, extra_data_func, config_save_func)
+                self, extra_data_func, config_save_func, file_name_format_hint)
         best_size = self.panel.BestSize
         # hack for some gtk themes that incorrectly calculate best size
         best_size.IncBy(dx=0, dy=30)
@@ -38,10 +39,12 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
 
 # Implementing settings_dialog
 class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
-    def __init__(self, parent, extra_data_func, config_save_func):
+    def __init__(self, parent, extra_data_func, config_save_func,
+                 file_name_format_hint):
         self.config_save_func = config_save_func
         dialog_base.SettingsDialogPanel.__init__(self, parent)
-        self.general = GeneralSettingsPanel(self.notebook)
+        self.general = GeneralSettingsPanel(self.notebook,
+                                            file_name_format_hint)
         self.html = HtmlSettingsPanel(self.notebook)
         self.extra = ExtraFieldsPanel(self.notebook, extra_data_func)
         self.notebook.AddPage(self.general, "General")
@@ -74,23 +77,10 @@ class HtmlSettingsPanel(dialog_base.HtmlSettingsPanelBase):
 
 # Implementing GeneralSettingsPanelBase
 class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
-    FILE_NAME_FORMAT_HINT = (
-        'Output file name format supports substitutions:\n' +
-        '\n' +
-        '    %f : original pcb file name without extension.\n' +
-        '    %p : pcb/project title from pcb metadata.\n' +
-        '    %c : company from pcb metadata.\n' +
-        '    %r : revision from pcb metadata.\n' +
-        '    %d : pcb date from metadata if available, ' +
-        'file modification date otherwise.\n' +
-        '    %D : bom generation date.\n' +
-        '    %T : bom generation time.\n' +
-        '\n' +
-        'Extension .html will be added automatically.'
-    )  # type: str
 
-    def __init__(self, parent):
+    def __init__(self, parent, file_name_format_hint):
         dialog_base.GeneralSettingsPanelBase.__init__(self, parent)
+        self.file_name_format_hint = file_name_format_hint
 
     # Handlers for GeneralSettingsPanelBase events.
     def OnComponentSortOrderUp(self, event):
@@ -159,8 +149,8 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
                 self.blacklistBox.SetSelection(max(selection - 1, 0))
 
     def OnNameFormatHintClick(self, event):
-        wx.MessageBox(self.FILE_NAME_FORMAT_HINT, 'File name format help',
-                      style=wx.ICON_NONE|wx.OK)
+        wx.MessageBox(self.file_name_format_hint, 'File name format help',
+                      style=wx.ICON_NONE | wx.OK)
 
     def OnSize(self, event):
         # Trick the listCheckBox best size calculations
