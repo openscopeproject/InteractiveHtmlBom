@@ -239,7 +239,9 @@ def main(parser, config, logger):
     # type: (EcadParser, Config, Logger) -> None
     global log
     log = logger
-    pcb_file_name = parser.file_name
+    pcb_file_name = os.path.basename(parser.file_name)
+    pcb_file_dir = os.path.dirname(parser.file_name)
+
     # Get extra field data
     extra_fields = None
     if config.netlist_file and os.path.isfile(config.netlist_file):
@@ -266,9 +268,10 @@ def main(parser, config, logger):
 
     extra_fields = extra_fields[1] if extra_fields else None
 
-    pcb_file_dir = os.path.dirname(pcb_file_name)
-
     pcbdata, components = parser.parse()
+    if not pcbdata or not components:
+        logger.error('Parsing failed.')
+        exit(1)
     pcbdata["bom"]["both"] = generate_bom(components, config, extra_fields)
 
     # build BOM

@@ -25,6 +25,15 @@ function drawtext(ctx, text, color, flip) {
   if ("ref" in text && !renderReferences) return;
   if ("val" in text && !renderValues) return;
   ctx.save();
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.lineCap = "round";
+  ctx.lineWidth = text.thickness;
+  if (text.svgpath) {
+    ctx.stroke(new Path2D(text.svgpath));
+    ctx.restore();
+    return;
+  }
   ctx.translate(...text.pos);
   var angle = -text.angle;
   if (text.attr.includes("mirrored")) {
@@ -40,10 +49,6 @@ function drawtext(ctx, text, color, flip) {
   // KiCad ignores last empty line.
   if (txt[txt.length - 1] == '') txt.pop();
   ctx.rotate(deg2rad(angle));
-  ctx.fillStyle = color;
-  ctx.strokeStyle = color;
-  ctx.lineCap = "round";
-  ctx.lineWidth = text.thickness;
   for (var i in txt) {
     var offsety = (-(txt.length - 1) + i * 2) * interline + text.height / 2;
     var lineWidth = 0;
@@ -93,12 +98,16 @@ function drawedge(ctx, scalefactor, edge, color) {
   }
   if (edge.type == "arc") {
     ctx.beginPath();
-    ctx.arc(
-      ...edge.start,
-      edge.radius,
-      deg2rad(edge.startangle),
-      deg2rad(edge.endangle));
-    ctx.stroke();
+    if (edge.svgpath) {
+      ctx.stroke(new Path2D(edge.svgpath));
+    } else {
+      ctx.arc(
+        ...edge.start,
+        edge.radius,
+        deg2rad(edge.startangle),
+        deg2rad(edge.endangle));
+      ctx.stroke();
+    }
   }
   if (edge.type == "circle") {
     ctx.beginPath();
@@ -145,9 +154,14 @@ function drawPolygons(ctx, color, polygons, ctxmethod) {
 
 function drawPolygonShape(ctx, shape, color) {
   ctx.save();
-  ctx.translate(...shape.pos);
-  ctx.rotate(deg2rad(-shape.angle));
-  drawPolygons(ctx, color, shape.polygons, ctx.fill.bind(ctx));
+  if (shape.svgpath) {
+    ctx.fillStyle = color;
+    ctx.fill(new Path2D(shape.svgpath));
+  } else {
+    ctx.translate(...shape.pos);
+    ctx.rotate(deg2rad(-shape.angle));
+    drawPolygons(ctx, color, shape.polygons, ctx.fill.bind(ctx));
+  }
   ctx.restore();
 }
 

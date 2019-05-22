@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     from .core import ibom
     from .core.config import Config
-    from .ecad import get_kicad_parser
+    from .ecad import get_parser_by_extension
 
     app = wx.App()
 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         exit(1)
     print("Loading %s" % args.file)
     logger = ibom.Logger(cli=True)
-    parser = get_kicad_parser(os.path.abspath(args.file), logger, None)
+    parser = get_parser_by_extension(os.path.abspath(args.file), logger)
     if args.show_dialog:
         ibom.run_with_dialog(parser, config, logger)
     else:
