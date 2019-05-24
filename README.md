@@ -35,3 +35,6 @@ generated bom page.
 
 `units.py` is borrowed from [KiBom](https://github.com/SchrodingersGat/KiBoM)
 plugin (MIT license).
+
+`svgpath.py` is heavily based on
+[svgpathtools](https://github.com/mathandy/svgpathtools) module (MIT license).

@@ -2,7 +2,6 @@ import io
 import sys
 
 from .common import EcadParser, Component, BoundingBox
-from .svgpath import parse_path
 
 
 PY3 = sys.version_info[0] == 3

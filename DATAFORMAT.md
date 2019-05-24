@@ -105,11 +105,14 @@ attribute.
 ```js
 {
   "type": "arc",
+  "width": width,
+  # SVG path of the arc given as 'd' attribute of svg spec.
+  # If this parameter is specified everything below it is ignored.
+  "svgpath": svgpath,
   "start": [x, y],
   "radius": radius,
   "startangle": angle1,
   "endangle": angle2,
-  "width": width,
 }
 ```
 
@@ -118,6 +121,9 @@ attribute.
 ```js
 {
   "type": "polygon",
+  # SVG path of the polygon given as 'd' attribute of svg spec.
+  # If this parameter is specified everything below it is ignored.
+  "svgpath": svgpath,
   "pos": [x, y],
   "angle": angle,
   "polygons": [
@@ -136,6 +142,12 @@ attribute.
 {
   "pos": [x, y],
   "text": text,
+  # SVG path of the text given as 'd' attribute of svg spec.
+  # If this parameter is specified then height, width, angle,
+  # text attributes and justification is ignored. Rendering engine
+  # will not attempt to read character data from newstroke font and
+  # will draw the path as is. "thickness" will be used as stroke width.
+  "svgpath": svgpath,
   "height": height,
   "width": width,
   // -1: justify left
