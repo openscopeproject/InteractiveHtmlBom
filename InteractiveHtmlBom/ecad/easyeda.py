@@ -2,6 +2,7 @@ import io
 import sys
 
 from .common import EcadParser, Component, BoundingBox
+from .svgpath import parse_path
 
 
 PY3 = sys.version_info[0] == 3
@@ -202,7 +203,7 @@ class EasyEdaParser(EcadParser):
         else:
             points = []
         angle = int(shape[10])
-        hole_length = self.normalize(shape[12])
+        hole_length = self.normalize(shape[12]) if shape[12] else 0
 
         pad_layers = {
             self.TOP_COPPER_LAYER: ['F'],
@@ -273,8 +274,7 @@ class EasyEdaParser(EcadParser):
             'custom': add_custom,
         }.get(pad['shape'])()
 
-    @staticmethod
-    def add_drawing_bounding_box(drawing, bbox):
+    def add_drawing_bounding_box(self, drawing, bbox):
         # type: (dict, BoundingBox) -> None
 
         def add_segment():
@@ -286,9 +286,13 @@ class EasyEdaParser(EcadParser):
             bbox.add_circle(drawing['start'][0], drawing['start'][1],
                             drawing['radius'] + drawing['width'] / 2)
 
+        def add_svgpath():
+            width = drawing.get('width', 0)
+            bbox.add_svgpath(drawing['svgpath'], width, self.logger)
+
         def add_polygon():
             if 'polygons' not in drawing:
-                # TODO: svgpath polygons
+                add_svgpath()
                 return
             polygon = drawing['polygons'][0]
             for point in polygon:
@@ -297,9 +301,9 @@ class EasyEdaParser(EcadParser):
         {
             'segment': add_segment,
             'circle': add_circle,
-            'arc': lambda: None,  # TODO
+            'arc': add_svgpath,
             'polygon': add_polygon,
-            'text': lambda: None,  # TODO
+            'text': lambda: None,  # text is not really needed for bounding box
         }.get(drawing['type'])()
 
     def parse_lib(self, shape):
@@ -353,7 +357,7 @@ class EasyEdaParser(EcadParser):
         for pad in pads:
             self.add_pad_bounding_box(pad, bbox)
         for drawing in copper_drawings:
-            self.add_drawing_bounding_box(drawing, bbox)
+            self.add_drawing_bounding_box(drawing['drawing'], bbox)
         for _, drawing in extra_drawings:
             self.add_drawing_bounding_box(drawing, bbox)
         bbox.pad(0.5)  # pad by 5 mil
@@ -430,14 +434,21 @@ class EasyEdaParser(EcadParser):
 
         drawings, modules, components = self.parse_shapes(pcb['shape'])
 
-        bbox = {
-            "minx": self.normalize(pcb['BBox']['x']),
-            "miny": self.normalize(pcb['BBox']['y']),
-            "maxx": self.normalize(pcb['BBox']['x']) + self.normalize(
-                    pcb['BBox']['width']),
-            "maxy": self.normalize(pcb['BBox']['y']) + self.normalize(
-                    pcb['BBox']['height'])
-        }
+        board_outline_bbox = BoundingBox()
+        for drawing in drawings.get(self.BOARD_OUTLINE_LAYER, []):
+            self.add_drawing_bounding_box(drawing, board_outline_bbox)
+        if board_outline_bbox.initialized():
+            bbox = board_outline_bbox.to_dict()
+        else:
+            # if nothing is drawn on outline layer then rely on EasyEDA bbox
+            x = self.normalize(pcb['BBox']['x'])
+            y = self.normalize(pcb['BBox']['y'])
+            bbox = {
+                "minx": x,
+                "miny": y,
+                "maxx": x + self.normalize(pcb['BBox']['width']),
+                "maxy": y + self.normalize(pcb['BBox']['height'])
+            }
 
         pcbdata = {
             "edges_bbox": bbox,

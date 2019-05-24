@@ -1,5 +1,7 @@
 import math
 
+from .svgpath import parse_path
+
 
 class EcadParser(object):
 
@@ -110,9 +112,12 @@ class BoundingBox(object):
         self.add_point(x, y + r)
         return self
 
-    def add_arc(self):
-        # TODO
-        pass
+    def add_svgpath(self, svgpath, width, logger):
+        w = width / 2
+        for segment in parse_path(svgpath, logger):
+            x0, x1, y0, y1 = segment.bbox()
+            self.add_point(x0 - w, y0 - w)
+            self.add_point(x1 + w, y1 + w)
 
     def pad(self, amount):
         """Add small padding to the box."""
