@@ -196,7 +196,8 @@ def process_substitutions(bom_name_format, pcb_file_name, metadata):
     name = name.replace('%D', now.strftime('%Y-%m-%d'))
     name = name.replace('%T', now.strftime('%H-%M-%S'))
     # sanitize the name to avoid characters illegal in file systems
-    name = re.sub(r'[/\\?%*:|"<>]', '_', name)
+    name = name.replace('\\', '/')
+    name = re.sub(r'[?%*:|"<>]', '_', name)
     return name + '.html'
 
 
@@ -212,11 +213,12 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
         bom_file_dir = config.bom_dest_dir
     else:
         bom_file_dir = os.path.join(pcb_file_dir, config.bom_dest_dir)
-    if not os.path.isdir(bom_file_dir):
-        os.makedirs(bom_file_dir)
     bom_file_name = process_substitutions(
             config.bom_name_format, pcb_file_name, pcbdata['metadata'])
     bom_file_name = os.path.join(bom_file_dir, bom_file_name)
+    bom_file_dir = os.path.dirname(bom_file_name)
+    if not os.path.isdir(bom_file_dir):
+        os.makedirs(bom_file_dir)
     pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
     config_js = "var config = " + config.get_html_config()
     html = get_file_content("ibom.html")
