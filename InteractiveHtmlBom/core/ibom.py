@@ -302,7 +302,7 @@ def run_with_dialog(parser, config, logger):
     )
     try:
         config.netlist_initial_directory = os.path.dirname(parser.file_name)
-        extra_data_file = parser.latest_extra_data
+        extra_data_file = parser.latest_extra_data()
         if extra_data_file is not None:
             dlg.set_extra_data_path(extra_data_file)
         config.transfer_to_dialog(dlg.panel)

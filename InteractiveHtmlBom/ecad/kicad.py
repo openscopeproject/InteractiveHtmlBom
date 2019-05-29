@@ -15,9 +15,22 @@ class PcbnewParser(EcadParser):
     def __init__(self, file_name, logger, board=None):
         super(PcbnewParser, self).__init__(file_name, logger)
         self.board = board
+        if self.board is None:
+            self.board = pcbnew.LoadBoard(self.file_name)  # type: pcbnew.BOARD
         self.font_parser = FontParser()
         self.extra_data_func = parse_schematic_data
-        self.latest_extra_data = find_latest_schematic_data(file_name)
+
+    def latest_extra_data(self):
+        base_name = os.path.splitext(os.path.basename(self.file_name))[0]
+        output_dir = self.board.GetPlotOptions().GetOutputDirectory()
+        file_dir_name = os.path.dirname(self.file_name)
+        if not os.path.isabs(output_dir):
+            output_dir = os.path.join(file_dir_name, output_dir)
+        directories = [
+            file_dir_name,
+            output_dir
+        ]
+        return find_latest_schematic_data(base_name, directories)
 
     @staticmethod
     def normalize(point):
@@ -344,8 +357,6 @@ class PcbnewParser(EcadParser):
                          attr)
 
     def parse(self):
-        if self.board is None:
-            self.board = pcbnew.LoadBoard(self.file_name)
         title_block = self.board.GetTitleBlock()
         file_date = title_block.GetDate()
         if not file_date:

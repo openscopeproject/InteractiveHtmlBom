@@ -13,7 +13,6 @@ class EcadParser(object):
         self.file_name = file_name
         self.logger = logger
         self.extra_data_func = lambda f, b: ([], {})
-        self.latest_extra_data = None
 
     def parse(self):
         """
@@ -24,6 +23,14 @@ class EcadParser(object):
         :return:
         """
         pass
+
+    def latest_extra_data(self):
+        """
+        Abstract method that may be overridden in implementations that support
+        extra field data.
+        :return: File name of most recent file with extra field data.
+        """
+        return None
 
 
 class Component(object):
