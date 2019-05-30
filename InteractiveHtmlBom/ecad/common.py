@@ -24,10 +24,11 @@ class EcadParser(object):
         """
         pass
 
-    def latest_extra_data(self):
+    def latest_extra_data(self, extra_dirs=None):
         """
         Abstract method that may be overridden in implementations that support
         extra field data.
+        :param extra_dirs: List of extra directories to search.
         :return: File name of most recent file with extra field data.
         """
         return None

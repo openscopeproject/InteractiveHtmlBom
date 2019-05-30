@@ -20,16 +20,18 @@ class PcbnewParser(EcadParser):
         self.font_parser = FontParser()
         self.extra_data_func = parse_schematic_data
 
-    def latest_extra_data(self):
+    def latest_extra_data(self, extra_dirs=None):
         base_name = os.path.splitext(os.path.basename(self.file_name))[0]
-        output_dir = self.board.GetPlotOptions().GetOutputDirectory()
+        extra_dirs.append(self.board.GetPlotOptions().GetOutputDirectory())
         file_dir_name = os.path.dirname(self.file_name)
-        if not os.path.isabs(output_dir):
-            output_dir = os.path.join(file_dir_name, output_dir)
         directories = [
             file_dir_name,
-            output_dir
         ]
+        for dir in extra_dirs:
+            if not os.path.isabs(dir):
+                dir = os.path.join(file_dir_name, dir)
+            if os.path.exists(dir):
+                directories.append(dir)
         return find_latest_schematic_data(base_name, directories)
 
     @staticmethod
