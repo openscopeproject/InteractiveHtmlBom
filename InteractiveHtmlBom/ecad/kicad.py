@@ -375,7 +375,7 @@ class PcbnewParser(EcadParser):
             self.logger.error('Please draw pcb outline on the edges '
                               'layer on sheet or any module before '
                               'generating BOM.')
-            return
+            return None, None
         bbox = {
             "minx": bbox.GetPosition().x * 1e-6,
             "miny": bbox.GetPosition().y * 1e-6,

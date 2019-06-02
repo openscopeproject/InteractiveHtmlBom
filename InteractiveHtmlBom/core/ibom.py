@@ -273,7 +273,7 @@ def main(parser, config, logger):
     pcbdata, components = parser.parse()
     if not pcbdata or not components:
         logger.error('Parsing failed.')
-        exit(1)
+        return
     pcbdata["bom"]["both"] = generate_bom(components, config, extra_fields)
 
     # build BOM
