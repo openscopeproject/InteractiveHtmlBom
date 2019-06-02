@@ -372,9 +372,9 @@ class PcbnewParser(EcadParser):
             title = os.path.splitext(pcb_file_name)[0]
         edges, bbox = self.parse_edges(self.board)
         if bbox is None:
-            self.logger.err('Please draw pcb outline on the edges '
-                            'layer on sheet or any module before '
-                            'generating BOM.')
+            self.logger.error('Please draw pcb outline on the edges '
+                              'layer on sheet or any module before '
+                              'generating BOM.')
             return
         bbox = {
             "minx": bbox.GetPosition().x * 1e-6,

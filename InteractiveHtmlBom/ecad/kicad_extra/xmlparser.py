@@ -19,6 +19,12 @@ class XmlParser(ParserBase):
         comp_dict = {}
         for c in components:
             ref_fields = comp_dict.setdefault(c.attributes['ref'].value, {})
+            datasheet = c.getElementsByTagName('datasheet')
+            if datasheet:
+                datasheet = self.get_text(datasheet[0].childNodes)
+                if datasheet != '~':
+                    field_set.add('datasheet')
+                    ref_fields['datasheet'] = datasheet
             for f in c.getElementsByTagName('field'):
                 name = f.attributes['name'].value
                 if name not in self.DEFAULT_FIELDS:

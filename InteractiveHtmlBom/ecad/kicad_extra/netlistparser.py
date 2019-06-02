@@ -19,14 +19,20 @@ class NetlistParser(ParserBase):
         for c in components:
             ref = None
             fields = None
+            datasheet = None
             for f in c[1:]:
                 if f[0] == 'ref':
                     ref = f[1]
                 if f[0] == 'fields':
                     fields = f[1:]
+                if f[0] == 'datasheet':
+                    datasheet = f[1]
             if ref is None:
                 return None
             ref_fields = comp_dict.setdefault(ref, {})
+            if datasheet and datasheet != '~':
+                field_set.add('datasheet')
+                ref_fields['datasheet'] = datasheet
             if fields is None:
                 continue
             for f in fields:
