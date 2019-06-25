@@ -46,6 +46,12 @@ function valuesVisible(value) {
   redrawIfInitDone();
 }
 
+function dnpOutline(value) {
+  writeStorage("dnpOutline", value);
+  renderDnpOutline = value;
+  redrawIfInitDone();
+}
+
 function setDarkMode(value) {
   if (value) {
     topmostdiv.classList.add("dark");
@@ -774,6 +780,10 @@ function initDefaults() {
   b = getStorageBooleanOrDefault("valuesVisible", true);
   document.getElementById("valuesCheckbox").checked = b;
   valuesVisible(b);
+
+  b = getStorageBooleanOrDefault("dnpOutline", false);
+  document.getElementById("dnpOutlineCheckbox").checked = b;
+  dnpOutline(b);
 
   b = getStorageBooleanOrDefault("redrawOnDrag", config.redraw_on_drag);
   document.getElementById("dragCheckbox").checked = b;

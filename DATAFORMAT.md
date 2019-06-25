@@ -30,6 +30,7 @@ pcbdata = {
   },
   // Describes footprints.
   // See footprint structure description below.
+  // index of entry corresponds to component's numeric ID
   "modules": [
     footprint1,
     footprint2,
@@ -48,6 +49,8 @@ pcbdata = {
     "both": [bomrow1, bomrow2, ...],
     "F":  [bomrow1, bomrow2, ...],
     "B":  [bomrow1, bomrow2, ...],
+    // numeric IDs of DNP components that are not in BOM
+    "skipped": [id1, id2, ...]
   },
   // Contains parsed stroke data from newstroke font for
   // characters used on the pcb.

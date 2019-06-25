@@ -46,15 +46,11 @@ class Logger(object):
             wx.LogWarning(msg)
 
 
-log = None  # type: Logger
+log = None  # type: Logger or None
 
 
-def skip_component(m, config, extra_data, filter_layer):
-    # type: (Component, Config, dict, str) -> bool
-    # filter part by layer
-    if filter_layer is not None and filter_layer != m.layer:
-        return True
-
+def skip_component(m, config, extra_data):
+    # type: (Component, Config, dict) -> bool
     # skip blacklisted components
     ref_prefix = re.findall('^[A-Z]*', m.ref)[0]
     if m.ref in config.component_blacklist:
@@ -63,6 +59,10 @@ def skip_component(m, config, extra_data, filter_layer):
         return True
 
     if config.blacklist_empty_val and m.val in ['', '~']:
+        return True
+
+    # skip virtual components if needed
+    if config.blacklist_virtual and m.attr == 'Virtual':
         return True
 
     # skip components with dnp field not empty
@@ -87,15 +87,14 @@ def skip_component(m, config, extra_data, filter_layer):
     return False
 
 
-def generate_bom(pcb_modules, config, extra_data, filter_layer=None):
-    # type: (list, Config, dict, str) -> list
+def generate_bom(pcb_modules, config, extra_data):
+    # type: (list, Config, dict) -> dict
     """
     Generate BOM from pcb layout.
     :param pcb_modules: list of modules on the pcb
     :param config: Config object
     :param extra_data: Extra fields data
-    :param filter_layer: include only parts for given layer
-    :return: BOM table (qty, value, footprint, refs)
+    :return: dict of BOM tables (qty, value, footprint, refs) and dnp components
     """
 
     def convert(text):
@@ -114,17 +113,15 @@ def generate_bom(pcb_modules, config, extra_data, filter_layer=None):
 
     # build grouped part list
     warning_shown = False
+    skipped_components = []
     part_groups = {}
     for i, m in enumerate(pcb_modules):
-        if skip_component(m, config, extra_data, filter_layer):
+        if skip_component(m, config, extra_data):
+            skipped_components.append(i)
             continue
 
         # group part refs by value and footprint
         norm_value = units.componentValue(m.val)
-
-        # skip virtual components if needed
-        if config.blacklist_virtual and m.attr == 'Virtual':
-            continue
 
         extras = []
         if config.extra_fields:
@@ -134,11 +131,9 @@ def generate_bom(pcb_modules, config, extra_data, filter_layer=None):
             else:
                 # Some components are on pcb but not in schematic data.
                 # Show a warning about possibly outdated netlist/xml file.
-                # Doing it only once when generating full bom is enough.
-                if filter_layer is None:
-                    log.warn(
-                            'Component %s is missing from schematic data.' % m.ref)
-                    warning_shown = True
+                log.warn(
+                        'Component %s is missing from schematic data.' % m.ref)
+                warning_shown = True
                 extras = [''] * len(config.extra_fields)
 
         group_key = (norm_value, tuple(extras), m.footprint, m.attr)
@@ -169,7 +164,23 @@ def generate_bom(pcb_modules, config, extra_data, filter_layer=None):
         config.component_sort_order.append('~')
     bom_table = sorted(bom_table, key=sort_func)
 
-    return bom_table
+    result = {
+        'both': bom_table,
+        'skipped': skipped_components
+    }
+
+    for layer in ['F', 'B']:
+        filtered_table = []
+        for row in bom_table:
+            filtered_refs = [ref for ref in row[3]
+                             if pcb_modules[ref[1]].layer == layer]
+            if filtered_refs:
+                filtered_table.append((len(filtered_refs), row[1],
+                                       row[2], filtered_refs, row[4]))
+
+        result[layer] = sorted(filtered_table, key=sort_func)
+
+    return result
 
 
 def open_file(filename):
@@ -274,14 +285,10 @@ def main(parser, config, logger):
     if not pcbdata or not components:
         logger.error('Parsing failed.')
         return
-    pcbdata["bom"]["both"] = generate_bom(components, config, extra_fields)
+
+    pcbdata["bom"] = generate_bom(components, config, extra_fields)
 
     # build BOM
-    for layer in ['F', 'B']:
-        bom_table = generate_bom(components, config, extra_fields,
-                                 filter_layer=layer)
-        pcbdata["bom"][layer] = bom_table
-
     bom_file = generate_file(pcb_file_dir, pcb_file_name, pcbdata, config)
 
     if config.open_browser:

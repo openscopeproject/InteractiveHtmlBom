@@ -5,6 +5,7 @@ var boardRotation = 0;
 var renderPads = true;
 var renderReferences = true;
 var renderValues = true;
+var renderDnpOutline = false;
 
 function deg2rad(deg) {
   return deg * Math.PI / 180;
@@ -182,7 +183,7 @@ function drawCircle(ctx, radius, ctxmethod) {
   ctxmethod();
 }
 
-function drawPad(ctx, pad, color, outline) {
+function drawPad(ctx, pad, color, outline, hole) {
   ctx.save();
   ctx.translate(...pad.pos);
   ctx.rotate(deg2rad(pad.angle));
@@ -208,7 +209,8 @@ function drawPad(ctx, pad, color, outline) {
   } else if (pad.shape == "custom") {
     drawPolygons(ctx, color, pad.polygons, ctxmethod);
   }
-  if (pad.type == "th" && !outline) {
+  if (pad.type == "th" && hole) {
+    ctxmethod = ctx.fill.bind(ctx);
     ctx.fillStyle = "#CCCCCC";
     if (pad.drillshape == "oblong") {
       drawOblong(ctx, "#CCCCCC", pad.drillsize, ctxmethod);
@@ -219,7 +221,7 @@ function drawPad(ctx, pad, color, outline) {
   ctx.restore();
 }
 
-function drawModule(ctx, layer, scalefactor, module, padcolor, outlinecolor, highlight) {
+function drawModule(ctx, layer, scalefactor, module, padcolor, outlinecolor, highlight, outline) {
   if (highlight) {
     // draw bounding box
     if (module.layer == layer) {
@@ -248,9 +250,9 @@ function drawModule(ctx, layer, scalefactor, module, padcolor, outlinecolor, hig
   if (renderPads) {
     for (var pad of module.pads) {
       if (pad.layers.includes(layer)) {
-        drawPad(ctx, pad, padcolor, false);
+        drawPad(ctx, pad, padcolor, outline, true);
         if (pad.pin1 && highlightpin1) {
-          drawPad(ctx, pad, outlinecolor, true);
+          drawPad(ctx, pad, outlinecolor, true, false);
         }
       }
     }
@@ -271,14 +273,15 @@ function drawModules(canvas, layer, scalefactor, highlight) {
   var style = getComputedStyle(topmostdiv);
   var padcolor = style.getPropertyValue('--pad-color');
   var outlinecolor = style.getPropertyValue('--pin1-outline-color');
-  if (highlight > 0) {
+  if (highlight) {
     padcolor = style.getPropertyValue('--pad-color-highlight');
     outlinecolor = style.getPropertyValue('--pin1-outline-color-highlight');
   }
   for (var i = 0; i < pcbdata.modules.length; i++) {
     var mod = pcbdata.modules[i];
+    var outline = renderDnpOutline && pcbdata.bom.skipped.includes(i);
     if (!highlight || highlightedModules.includes(i)) {
-      drawModule(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight);
+      drawModule(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight, outline);
     }
   }
 }

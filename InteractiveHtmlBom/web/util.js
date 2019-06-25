@@ -177,8 +177,8 @@ function initUtils() {
                          "([GgMmKkUuNnPp])?" +
                          "([0-9]*)" +
                          "(\\b.*)?$", "");
-  for (var bomtable of Object.values(pcbdata.bom)) {
-    for (var row of bomtable) {
+  for (var bom_type of ["both", "F", "B"]) {
+    for (var row of pcbdata.bom[bom_type]) {
       row.push(parseValue(row[1], row[3][0][0]));
     }
   }
