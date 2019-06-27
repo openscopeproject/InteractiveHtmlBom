@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 
 from wx import FileConfig
 
@@ -10,18 +11,18 @@ from .. import dialog
 
 class Config:
     FILE_NAME_FORMAT_HINT = (
-            'Output file name format supports substitutions:\n'
-            '\n'
-            '    %f : original pcb file name without extension.\n'
-            '    %p : pcb/project title from pcb metadata.\n'
-            '    %c : company from pcb metadata.\n'
-            '    %r : revision from pcb metadata.\n'
-            '    %d : pcb date from metadata if available, '
-            'file modification date otherwise.\n'
-            '    %D : bom generation date.\n'
-            '    %T : bom generation time.\n'
-            '\n'
-            'Extension .html will be added automatically.'
+        'Output file name format supports substitutions:\n'
+        '\n'
+        '    %f : original pcb file name without extension.\n'
+        '    %p : pcb/project title from pcb metadata.\n'
+        '    %c : company from pcb metadata.\n'
+        '    %r : revision from pcb metadata.\n'
+        '    %d : pcb date from metadata if available, '
+        'file modification date otherwise.\n'
+        '    %D : bom generation date.\n'
+        '    %T : bom generation time.\n'
+        '\n'
+        'Extension .html will be added automatically.'
     )  # type: str
 
     # Helper constants
@@ -76,7 +77,7 @@ class Config:
     @staticmethod
     def _split(s):
         """Splits string by ',' and drops empty strings from resulting array."""
-        return [a for a in s.split(',') if a]
+        return [a.replace('\\,', ',') for a in re.split(r'(?<!\\),', s) if a]
 
     def __init__(self):
         """Init from config file if it exists."""
