@@ -12,6 +12,10 @@ in different formats e.g.
 """
 
 import re
+import locale
+
+locale.setlocale(locale.LC_NUMERIC, '')
+decimal_separator = locale.localeconv()['decimal_point']
 
 PREFIX_MICRO = [u"μ", "u", "micro"]
 PREFIX_MILLI = ["milli", "m"]
@@ -99,8 +103,13 @@ e.g. compMatch("3.3mOhm") returns (0.0033, R)
 
 
 def compMatch(component):
-    # remove any commas
-    component = component.strip().replace(",", "").lower()
+    component = component.strip().lower()
+    if decimal_separator == ',':
+        # replace separator with dot
+        component = component.replace(",", ".")
+    else:
+        # remove thousands separator
+        component = component.replace(",", "")
     match = matchString()
     result = re.search(match, component)
 
