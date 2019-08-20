@@ -56,7 +56,7 @@ class SettingsDialogPanel ( wx.Panel ):
         self.m_button42.SetDefault()
         bSizer39.Add( self.m_button42, 0, wx.ALL, 5 )
         
-        self.m_button43 = wx.Button( self, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
+        self.m_button43 = wx.Button( self, wx.ID_CANCEL, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
         bSizer39.Add( self.m_button43, 0, wx.ALL, 5 )
         
         
