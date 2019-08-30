@@ -47,7 +47,6 @@ if not os.environ.get('INTERACTIVE_HTML_BOM_CLI_MODE', False):
     from .ecad.kicad import InteractiveHtmlBomPlugin
 
     plugin = InteractiveHtmlBomPlugin()
-    plugin.defaults()
     plugin.register()
 
     # Add a button the hacky way if plugin button is not supported

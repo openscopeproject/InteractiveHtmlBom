@@ -20,6 +20,8 @@ class ParserBase:
 
     def parse(self, normalize_case):
         data = self.get_extra_field_data()
+        if data is None:
+            return None
         if normalize_case:
             data = self.normalize_field_names(data)
         return sorted(data[0]), data[1]
