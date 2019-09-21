@@ -4,7 +4,7 @@ term_regex = r'''(?mx)
     \s*(?:
         (?P<open>\()|
         (?P<close>\))|
-        (?P<sq>"[^"]*")|
+        (?P<sq>"(?:\\"|[^"])*")|
         (?P<s>[^(^)\s]+)
        )'''
 pattern = re.compile(term_regex)
@@ -23,7 +23,7 @@ def parse_sexpression(sexpression):
             tmp, out = out, stack.pop(-1)
             out.append(tmp)
         elif term == 'sq':
-            out.append(value[1:-1])
+            out.append(value[1:-1].replace('\\"', '"'))
         elif term == 's':
             out.append(value)
         else:
