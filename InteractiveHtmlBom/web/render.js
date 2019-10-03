@@ -153,6 +153,15 @@ function drawPolygons(ctx, color, polygons, ctxmethod) {
   }
 }
 
+function drawSvgPath(ctx, color, svgpath, outline) {
+  ctx.fillStyle = color;
+  if (outline) {
+    ctx.stroke(new Path2D(svgpath));
+  } else {
+    ctx.fill(new Path2D(svgpath));
+  }
+}
+
 function drawPolygonShape(ctx, shape, color) {
   ctx.save();
   if (shape.svgpath) {
@@ -208,6 +217,8 @@ function drawPad(ctx, pad, color, outline, hole) {
     drawRoundRect(ctx, color, pad.size, pad.radius, ctxmethod);
   } else if (pad.shape == "custom") {
     drawPolygons(ctx, color, pad.polygons, ctxmethod);
+  } else if (pad.shape == "svgpath") {
+    drawSvgPath(ctx, color, pad.svgpath, outline);
   }
   if (pad.type == "th" && hole) {
     ctxmethod = ctx.fill.bind(ctx);
