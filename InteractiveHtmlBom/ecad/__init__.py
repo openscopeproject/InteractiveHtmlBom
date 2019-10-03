@@ -7,6 +7,8 @@ def get_parser_by_extension(file_name, logger):
         return get_kicad_parser(file_name, logger)
     elif ext == '.json':
         return get_easyeda_parser(file_name, logger)
+    elif ext == '.alg':
+        return get_allegro_parser(file_name, logger)
     else:
         return None
 
@@ -19,3 +21,8 @@ def get_kicad_parser(file_name, logger, board=None):
 def get_easyeda_parser(file_name, logger):
     from .easyeda import EasyEdaParser
     return EasyEdaParser(file_name, logger)
+
+
+def get_allegro_parser(file_name, logger):
+    from .allegro import AllegroParser
+    return AllegroParser(file_name, logger)
