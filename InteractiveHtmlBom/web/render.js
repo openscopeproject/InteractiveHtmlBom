@@ -45,6 +45,10 @@ function drawtext(ctx, text, color, flip) {
   if (text.attr.includes("italic")) {
     tilt = 0.125;
   }
+  var charSpacing = 0;
+  if (text.hasOwnProperty('char_spacing')) {
+    charSpacing = text.char_spacing;
+  }
   var interline = (text.height * 1.5 + text.thickness) / 2;
   var txt = text.text.split("\n");
   // KiCad ignores last empty line.
@@ -54,8 +58,9 @@ function drawtext(ctx, text, color, flip) {
     var offsety = (-(txt.length - 1) + i * 2) * interline + text.height / 2;
     var lineWidth = 0;
     for (var c of txt[i]) {
-      lineWidth += pcbdata.font_data[c].w * text.width;
+      lineWidth += pcbdata.font_data[c].w * text.width + charSpacing;
     }
+    lineWidth -= charSpacing;
     var offsetx = 0;
     switch (text.horiz_justify) {
       case -1:
@@ -81,7 +86,7 @@ function drawtext(ctx, text, color, flip) {
           ctx.stroke();
         }
       }
-      offsetx += pcbdata.font_data[c].w * text.width;
+      offsetx += pcbdata.font_data[c].w * text.width + charSpacing;
     }
   }
   ctx.restore();
