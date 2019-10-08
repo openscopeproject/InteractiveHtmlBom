@@ -121,24 +121,50 @@ function drawedge(ctx, scalefactor, edge, color) {
   }
 }
 
-function drawRoundRect(ctx, color, size, radius, ctxmethod) {
+function drawChamferedRect(ctx, color, size, radius, chamfpos, chamfratio, ctxmethod) {
+  // chamfpos is a bitmask, left = 1, right = 2, bottom left = 4, bottom right = 8
   ctx.beginPath();
   ctx.strokeStyle = color;
-  var x = size[0] * -0.5;
-  var y = size[1] * -0.5;
   var width = size[0];
   var height = size[1];
+  var x = width * -0.5;
+  var y = height * -0.5;
+  var chamfOffset = Math.min(width, height) * chamfratio;
   ctx.moveTo(x, 0);
-  ctx.arcTo(x, y + height, x + width, y + height, radius);
-  ctx.arcTo(x + width, y + height, x + width, y, radius);
-  ctx.arcTo(x + width, y, x, y, radius);
-  ctx.arcTo(x, y, x, y + height, radius);
+  if (chamfpos & 4) {
+    ctx.lineTo(x, y + height - chamfOffset);
+    ctx.lineTo(x + chamfOffset, y + height);
+    ctx.lineTo(0, y + height);
+  } else {
+    ctx.arcTo(x, y + height, x + width, y + height, radius);
+  }
+  if (chamfpos & 8) {
+    ctx.lineTo(x + width - chamfOffset, y + height);
+    ctx.lineTo(x + width, y + height - chamfOffset);
+    ctx.lineTo(x + width, 0);
+  } else {
+    ctx.arcTo(x + width, y + height, x + width, y, radius);
+  }
+  if (chamfpos & 2) {
+    ctx.lineTo(x + width, y + chamfOffset);
+    ctx.lineTo(x + width - chamfOffset, y);
+    ctx.lineTo(0, y);
+  } else {
+    ctx.arcTo(x + width, y, x, y, radius);
+  }
+  if (chamfpos & 1) {
+    ctx.lineTo(x + chamfOffset, y);
+    ctx.lineTo(x, y + chamfOffset);
+    ctx.lineTo(x, 0);
+  } else {
+    ctx.arcTo(x, y, x, y + height, radius);
+  }
   ctx.closePath();
   ctxmethod();
 }
 
 function drawOblong(ctx, color, size, ctxmethod) {
-  drawRoundRect(ctx, color, size, Math.min(size[0], size[1]) / 2, ctxmethod);
+  drawChamferedRect(ctx, color, size, Math.min(size[0], size[1]) / 2, 0, 0, ctxmethod);
 }
 
 function drawPolygons(ctx, color, polygons, ctxmethod) {
@@ -205,7 +231,9 @@ function drawPad(ctx, pad, color, outline, hole) {
   } else if (pad.shape == "circle") {
     drawCircle(ctx, pad.size[0] / 2, ctxmethod);
   } else if (pad.shape == "roundrect") {
-    drawRoundRect(ctx, color, pad.size, pad.radius, ctxmethod);
+    drawChamferedRect(ctx, color, pad.size, pad.radius, 0, 0, ctxmethod);
+  } else if (pad.shape == "chamfrect") {
+    drawChamferedRect(ctx, color, pad.size, pad.radius, pad.chamfpos, pad.chamfratio, ctxmethod)
   } else if (pad.shape == "custom") {
     drawPolygons(ctx, color, pad.polygons, ctxmethod);
   }

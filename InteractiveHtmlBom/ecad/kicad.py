@@ -212,6 +212,7 @@ class PcbnewParser(EcadParser):
         return drawings
 
     def parse_pad(self, pad):
+        # type: (pcbnew.D_PAD) -> dict or None
         layers_set = list(pad.GetLayerSet().Seq())
         layers = []
         if pcbnew.F_Cu in layers_set:
@@ -231,6 +232,8 @@ class PcbnewParser(EcadParser):
             shape_lookup[pcbnew.PAD_SHAPE_ROUNDRECT] = "roundrect"
         if hasattr(pcbnew, "PAD_SHAPE_CUSTOM"):
             shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
+        if hasattr(pcbnew, "PAD_SHAPE_CHAMFERED_RECT"):
+            shape_lookup[pcbnew.PAD_SHAPE_CHAMFERED_RECT] = "chamfrect"
         shape = shape_lookup.get(pad.GetShape(), "")
         if shape == "":
             self.logger.info("Unsupported pad shape %s, skipping.",
@@ -251,12 +254,15 @@ class PcbnewParser(EcadParser):
                 self.logger.warn('Detected holes in custom pad polygons')
             if polygon_set.IsSelfIntersecting():
                 self.logger.warn(
-                        'Detected self intersecting polygons in custom pad')
+                    'Detected self intersecting polygons in custom pad')
             pad_dict["polygons"] = self.parse_poly_set(polygon_set)
-        if shape == "roundrect":
+        if shape in ["roundrect", "chamfrect"]:
             pad_dict["radius"] = pad.GetRoundRectCornerRadius() * 1e-6
+        if shape == "chamfrect":
+            pad_dict["chamfpos"] = pad.GetChamferPositions()
+            pad_dict["chamfratio"] = pad.GetChamferRectRatio()
         if (pad.GetAttribute() == pcbnew.PAD_ATTRIB_STANDARD or
-                pad.GetAttribute() == pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED):
+            pad.GetAttribute() == pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED):
             pad_dict["type"] = "th"
             pad_dict["drillshape"] = {
                 pcbnew.PAD_DRILL_SHAPE_CIRCLE: "circle",
