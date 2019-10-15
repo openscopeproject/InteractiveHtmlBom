@@ -55,21 +55,29 @@
             <input id="padsCheckbox" type="checkbox" checked onchange="padsVisible(this.checked)">
             Show footprint pads
           </label>
-          <label class="menu-label">
+          <label class="menu-label" style="width: calc(50% - 18px)">
             <input id="fabricationCheckbox" type="checkbox" checked onchange="fabricationVisible(this.checked)">
-            Show fabrication layer
-          </label>
-          <label class="menu-label">
+            Fab layer
+          </label><!-- This comment eats space! All of it!
+          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
             <input id="silkscreenCheckbox" type="checkbox" checked onchange="silkscreenVisible(this.checked)">
-            Show silkscreen
+            Silkscreen
           </label>
           <label class="menu-label" style="width: calc(50% - 18px)">
             <input id="referencesCheckbox" type="checkbox" checked onchange="referencesVisible(this.checked)">
             References
           </label><!-- This comment eats space! All of it!
-          --><label class="menu-label" style="width: calc(50% - 18px); border-left: 0;">
+          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
             <input id="valuesCheckbox" type="checkbox" checked onchange="valuesVisible(this.checked)">
             Values
+          </label>
+          <label class="menu-label" style="width: calc(50% - 18px)">
+            <input id="tracksCheckbox" type="checkbox" checked onchange="tracksVisible(this.checked)">
+            Tracks
+          </label><!-- This comment eats space! All of it!
+          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+            <input id="zonesCheckbox" type="checkbox" checked onchange="zonesVisible(this.checked)">
+            Zones
           </label>
           <label class="menu-label">
             <input id="dnpOutlineCheckbox" type="checkbox" checked onchange="dnpOutline(this.checked)">

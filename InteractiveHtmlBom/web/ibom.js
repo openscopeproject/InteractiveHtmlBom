@@ -46,6 +46,18 @@ function valuesVisible(value) {
   redrawIfInitDone();
 }
 
+function tracksVisible(value) {
+  writeStorage("tracksVisible", value);
+  renderTracks = value;
+  redrawIfInitDone();
+}
+
+function zonesVisible(value) {
+  writeStorage("zonesVisible", value);
+  renderZones = value;
+  redrawIfInitDone();
+}
+
 function dnpOutline(value) {
   writeStorage("dnpOutline", value);
   renderDnpOutline = value;
@@ -852,6 +864,14 @@ function initDefaults() {
   b = getStorageBooleanOrDefault("valuesVisible", true);
   document.getElementById("valuesCheckbox").checked = b;
   valuesVisible(b);
+
+  b = getStorageBooleanOrDefault("tracksVisible", true);
+  document.getElementById("tracksCheckbox").checked = b;
+  tracksVisible(b);
+
+  b = getStorageBooleanOrDefault("zonesVisible", true);
+  document.getElementById("zonesCheckbox").checked = b;
+  zonesVisible(b);
 
   b = getStorageBooleanOrDefault("dnpOutline", false);
   document.getElementById("dnpOutlineCheckbox").checked = b;

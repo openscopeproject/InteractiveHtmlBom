@@ -339,6 +339,49 @@ class PcbnewParser(EcadParser):
 
         return modules
 
+    def parse_tracks(self, tracks):
+        result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
+        for track in tracks:
+            if track.GetClass() == "VIA":
+                track_dict = {
+                    "start": self.normalize(track.GetStart()),
+                    "end": self.normalize(track.GetEnd()),
+                    "width": track.GetWidth() * 1e-6,
+                    "net": track.GetNetname(),
+                }
+                for l in [pcbnew.F_Cu, pcbnew.B_Cu]:
+                    if track.IsOnLayer(l):
+                        result[l].append(track_dict)
+            else:
+                if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
+                    result[track.GetLayer()].append({
+                        "start": self.normalize(track.GetStart()),
+                        "end": self.normalize(track.GetEnd()),
+                        "width": track.GetWidth() * 1e-6,
+                        "net": track.GetNetname(),
+                    })
+
+        return {
+            'F': result.get(pcbnew.F_Cu),
+            'B': result.get(pcbnew.B_Cu)
+        }
+
+    def parse_zones(self, zones):
+        result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
+        for zone in zones:
+            if not zone.IsFilled() or zone.GetIsKeepout():
+                continue
+            if zone.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
+                result[zone.GetLayer()].append({
+                    "polygons": self.parse_poly_set(zone.GetFilledPolysList()),
+                    "net": zone.GetNetname(),
+                })
+
+        return {
+            'F': result.get(pcbnew.F_Cu),
+            'B': result.get(pcbnew.B_Cu)
+        }
+
     @staticmethod
     def module_to_component(module):
         # type: (pcbnew.MODULE) -> Component
@@ -409,6 +452,8 @@ class PcbnewParser(EcadParser):
             "bom": {},
             "font_data": self.font_parser.get_parsed_font()
         }
+        pcbdata["tracks"] = self.parse_tracks(self.board.GetTracks())
+        pcbdata["zones"] = self.parse_zones(self.board.Zones())
         components = [self.module_to_component(m) for m in pcb_modules]
 
         return pcbdata, components

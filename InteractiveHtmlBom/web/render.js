@@ -6,6 +6,8 @@ var renderPads = true;
 var renderReferences = true;
 var renderValues = true;
 var renderDnpOutline = false;
+var renderTracks = true;
+var renderZones = true;
 
 function deg2rad(deg) {
   return deg * Math.PI / 180;
@@ -327,6 +329,26 @@ function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonCo
   }
 }
 
+function drawTracks(canvas, layer, color) {
+  ctx = canvas.getContext("2d");
+  ctx.strokeStyle = color;
+  ctx.lineCap = "round";
+  for(var track of pcbdata.tracks[layer]) {
+    ctx.lineWidth = track.width;
+    ctx.beginPath();
+    ctx.moveTo(...track.start);
+    ctx.lineTo(...track.end);
+    ctx.stroke();
+  }
+}
+
+function drawZones(canvas, layer, color) {
+  ctx = canvas.getContext("2d");
+  for(var zone of pcbdata.zones[layer]) {
+    drawPolygons(ctx, color, zone.polygons, ctx.fill.bind(ctx));
+  }
+}
+
 function clearCanvas(canvas) {
   var ctx = canvas.getContext("2d");
   ctx.save();
@@ -351,10 +373,20 @@ function drawBackground(canvasdict) {
   clearCanvas(canvasdict.fab);
   clearCanvas(canvasdict.silk);
   drawEdgeCuts(canvasdict.bg, canvasdict.transform.s);
+
+  var style = getComputedStyle(topmostdiv);
+  if (renderTracks) {
+    var trackColor = style.getPropertyValue('--track-color');
+    drawTracks(canvasdict.bg, canvasdict.layer, trackColor);
+  }
+  if (renderZones) {
+    var zoneColor = style.getPropertyValue('--zone-color');
+    drawZones(canvasdict.bg, canvasdict.layer, zoneColor);
+  }
+
   drawModules(canvasdict.bg, canvasdict.layer,
     canvasdict.transform.s * canvasdict.transform.zoom, false);
 
-  var style = getComputedStyle(topmostdiv);
   var edgeColor = style.getPropertyValue('--silkscreen-edge-color');
   var polygonColor = style.getPropertyValue('--silkscreen-polygon-color');
   var textColor = style.getPropertyValue('--silkscreen-text-color');
