@@ -31,6 +31,7 @@ function drawtext(ctx, text, color, flip) {
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
   ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.lineWidth = text.thickness;
   if (text.svgpath) {
     ctx.stroke(new Path2D(text.svgpath));
@@ -74,14 +75,12 @@ function drawtext(ctx, text, color, flip) {
     }
     for (var c of txt[i]) {
       for (var line of pcbdata.font_data[c].l) {
-        // Drawing each segment separately instead of
-        // polyline because round line caps don't work in joints
-        for (var i = 0; i < line.length - 1; i++) {
-          ctx.beginPath();
-          ctx.moveTo(...calcFontPoint(line[i], text, offsetx, offsety, tilt));
-          ctx.lineTo(...calcFontPoint(line[i + 1], text, offsetx, offsety, tilt));
-          ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(...calcFontPoint(line[0], text, offsetx, offsety, tilt));
+        for (var i = 1; i < line.length; i++) {
+          ctx.lineTo(...calcFontPoint(line[i], text, offsetx, offsety, tilt));
         }
+        ctx.stroke();
       }
       offsetx += pcbdata.font_data[c].w * text.width;
     }
@@ -344,7 +343,11 @@ function drawTracks(canvas, layer, color) {
 
 function drawZones(canvas, layer, color) {
   ctx = canvas.getContext("2d");
+  ctx.strokeStyle = color;
+  ctx.lineJoin = "round";
   for(var zone of pcbdata.zones[layer]) {
+    ctx.lineWidth = zone.width;
+    drawPolygons(ctx, color, zone.polygons, ctx.stroke.bind(ctx));
     drawPolygons(ctx, color, zone.polygons, ctx.fill.bind(ctx));
   }
 }

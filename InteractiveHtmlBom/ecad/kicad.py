@@ -378,6 +378,7 @@ class PcbnewParser(EcadParser):
             if zone.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
                 zone_dict = {
                     "polygons": self.parse_poly_set(zone.GetFilledPolysList()),
+                    "width": zone.GetMinThickness() * 1e-6,
                 }
                 if self.config.include_nets:
                     zone_dict["net"] = zone.GetNetname()
@@ -468,8 +469,12 @@ class PcbnewParser(EcadParser):
         }
         if self.config.include_tracks:
             pcbdata["tracks"] = self.parse_tracks(self.board.GetTracks())
-            pcbdata["zones"] = self.parse_zones(self.board.Zones())
-        if self.config.include_nets:
+            if hasattr(self.board, "Zones"):
+                pcbdata["zones"] = self.parse_zones(self.board.Zones())
+            else:
+                self.logger.info("Zones not supported for KiCad 4, skipping")
+                pcbdata["zones"] = {'F': [], 'B': []}
+        if self.config.include_nets and hasattr(self.board, "GetNetInfo"):
             pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
         components = [self.module_to_component(m) for m in pcb_modules]
 
