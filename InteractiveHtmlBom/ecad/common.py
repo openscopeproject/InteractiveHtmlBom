@@ -5,12 +5,14 @@ from .svgpath import parse_path
 
 class EcadParser(object):
 
-    def __init__(self, file_name, logger):
+    def __init__(self, file_name, config, logger):
         """
         :param file_name: path to file that should be parsed.
+        :param config: Config instance
         :param logger: logging object.
         """
         self.file_name = file_name
+        self.config = config
         self.logger = logger
         self.extra_data_func = lambda f, b: ([], {})
 

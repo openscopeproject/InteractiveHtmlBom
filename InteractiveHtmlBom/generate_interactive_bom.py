@@ -44,7 +44,7 @@ if __name__ == "__main__":
         exit(1)
     print("Loading %s" % args.file)
     logger = ibom.Logger(cli=True)
-    parser = get_parser_by_extension(os.path.abspath(args.file), logger)
+    parser = get_parser_by_extension(os.path.abspath(args.file), config, logger)
     if args.show_dialog:
         ibom.run_with_dialog(parser, config, logger)
     else:

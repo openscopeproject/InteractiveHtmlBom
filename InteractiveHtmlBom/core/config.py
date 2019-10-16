@@ -63,6 +63,8 @@ class Config:
     component_blacklist = []
     blacklist_virtual = True
     blacklist_empty_val = False
+    include_tracks = False
+    include_nets = False
 
     # Extra fields section
     netlist_file = None
@@ -113,6 +115,8 @@ class Config:
                 'blacklist_virtual', self.blacklist_virtual)
         self.blacklist_empty_val = f.ReadBool(
                 'blacklist_empty_val', self.blacklist_empty_val)
+        self.include_tracks = f.ReadBool('include_tracks', self.include_tracks)
+        self.include_nets = f.ReadBool('include_nets', self.include_nets)
 
         f.SetPath('/extra_fields')
         self.extra_fields = self._split(f.Read(
@@ -159,6 +163,8 @@ class Config:
                 ','.join(self.component_blacklist))
         f.WriteBool('blacklist_virtual', self.blacklist_virtual)
         f.WriteBool('blacklist_empty_val', self.blacklist_empty_val)
+        f.WriteBool('include_tracks', self.include_tracks)
+        f.WriteBool('include_nets', self.include_nets)
 
         f.SetPath('/extra_fields')
         f.Write('extra_fields', ','.join(self.extra_fields))
@@ -196,6 +202,8 @@ class Config:
             dlg.general.blacklistVirtualCheckbox.IsChecked()
         self.blacklist_empty_val = \
             dlg.general.blacklistEmptyValCheckbox.IsChecked()
+        self.include_tracks = dlg.general.includeTracksCheckbox.IsChecked()
+        self.include_nets = dlg.general.includeNetsCheckbox.IsChecked()
 
         # Extra fields
         self.netlist_file = dlg.extra.netlistFilePicker.Path
@@ -241,6 +249,8 @@ class Config:
         dlg.general.blacklistBox.SetItems(self.component_blacklist)
         dlg.general.blacklistVirtualCheckbox.Value = self.blacklist_virtual
         dlg.general.blacklistEmptyValCheckbox.Value = self.blacklist_empty_val
+        dlg.general.includeTracksCheckbox.Value = self.include_tracks
+        dlg.general.includeNetsCheckbox.Value = self.include_nets
 
         # Extra fields
         dlg.extra.netlistFilePicker.SetInitialDirectory(
@@ -308,6 +318,11 @@ class Config:
                                  'relative to pcb file directory.')
         parser.add_argument('--name-format', default=self.bom_name_format,
                             help=file_name_format_hint.replace('%', '%%'))
+        parser.add_argument('--include-tracks', action='store_true',
+                            help='Include track/zone information in output. '
+                                 'F.Cu and B.Cu layers only.')
+        parser.add_argument('--include-nets', action='store_true',
+                            help='Include netlist information in output.')
         parser.add_argument('--sort-order',
                             help='Default sort order for components. '
                                  'Must contain "~" once.',
@@ -370,6 +385,8 @@ class Config:
         self.component_blacklist = self._split(args.blacklist)
         self.blacklist_virtual = not args.no_blacklist_virtual
         self.blacklist_empty_val = args.blacklist_empty_val
+        self.include_tracks = args.include_tracks
+        self.include_nets = args.include_nets
 
         # Extra
         self.netlist_file = args.netlist_file

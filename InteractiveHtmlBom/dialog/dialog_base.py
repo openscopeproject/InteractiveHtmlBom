@@ -234,6 +234,17 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         bSizer32.Add( sbSizer6, 0, wx.ALL|wx.EXPAND, 5 )
         
+        sbSizer9 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Additional pcb data" ), wx.HORIZONTAL )
+        
+        self.includeTracksCheckbox = wx.CheckBox( sbSizer9.GetStaticBox(), wx.ID_ANY, u"Include tracks/zones", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer9.Add( self.includeTracksCheckbox, 1, wx.ALL, 5 )
+        
+        self.includeNetsCheckbox = wx.CheckBox( sbSizer9.GetStaticBox(), wx.ID_ANY, u"Include nets", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer9.Add( self.includeNetsCheckbox, 1, wx.ALL, 5 )
+        
+        
+        bSizer32.Add( sbSizer9, 0, wx.ALL|wx.EXPAND, 5 )
+        
         sortingSizer = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Component sort order" ), wx.VERTICAL )
         
         bSizer4 = wx.BoxSizer( wx.HORIZONTAL )

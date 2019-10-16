@@ -12,8 +12,8 @@ from ..core.fontparser import FontParser
 
 class PcbnewParser(EcadParser):
 
-    def __init__(self, file_name, logger, board=None):
-        super(PcbnewParser, self).__init__(file_name, logger)
+    def __init__(self, file_name, config, logger, board=None):
+        super(PcbnewParser, self).__init__(file_name, config, logger)
         self.board = board
         if self.board is None:
             self.board = pcbnew.LoadBoard(self.file_name)  # type: pcbnew.BOARD
@@ -273,6 +273,8 @@ class PcbnewParser(EcadParser):
             pad_dict["type"] = "smd"
         if hasattr(pad, "GetOffset"):
             pad_dict["offset"] = self.normalize(pad.GetOffset())
+        if self.config.include_nets:
+            pad_dict["net"] = pad.GetNetname()
 
         return pad_dict
 
@@ -354,12 +356,14 @@ class PcbnewParser(EcadParser):
                         result[l].append(track_dict)
             else:
                 if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
-                    result[track.GetLayer()].append({
+                    track_dict = {
                         "start": self.normalize(track.GetStart()),
                         "end": self.normalize(track.GetEnd()),
                         "width": track.GetWidth() * 1e-6,
-                        "net": track.GetNetname(),
-                    })
+                    }
+                    if self.config.include_nets:
+                        track_dict["net"] = track.GetNetname()
+                    result[track.GetLayer()].append(track_dict)
 
         return {
             'F': result.get(pcbnew.F_Cu),
@@ -368,19 +372,29 @@ class PcbnewParser(EcadParser):
 
     def parse_zones(self, zones):
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
-        for zone in zones:
+        for zone in zones: # type: (pcbnew.ZONE_CONTAINER)
             if not zone.IsFilled() or zone.GetIsKeepout():
                 continue
             if zone.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
-                result[zone.GetLayer()].append({
+                zone_dict = {
                     "polygons": self.parse_poly_set(zone.GetFilledPolysList()),
-                    "net": zone.GetNetname(),
-                })
+                }
+                if self.config.include_nets:
+                    zone_dict["net"] = zone.GetNetname()
+                result[zone.GetLayer()].append(zone_dict)
 
         return {
             'F': result.get(pcbnew.F_Cu),
             'B': result.get(pcbnew.B_Cu)
         }
+
+    @staticmethod
+    def parse_netlist(net_info):
+        # type: (pcbnew.NETINFO_LIST) -> list
+        nets = net_info.NetsByName().asdict().keys()
+        nets = [str(s) for s in nets]
+        nets.sort()
+        return nets
 
     @staticmethod
     def module_to_component(module):
@@ -452,8 +466,11 @@ class PcbnewParser(EcadParser):
             "bom": {},
             "font_data": self.font_parser.get_parsed_font()
         }
-        pcbdata["tracks"] = self.parse_tracks(self.board.GetTracks())
-        pcbdata["zones"] = self.parse_zones(self.board.Zones())
+        if self.config.include_tracks:
+            pcbdata["tracks"] = self.parse_tracks(self.board.GetTracks())
+            pcbdata["zones"] = self.parse_zones(self.board.Zones())
+        if self.config.include_nets:
+            pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
         components = [self.module_to_component(m) for m in pcb_modules]
 
         return pcbdata, components
@@ -485,5 +502,5 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
             logger.error('Please save the board file before generating BOM.')
             return
 
-        parser = PcbnewParser(pcb_file_name, logger, board)
+        parser = PcbnewParser(pcb_file_name, config, logger, board)
         ibom.run_with_dialog(parser, config, logger)

@@ -71,14 +71,16 @@
             <input id="valuesCheckbox" type="checkbox" checked onchange="valuesVisible(this.checked)">
             Values
           </label>
-          <label class="menu-label" style="width: calc(50% - 18px)">
-            <input id="tracksCheckbox" type="checkbox" checked onchange="tracksVisible(this.checked)">
-            Tracks
-          </label><!-- This comment eats space! All of it!
-          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
-            <input id="zonesCheckbox" type="checkbox" checked onchange="zonesVisible(this.checked)">
-            Zones
-          </label>
+          <div id="tracksAndZonesCheckboxes">
+            <label class="menu-label" style="width: calc(50% - 18px)">
+              <input id="tracksCheckbox" type="checkbox" checked onchange="tracksVisible(this.checked)">
+              Tracks
+            </label><!-- This comment eats space! All of it!
+            --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+              <input id="zonesCheckbox" type="checkbox" checked onchange="zonesVisible(this.checked)">
+              Zones
+            </label>
+          </div>
           <label class="menu-label">
             <input id="dnpOutlineCheckbox" type="checkbox" checked onchange="dnpOutline(this.checked)">
             DNP components outlined

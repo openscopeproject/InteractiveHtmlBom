@@ -865,13 +865,19 @@ function initDefaults() {
   document.getElementById("valuesCheckbox").checked = b;
   valuesVisible(b);
 
-  b = getStorageBooleanOrDefault("tracksVisible", true);
-  document.getElementById("tracksCheckbox").checked = b;
-  tracksVisible(b);
-
-  b = getStorageBooleanOrDefault("zonesVisible", true);
-  document.getElementById("zonesCheckbox").checked = b;
-  zonesVisible(b);
+  if ("tracks" in pcbdata) {
+    b = getStorageBooleanOrDefault("tracksVisible", true);
+    document.getElementById("tracksCheckbox").checked = b;
+    tracksVisible(b);
+  
+    b = getStorageBooleanOrDefault("zonesVisible", true);
+    document.getElementById("zonesCheckbox").checked = b;
+    zonesVisible(b);
+  } else {
+    document.getElementById("tracksAndZonesCheckboxes").style.display = "none";
+    tracksVisible(false);
+    zonesVisible(false);
+  }
 
   b = getStorageBooleanOrDefault("dnpOutline", false);
   document.getElementById("dnpOutlineCheckbox").checked = b;
