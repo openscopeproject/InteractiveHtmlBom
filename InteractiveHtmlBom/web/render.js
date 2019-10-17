@@ -328,11 +328,12 @@ function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonCo
   }
 }
 
-function drawTracks(canvas, layer, color) {
+function drawTracks(canvas, layer, color, highlight) {
   ctx = canvas.getContext("2d");
   ctx.strokeStyle = color;
   ctx.lineCap = "round";
   for(var track of pcbdata.tracks[layer]) {
+    if (highlight && highlightedNet != track.net) continue;
     ctx.lineWidth = track.width;
     ctx.beginPath();
     ctx.moveTo(...track.start);
@@ -341,11 +342,12 @@ function drawTracks(canvas, layer, color) {
   }
 }
 
-function drawZones(canvas, layer, color) {
+function drawZones(canvas, layer, color, highlight) {
   ctx = canvas.getContext("2d");
   ctx.strokeStyle = color;
   ctx.lineJoin = "round";
   for(var zone of pcbdata.zones[layer]) {
+    if (highlight && highlightedNet != zone.net) continue;
     ctx.lineWidth = zone.width;
     drawPolygons(ctx, color, zone.polygons, ctx.stroke.bind(ctx));
     drawPolygons(ctx, color, zone.polygons, ctx.fill.bind(ctx));
@@ -360,11 +362,41 @@ function clearCanvas(canvas) {
   ctx.restore();
 }
 
+function drawNets(canvas, layer, highlight) {
+  var style = getComputedStyle(topmostdiv);
+  if (renderTracks) {
+    var trackColor = style.getPropertyValue(highlight ? '--track-color-highlight' : '--track-color');
+    drawTracks(canvas, layer, trackColor, highlight);
+  }
+  if (renderZones) {
+    var zoneColor = style.getPropertyValue(highlight ? '--zone-color-highlight' : '--zone-color');
+    drawZones(canvas, layer, zoneColor, highlight);
+  }
+  if (highlight && renderPads) {
+    var padColor = style.getPropertyValue('--pad-color-highlight');
+    var ctx = canvas.getContext("2d");
+    for (var mod of pcbdata.modules) {
+      // draw pads
+      for (var pad of mod.pads) {
+        if (highlightedNet != pad.net) continue;
+        if (pad.layers.includes(layer)) {
+          drawPad(ctx, pad, padColor, false, true);
+        }
+      }
+    }
+  }
+}
+
 function drawHighlightsOnLayer(canvasdict) {
   clearCanvas(canvasdict.highlight);
-  drawModules(canvasdict.highlight, canvasdict.layer,
-    canvasdict.transform.s * canvasdict.transform.zoom, true);
-}
+  if (highlightedModules.length > 0) {
+    drawModules(canvasdict.highlight, canvasdict.layer,
+      canvasdict.transform.s * canvasdict.transform.zoom, true);
+  }    
+  if (highlightedNet !== null) {
+    drawNets(canvasdict.highlight, canvasdict.layer, true);
+  }  
+}  
 
 function drawHighlights() {
   drawHighlightsOnLayer(allcanvas.front);
@@ -377,19 +409,11 @@ function drawBackground(canvasdict) {
   clearCanvas(canvasdict.silk);
   drawEdgeCuts(canvasdict.bg, canvasdict.transform.s);
 
-  var style = getComputedStyle(topmostdiv);
-  if (renderTracks) {
-    var trackColor = style.getPropertyValue('--track-color');
-    drawTracks(canvasdict.bg, canvasdict.layer, trackColor);
-  }
-  if (renderZones) {
-    var zoneColor = style.getPropertyValue('--zone-color');
-    drawZones(canvasdict.bg, canvasdict.layer, zoneColor);
-  }
-
+  drawNets(canvasdict.bg, canvasdict.layer, false);
   drawModules(canvasdict.bg, canvasdict.layer,
     canvasdict.transform.s * canvasdict.transform.zoom, false);
 
+  var style = getComputedStyle(topmostdiv);
   var edgeColor = style.getPropertyValue('--silkscreen-edge-color');
   var polygonColor = style.getPropertyValue('--silkscreen-polygon-color');
   var textColor = style.getPropertyValue('--silkscreen-text-color');
@@ -500,7 +524,52 @@ function resizeAll() {
   resizeCanvas(allcanvas.back);
 }
 
-function bboxScan(layer, x, y) {
+function pointWithinDistanceToSegment(x, y, x1, y1, x2, y2, d) {
+  var A = x - x1;
+  var B = y - y1;
+  var C = x2 - x1;
+  var D = y2 - y1;
+
+  var dot = A * C + B * D;
+  var len_sq = C * C + D * D;
+  var dx, dy;
+  if (len_sq == 0) {
+    // start and end of the segment coincide
+    dx = x - x1;
+    dy = y - y1;
+  } else {
+    var param = dot / len_sq;
+    var xx, yy;
+    if (param < 0) {
+      xx = x1;
+      yy = y1;
+    } else if (param > 1) {
+      xx = x2;
+      yy = y2;
+    } else {
+      xx = x1 + param * C;
+      yy = y1 + param * D;
+    }
+    dx = x - xx;
+    dy = y - yy;
+  }
+  return dx * dx + dy * dy <= d * d;
+}
+
+function netHitScan(layer, x, y) {
+  // Check track segments
+  if ("tracks" in pcbdata) {
+    for(var track of pcbdata.tracks[layer]) {
+      if (pointWithinDistanceToSegment(x, y, ...track.start, ...track.end, track.width / 2)) {
+        return track.net;
+      }
+    }
+  }
+  // Check pads
+  return null;
+}
+
+function bboxHitScan(layer, x, y) {
   var result = [];
   for (var i = 0; i < pcbdata.modules.length; i++) {
     var module = pcbdata.modules[i];
@@ -553,9 +622,19 @@ function handleMouseClick(e, layerdict) {
   }
   y = (devicePixelRatio * y / t.zoom - t.y - t.pany) / t.s;
   var v = rotateVector([x, y], -boardRotation);
-  var modules = bboxScan(layerdict.layer, v[0], v[1]);
-  if (modules.length > 0) {
-    modulesClicked(modules);
+  if ("nets" in pcbdata) {
+    var net = netHitScan(layerdict.layer, ...v);
+    if (net !== highlightedNet) {
+      highlightedNet = net;
+      clearHighlightedModules();
+      drawHighlights();
+    }
+  }
+  if (highlightedNet === null) {
+    var modules = bboxHitScan(layerdict.layer, ...v);
+    if (modules.length > 0) {
+      modulesClicked(modules);
+    }
   }
 }
 

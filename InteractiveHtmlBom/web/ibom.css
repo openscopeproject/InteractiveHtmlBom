@@ -11,7 +11,9 @@
   --fabrication-polygon-color: #907651;
   --fabrication-text-color: #a27c24;
   --track-color: #def5f1;
+  --track-color-highlight: #D04040;
   --zone-color: #def5f1;
+  --zone-color-highlight: #d0404080;
 }
 
 html, body {

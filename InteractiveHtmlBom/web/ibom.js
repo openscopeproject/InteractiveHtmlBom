@@ -12,6 +12,7 @@ var currentHighlightedRowId;
 var highlightHandlers = [];
 var moduleIndexToHandler = {};
 var highlightedModules = [];
+var highlightedNet = null;
 var checkboxes = [];
 var bomCheckboxes = "";
 var highlightpin1 = false;
@@ -159,6 +160,14 @@ function createCheckboxChangeHandler(checkbox, references) {
     }
     writeStorage("checkbox_" + checkbox, [...refsSet].join(","));
     updateCheckboxStats(checkbox);
+  }
+}
+
+function clearHighlightedModules() {
+  if (currentHighlightedRowId) {
+    document.getElementById(currentHighlightedRowId).classList.remove("highlighted");
+    currentHighlightedRowId = null;
+    highlightedModules = [];
   }
 }
 
