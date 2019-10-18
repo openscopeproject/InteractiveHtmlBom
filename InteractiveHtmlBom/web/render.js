@@ -556,6 +556,28 @@ function pointWithinDistanceToSegment(x, y, x1, y1, x2, y2, d) {
   return dx * dx + dy * dy <= d * d;
 }
 
+function pointWithinPad(x, y, pad) {
+  var v = [x - pad.pos[0], y - pad.pos[1]];
+  v = rotateVector(v, -pad.angle);
+  if (pad.offset) {
+    v[0] -= pad.offset[0];
+    v[1] -= pad.offset[1];
+  }
+  if (["rect", "roundrect", "chamfrect"].includes(pad.shape)) {
+    return -pad.size[0] / 2 <= v[0] && v[0] <= pad.size[0] / 2 &&
+           -pad.size[1] / 2 <= v[1] && v[1] <= pad.size[1] / 2;
+  } else if (pad.shape == "oval") {
+    var d = (pad.size[0] - pad.size[1]) / 2;
+    if (d > 0) {
+      return pointWithinDistanceToSegment(v[0], v[1], d, 0, -d, 0, pad.size[1] / 2);
+    } else {
+      return pointWithinDistanceToSegment(v[0], v[1], 0, d, 0, -d, pad.size[0] / 2);
+    }
+  } else if (pad.shape == "circle") {
+    return v[0] * v[0] + v[1] * v[1] <= pad.size[0] * pad.size[0] / 4;
+  }
+}
+
 function netHitScan(layer, x, y) {
   // Check track segments
   if ("tracks" in pcbdata) {
@@ -566,6 +588,13 @@ function netHitScan(layer, x, y) {
     }
   }
   // Check pads
+  for (var mod of pcbdata.modules) {
+    for(var pad of mod.pads) {
+      if (pad.layers.includes(layer) && pointWithinPad(x, y, pad)) {
+        return pad.net;
+      }
+    }
+  }
   return null;
 }
 
