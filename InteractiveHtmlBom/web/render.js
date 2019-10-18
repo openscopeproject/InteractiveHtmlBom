@@ -8,6 +8,7 @@ var renderValues = true;
 var renderDnpOutline = false;
 var renderTracks = true;
 var renderZones = true;
+var emptyContext2d = document.createElement("canvas").getContext("2d");
 
 function deg2rad(deg) {
   return deg * Math.PI / 180;
@@ -122,74 +123,79 @@ function drawedge(ctx, scalefactor, edge, color) {
   }
 }
 
-function drawChamferedRect(ctx, color, size, radius, chamfpos, chamfratio, ctxmethod) {
+function getChamferedRectPath(size, radius, chamfpos, chamfratio) {
   // chamfpos is a bitmask, left = 1, right = 2, bottom left = 4, bottom right = 8
-  ctx.beginPath();
-  ctx.strokeStyle = color;
+  var path = new Path2D();
   var width = size[0];
   var height = size[1];
   var x = width * -0.5;
   var y = height * -0.5;
   var chamfOffset = Math.min(width, height) * chamfratio;
-  ctx.moveTo(x, 0);
+  path.moveTo(x, 0);
   if (chamfpos & 4) {
-    ctx.lineTo(x, y + height - chamfOffset);
-    ctx.lineTo(x + chamfOffset, y + height);
-    ctx.lineTo(0, y + height);
+    path.lineTo(x, y + height - chamfOffset);
+    path.lineTo(x + chamfOffset, y + height);
+    path.lineTo(0, y + height);
   } else {
-    ctx.arcTo(x, y + height, x + width, y + height, radius);
+    path.arcTo(x, y + height, x + width, y + height, radius);
   }
   if (chamfpos & 8) {
-    ctx.lineTo(x + width - chamfOffset, y + height);
-    ctx.lineTo(x + width, y + height - chamfOffset);
-    ctx.lineTo(x + width, 0);
+    path.lineTo(x + width - chamfOffset, y + height);
+    path.lineTo(x + width, y + height - chamfOffset);
+    path.lineTo(x + width, 0);
   } else {
-    ctx.arcTo(x + width, y + height, x + width, y, radius);
+    path.arcTo(x + width, y + height, x + width, y, radius);
   }
   if (chamfpos & 2) {
-    ctx.lineTo(x + width, y + chamfOffset);
-    ctx.lineTo(x + width - chamfOffset, y);
-    ctx.lineTo(0, y);
+    path.lineTo(x + width, y + chamfOffset);
+    path.lineTo(x + width - chamfOffset, y);
+    path.lineTo(0, y);
   } else {
-    ctx.arcTo(x + width, y, x, y, radius);
+    path.arcTo(x + width, y, x, y, radius);
   }
   if (chamfpos & 1) {
-    ctx.lineTo(x + chamfOffset, y);
-    ctx.lineTo(x, y + chamfOffset);
-    ctx.lineTo(x, 0);
+    path.lineTo(x + chamfOffset, y);
+    path.lineTo(x, y + chamfOffset);
+    path.lineTo(x, 0);
   } else {
-    ctx.arcTo(x, y, x, y + height, radius);
+    path.arcTo(x, y, x, y + height, radius);
   }
-  ctx.closePath();
-  ctxmethod();
+  path.closePath();
+  return path;
 }
 
-function drawOblong(ctx, color, size, ctxmethod) {
-  drawChamferedRect(ctx, color, size, Math.min(size[0], size[1]) / 2, 0, 0, ctxmethod);
+function getOblongPath(size) {
+  return getChamferedRectPath(size, Math.min(size[0], size[1]) / 2, 0, 0);
 }
 
-function drawPolygons(ctx, color, polygons, ctxmethod) {
-  ctx.fillStyle = color;
+function getPolygonsPath(polygons) {
+  var combinedPath = new Path2D();
   for (var polygon of polygons) {
-    ctx.beginPath();
+    var path = new Path2D();
     for (var vertex of polygon) {
-      ctx.lineTo(...vertex)
+      path.lineTo(...vertex)
     }
-    ctx.closePath();
-    ctxmethod();
+    path.closePath();
+    combinedPath.addPath(path);
   }
+  return combinedPath;
 }
 
 function drawPolygonShape(ctx, shape, color) {
   ctx.save();
-  if (shape.svgpath) {
-    ctx.fillStyle = color;
-    ctx.fill(new Path2D(shape.svgpath));
-  } else {
+  ctx.fillStyle = color;
+  if (!shape.path2d) {
+    if (shape.svgpath) {
+      shape.path2d = new Path2D(shape.svgpath);
+    } else {
+      shape.path2d = getPolygonsPath(shape.polygons);
+    }
+  }
+  if (!shape.svgpath) {
     ctx.translate(...shape.pos);
     ctx.rotate(deg2rad(-shape.angle));
-    drawPolygons(ctx, color, shape.polygons, ctx.fill.bind(ctx));
   }
+  ctx.fill(shape.path2d);
   ctx.restore();
 }
 
@@ -203,11 +209,32 @@ function drawDrawing(ctx, layer, scalefactor, drawing, color) {
   }
 }
 
-function drawCircle(ctx, radius, ctxmethod) {
-  ctx.beginPath();
-  ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-  ctx.closePath();
-  ctxmethod();
+function getCirclePath(radius) {
+  var path = new Path2D();
+  path.arc(0, 0, radius, 0, 2 * Math.PI);
+  path.closePath();
+  return path;
+}
+
+function getCachedPadPath(pad) {
+  if (!pad.path2d) {
+    // if path2d is not set, build one and cache it on pad object
+    if (pad.shape == "rect") {
+      pad.path2d = new Path2D();
+      pad.path2d.rect(...pad.size.map(c => -c * 0.5), ...pad.size);
+    } else if (pad.shape == "oval") {
+      pad.path2d = getOblongPath(pad.size);
+    } else if (pad.shape == "circle") {
+      pad.path2d = getCirclePath(pad.size[0] / 2);
+    } else if (pad.shape == "roundrect") {
+      pad.path2d = getChamferedRectPath(pad.size, pad.radius, 0, 0);
+    } else if (pad.shape == "chamfrect") {
+      pad.path2d = getChamferedRectPath(pad.size, pad.radius, pad.chamfpos, pad.chamfratio)
+    } else if (pad.shape == "custom") {
+      pad.path2d = getPolygonsPath(pad.polygons);
+    }
+  }
+  return pad.path2d;
 }
 
 function drawPad(ctx, pad, color, outline, hole) {
@@ -219,32 +246,18 @@ function drawPad(ctx, pad, color, outline, hole) {
   }
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
-  var ctxmethod = outline ? ctx.stroke.bind(ctx) : ctx.fill.bind(ctx);
-  if (pad.shape == "rect") {
-    var rect = [...pad.size.map(c => -c * 0.5), ...pad.size];
-    if (outline) {
-      ctx.strokeRect(...rect);
-    } else {
-      ctx.fillRect(...rect);
-    }
-  } else if (pad.shape == "oval") {
-    drawOblong(ctx, color, pad.size, ctxmethod);
-  } else if (pad.shape == "circle") {
-    drawCircle(ctx, pad.size[0] / 2, ctxmethod);
-  } else if (pad.shape == "roundrect") {
-    drawChamferedRect(ctx, color, pad.size, pad.radius, 0, 0, ctxmethod);
-  } else if (pad.shape == "chamfrect") {
-    drawChamferedRect(ctx, color, pad.size, pad.radius, pad.chamfpos, pad.chamfratio, ctxmethod)
-  } else if (pad.shape == "custom") {
-    drawPolygons(ctx, color, pad.polygons, ctxmethod);
+  var path = getCachedPadPath(pad);
+  if (outline) {
+    ctx.stroke(path);
+  } else {
+    ctx.fill(path);
   }
   if (pad.type == "th" && hole) {
-    ctxmethod = ctx.fill.bind(ctx);
     ctx.fillStyle = "#CCCCCC";
     if (pad.drillshape == "oblong") {
-      drawOblong(ctx, "#CCCCCC", pad.drillsize, ctxmethod);
+      ctx.fill(getOblongPath(pad.drillsize));
     } else {
-      drawCircle(ctx, pad.drillsize[0] / 2, ctxmethod);
+      ctx.fill(getCirclePath(pad.drillsize[0] / 2));
     }
   }
   ctx.restore();
@@ -345,12 +358,16 @@ function drawTracks(canvas, layer, color, highlight) {
 function drawZones(canvas, layer, color, highlight) {
   ctx = canvas.getContext("2d");
   ctx.strokeStyle = color;
+  ctx.fillStyle = color;
   ctx.lineJoin = "round";
   for(var zone of pcbdata.zones[layer]) {
+    if (!zone.path2d) {
+      zone.path2d = getPolygonsPath(zone.polygons);
+    }
     if (highlight && highlightedNet != zone.net) continue;
     ctx.lineWidth = zone.width;
-    drawPolygons(ctx, color, zone.polygons, ctx.stroke.bind(ctx));
-    drawPolygons(ctx, color, zone.polygons, ctx.fill.bind(ctx));
+    ctx.fill(zone.path2d);
+    ctx.stroke(zone.path2d);
   }
 }
 
@@ -563,24 +580,12 @@ function pointWithinPad(x, y, pad) {
     v[0] -= pad.offset[0];
     v[1] -= pad.offset[1];
   }
-  if (["rect", "roundrect", "chamfrect"].includes(pad.shape)) {
-    return -pad.size[0] / 2 <= v[0] && v[0] <= pad.size[0] / 2 &&
-           -pad.size[1] / 2 <= v[1] && v[1] <= pad.size[1] / 2;
-  } else if (pad.shape == "oval") {
-    var d = (pad.size[0] - pad.size[1]) / 2;
-    if (d > 0) {
-      return pointWithinDistanceToSegment(v[0], v[1], d, 0, -d, 0, pad.size[1] / 2);
-    } else {
-      return pointWithinDistanceToSegment(v[0], v[1], 0, d, 0, -d, pad.size[0] / 2);
-    }
-  } else if (pad.shape == "circle") {
-    return v[0] * v[0] + v[1] * v[1] <= pad.size[0] * pad.size[0] / 4;
-  }
+  return emptyContext2d.isPointInPath(getCachedPadPath(pad), ...v);
 }
 
 function netHitScan(layer, x, y) {
   // Check track segments
-  if ("tracks" in pcbdata) {
+  if (renderTracks && pcbdata.tracks) {
     for(var track of pcbdata.tracks[layer]) {
       if (pointWithinDistanceToSegment(x, y, ...track.start, ...track.end, track.width / 2)) {
         return track.net;
@@ -588,10 +593,12 @@ function netHitScan(layer, x, y) {
     }
   }
   // Check pads
-  for (var mod of pcbdata.modules) {
-    for(var pad of mod.pads) {
-      if (pad.layers.includes(layer) && pointWithinPad(x, y, pad)) {
-        return pad.net;
+  if (renderPads) {
+    for (var mod of pcbdata.modules) {
+      for(var pad of mod.pads) {
+        if (pad.layers.includes(layer) && pointWithinPad(x, y, pad)) {
+          return pad.net;
+        }
       }
     }
   }
