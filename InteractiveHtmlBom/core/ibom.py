@@ -212,6 +212,15 @@ def process_substitutions(bom_name_format, pcb_file_name, metadata):
     return name + '.html'
 
 
+def get_compressed_pcbdata(pcbdata):
+    from .lzstring import LZString
+
+    pcbdata_js = LZString.compress_to_utf16(json.dumps(pcbdata))
+    pcbdata_js = json.dumps(pcbdata_js)
+    js = "var pcbdata = JSON.parse(LZString.decompressFromUTF16({}))"
+    return js.format(pcbdata_js)
+
+
 def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     def get_file_content(file_name):
         path = os.path.join(os.path.dirname(__file__), "..", "web", file_name)
@@ -230,15 +239,15 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     bom_file_dir = os.path.dirname(bom_file_name)
     if not os.path.isdir(bom_file_dir):
         os.makedirs(bom_file_dir)
-    pcbdata_js = "var pcbdata = " + json.dumps(pcbdata)
     config_js = "var config = " + config.get_html_config()
     html = get_file_content("ibom.html")
     html = html.replace('///CSS///', get_file_content('ibom.css'))
     html = html.replace('///SPLITJS///', get_file_content('split.js'))
+    html = html.replace('///LZ-STRING///', get_file_content('lz-string.js'))
     html = html.replace('///POINTER_EVENTS_POLYFILL///',
                         get_file_content('pep.js'))
     html = html.replace('///CONFIG///', config_js)
-    html = html.replace('///PCBDATA///', pcbdata_js)
+    html = html.replace('///PCBDATA///', get_compressed_pcbdata(pcbdata))
     html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
