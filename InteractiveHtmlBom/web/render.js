@@ -270,15 +270,13 @@ function drawModule(ctx, layer, scalefactor, module, padcolor, outlinecolor, hig
       ctx.save();
       ctx.globalAlpha = 0.2;
       ctx.translate(...module.bbox.pos);
+      ctx.rotate(deg2rad(-module.bbox.angle));
+      ctx.translate(...module.bbox.relpos);
       ctx.fillStyle = padcolor;
-      ctx.fillRect(
-        0, 0,
-        ...module.bbox.size);
+      ctx.fillRect(0, 0, ...module.bbox.size);
       ctx.globalAlpha = 1;
       ctx.strokeStyle = padcolor;
-      ctx.strokeRect(
-        0, 0,
-        ...module.bbox.size);
+      ctx.strokeRect(0, 0, ...module.bbox.size);
       ctx.restore();
     }
   }
@@ -605,14 +603,19 @@ function netHitScan(layer, x, y) {
   return null;
 }
 
+function pointWithinModuleBbox(x, y, bbox) {
+  var v = [x - bbox.pos[0], y - bbox.pos[1]];
+  v = rotateVector(v, bbox.angle);
+  return bbox.relpos[0] <= v[0] && v[0] <= bbox.relpos[0] + bbox.size[0] &&
+         bbox.relpos[1] <= v[1] && v[1] <= bbox.relpos[1] + bbox.size[1];
+}
+
 function bboxHitScan(layer, x, y) {
   var result = [];
   for (var i = 0; i < pcbdata.modules.length; i++) {
     var module = pcbdata.modules[i];
     if (module.layer == layer) {
-      var b = module.bbox;
-      if (b.pos[0] <= x && b.pos[0] + b.size[0] >= x &&
-        b.pos[1] <= y && b.pos[1] + b.size[1] >= y) {
+      if (pointWithinModuleBbox(x, y, module.bbox)) {
         result.push(i);
       }
     }

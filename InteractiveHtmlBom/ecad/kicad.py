@@ -281,17 +281,19 @@ class PcbnewParser(EcadParser):
     def parse_modules(self, pcb_modules):
         # type: (list) -> list
         modules = []
-        for m in pcb_modules:
+        for m in pcb_modules:  # type: pcbnew.MODULE
             ref = m.GetReference()
-            center = self.normalize(m.GetCenter())
 
             # bounding box
-            mrect = m.GetFootprintRect()
-            mrect_pos = self.normalize(mrect.GetPosition())
-            mrect_size = self.normalize(mrect.GetSize())
+            m_copy = pcbnew.MODULE(m)
+            m_copy.SetOrientation(0)
+            m_copy.SetPosition(pcbnew.wxPoint(0, 0))
+            mrect = m_copy.GetFootprintRect()
             bbox = {
-                "pos": mrect_pos,
-                "size": mrect_size
+                "pos": self.normalize(m.GetPosition()),
+                "relpos": self.normalize(mrect.GetPosition()),
+                "size": self.normalize(mrect.GetSize()),
+                "angle": m.GetOrientation() * 0.1,
             }
 
             # graphical drawings
@@ -329,7 +331,6 @@ class PcbnewParser(EcadParser):
             # add module
             modules.append({
                 "ref": ref,
-                "center": center,
                 "bbox": bbox,
                 "pads": pads,
                 "drawings": drawings,

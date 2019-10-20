@@ -69,7 +69,9 @@ class BoundingBox(object):
         # type: () -> dict
         return {
             "pos": [self._x0, self._y0],
+            "relpos": [0, 0],
             "size": [self._x1 - self._x0, self._y1 - self._y0],
+            "angle": 0,
         }
 
     def add(self, other):
