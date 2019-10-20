@@ -215,9 +215,9 @@ def process_substitutions(bom_name_format, pcb_file_name, metadata):
 def get_compressed_pcbdata(pcbdata):
     from .lzstring import LZString
 
-    pcbdata_js = LZString.compress_to_utf16(json.dumps(pcbdata))
+    pcbdata_js = LZString().compress_to_base64(json.dumps(pcbdata))
     pcbdata_js = json.dumps(pcbdata_js)
-    js = "var pcbdata = JSON.parse(LZString.decompressFromUTF16({}))"
+    js = "var pcbdata = JSON.parse(LZString.decompressFromBase64({}))"
     return js.format(pcbdata_js)
 
 

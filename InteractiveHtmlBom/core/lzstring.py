@@ -12,7 +12,9 @@ if sys.version_info[0] == 3:
 class LZString:
 
     def __init__(self):
-        pass
+        self.keyStr = (
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+        )
 
     @staticmethod
     def compress(uncompressed):
@@ -247,84 +249,56 @@ class LZString:
 
         return context_data_string
 
-    @staticmethod
-    def compress_to_utf16(string):
-
+    def compress_to_base64(self, string):
         if string is None:
             return ''
 
         output = ''
-        current = 0
-        status = 0
 
-        string = LZString.compress(string)
+        string = self.compress(string)
+        str_len = len(string)
 
-        for i in range(len(string)):
-            c = ord(string[i])
+        for i in range(0, str_len * 2, 3):
+            if (i % 2) == 0:
+                chr1 = ord(string[i // 2]) >> 8
+                chr2 = ord(string[i // 2]) & 255
 
-            if status == 0:
-                status += 1
-                output += unichr(((c >> 1) + 32))
-                current = (c & 1) << 14
-            elif status == 1:
-                status += 1
-                output += unichr(((current + (c >> 2)) + 32))
-                current = (c & 3) << 13
-            elif status == 2:
-                status += 1
-                output += unichr(((current + (c >> 3)) + 32))
-                current = (c & 7) << 12
-            elif status == 3:
-                status += 1
-                output += unichr(((current + (c >> 4)) + 32))
-                current = (c & 15) << 11
-            elif status == 4:
-                status += 1
-                output += unichr(((current + (c >> 5)) + 32))
-                current = (c & 31) << 10
-            elif status == 5:
-                status += 1
-                output += unichr(((current + (c >> 6)) + 32))
-                current = (c & 63) << 9
-            elif status == 6:
-                status += 1
-                output += unichr(((current + (c >> 7)) + 32))
-                current = (c & 127) << 8
-            elif status == 7:
-                status += 1
-                output += unichr(((current + (c >> 8)) + 32))
-                current = (c & 255) << 7
-            elif status == 8:
-                status += 1
-                output += unichr(((current + (c >> 9)) + 32))
-                current = (c & 511) << 6
-            elif status == 9:
-                status += 1
-                output += unichr(((current + (c >> 10)) + 32))
-                current = (c & 1023) << 5
-            elif status == 10:
-                status += 1
-                output += unichr(((current + (c >> 11)) + 32))
-                current = (c & 2047) << 4
-            elif status == 11:
-                status += 1
-                output += unichr(((current + (c >> 12)) + 32))
-                current = (c & 4095) << 3
-            elif status == 12:
-                status += 1
-                output += unichr(((current + (c >> 13)) + 32))
-                current = (c & 8191) << 2
-            elif status == 13:
-                status += 1
-                output += unichr(((current + (c >> 14)) + 32))
-                current = (c & 16383) << 1
-            elif status == 14:
-                status += 1
-                output += unichr(((current + (c >> 15)) + 32))
-                output += unichr((c & 32767) + 32)
+                if (i / 2) + 1 < str_len:
+                    chr3 = ord(string[(i // 2) + 1]) >> 8
+                else:
+                    chr3 = None
+            else:
+                chr1 = ord(string[(i - 1) // 2]) & 255
+                if (i + 1) / 2 < str_len:
+                    chr2 = ord(string[(i + 1) // 2]) >> 8
+                    chr3 = ord(string[(i + 1) // 2]) & 255
+                else:
+                    chr2 = None
+                    chr3 = None
 
-                status = 0
+            # python dont support bit operation with NaN like javascript
+            enc1 = chr1 >> 2
+            enc2 = (
+                ((chr1 & 3) << 4) |
+                (chr2 >> 4 if chr2 is not None else 0)
+            )
+            enc3 = (
+                ((chr2 & 15 if chr2 is not None else 0) << 2) |
+                (chr3 >> 6 if chr3 is not None else 0)
+            )
+            enc4 = (chr3 if chr3 is not None else 0) & 63
 
-        output += unichr(current + 32)
+            if chr2 is None:
+                enc3 = 64
+                enc4 = 64
+            elif chr3 is None:
+                enc4 = 64
+
+            output += (
+                self.keyStr[enc1] +
+                self.keyStr[enc2] +
+                self.keyStr[enc3] +
+                self.keyStr[enc4]
+            )
 
         return output
