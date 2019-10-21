@@ -168,34 +168,35 @@ function getOblongPath(size) {
   return getChamferedRectPath(size, Math.min(size[0], size[1]) / 2, 0, 0);
 }
 
-function getPolygonsPath(polygons) {
-  var combinedPath = new Path2D();
-  for (var polygon of polygons) {
-    var path = new Path2D();
-    for (var vertex of polygon) {
-      path.lineTo(...vertex)
-    }
-    path.closePath();
-    combinedPath.addPath(path);
+function getPolygonsPath(shape) {
+  if (shape.path2d) {
+    return shape.path2d;
   }
-  return combinedPath;
+  if (shape.svgpath) {
+    shape.path2d = new Path2D(shape.svgpath);
+  } else {
+    var combinedPath = new Path2D();
+    for (var polygon of shape.polygons) {
+      var path = new Path2D();
+      for (var vertex of polygon) {
+        path.lineTo(...vertex)
+      }
+      path.closePath();
+      combinedPath.addPath(path);
+    }
+    shape.path2d = combinedPath;
+  }
+  return shape.path2d;
 }
 
 function drawPolygonShape(ctx, shape, color) {
   ctx.save();
   ctx.fillStyle = color;
-  if (!shape.path2d) {
-    if (shape.svgpath) {
-      shape.path2d = new Path2D(shape.svgpath);
-    } else {
-      shape.path2d = getPolygonsPath(shape.polygons);
-    }
-  }
   if (!shape.svgpath) {
     ctx.translate(...shape.pos);
     ctx.rotate(deg2rad(-shape.angle));
   }
-  ctx.fill(shape.path2d);
+  ctx.fill(getPolygonsPath(shape));
   ctx.restore();
 }
 
@@ -360,10 +361,10 @@ function drawZones(canvas, layer, color, highlight) {
   ctx.lineJoin = "round";
   for(var zone of pcbdata.zones[layer]) {
     if (!zone.path2d) {
-      zone.path2d = getPolygonsPath(zone.polygons);
+      zone.path2d = getPolygonsPath(zone);
     }
     if (highlight && highlightedNet != zone.net) continue;
-    ctx.lineWidth = zone.width;
+    ctx.lineWidth = zone.width ? zone.width : 0;
     ctx.fill(zone.path2d);
     ctx.stroke(zone.path2d);
   }
@@ -422,11 +423,12 @@ function drawBackground(canvasdict) {
   clearCanvas(canvasdict.bg);
   clearCanvas(canvasdict.fab);
   clearCanvas(canvasdict.silk);
-  drawEdgeCuts(canvasdict.bg, canvasdict.transform.s);
 
   drawNets(canvasdict.bg, canvasdict.layer, false);
   drawModules(canvasdict.bg, canvasdict.layer,
     canvasdict.transform.s * canvasdict.transform.zoom, false);
+
+  drawEdgeCuts(canvasdict.bg, canvasdict.transform.s);
 
   var style = getComputedStyle(topmostdiv);
   var edgeColor = style.getPropertyValue('--silkscreen-edge-color');

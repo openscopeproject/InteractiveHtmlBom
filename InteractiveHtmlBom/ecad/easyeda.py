@@ -318,7 +318,6 @@ class EasyEdaParser(EcadParser):
         if len(attr) % 2 != 0:
             attr.pop()
         attr = {attr[i]: attr[i + 1] for i in range(0, len(attr), 2)}
-        # TODO: determine layer, reference, value etc.
         fp_layer = 'F' if fp_layer == self.TOP_COPPER_LAYER else 'B'
         val = '??'
         ref = '??'
@@ -465,5 +464,25 @@ class EasyEdaParser(EcadParser):
             "bom": {},
             "font_data": {}
         }
+
+        if self.config.include_tracks:
+            def filter_tracks(drawing_list, drawing_type, keys):
+                result = []
+                for drawing in drawing_list:
+                    if drawing["type"] == drawing_type:
+                        r = {}
+                        for key in keys:
+                            r[key] = drawing[key]
+                        result.append(r)
+                return result
+
+            pcbdata["tracks"] = {
+                'F': filter_tracks(drawings.get(self.TOP_COPPER_LAYER, []),
+                                   "segment", ["start", "end", "width"]),
+                'B': filter_tracks(drawings.get(self.BOT_COPPER_LAYER, []),
+                                   "segment", ["start", "end", "width"]),
+            }
+            # zones are not supported
+            pcbdata["zones"] = {'F': [], 'B': []}
 
         return pcbdata, components
