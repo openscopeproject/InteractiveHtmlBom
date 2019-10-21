@@ -232,7 +232,7 @@ function getCachedPadPath(pad) {
     } else if (pad.shape == "chamfrect") {
       pad.path2d = getChamferedRectPath(pad.size, pad.radius, pad.chamfpos, pad.chamfratio)
     } else if (pad.shape == "custom") {
-      pad.path2d = getPolygonsPath(pad.polygons);
+      pad.path2d = getPolygonsPath(pad);
     }
   }
   return pad.path2d;
