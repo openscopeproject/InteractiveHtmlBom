@@ -36,6 +36,38 @@ pcbdata = {
     footprint2,
     ...
   ],
+  // Optional track data. Vias are 0 length tracks.
+  "tracks": {
+    "F": [
+      {
+        "start": [x, y],
+        "end": [x, y],
+        "width": w,
+        // Optional net name
+        "net": netname
+      },
+      ...
+    ],
+    "B": [...]
+  }
+  // Optional zone data (should be present if tracks are present).
+  "zones": {
+    "F": [
+      {
+        // SVG path of the polygon given as 'd' attribute of svg spec.
+        // If "svgpath" is present "polygons" is ignored. 
+        "svgpath": svgpath,
+        "polygons": [
+          // Set of polylines same as in polygon drawing.
+          [[point1x, point1y], [point2x, point2y], ...],
+        ],
+        // Optional net name.
+        "net": netname,
+      },
+      ...
+    ],
+    "B": [...]
+  }
   // PCB metadata from the title block.
   "metadata": {
     "title": "title",
@@ -124,8 +156,8 @@ attribute.
 ```js
 {
   "type": "polygon",
-  # SVG path of the polygon given as 'd' attribute of svg spec.
-  # If this parameter is specified everything below it is ignored.
+  // SVG path of the polygon given as 'd' attribute of svg spec.
+  // If this parameter is specified everything below it is ignored.
   "svgpath": svgpath,
   "pos": [x, y],
   "angle": angle,
@@ -145,11 +177,11 @@ attribute.
 {
   "pos": [x, y],
   "text": text,
-  # SVG path of the text given as 'd' attribute of svg spec.
-  # If this parameter is specified then height, width, angle,
-  # text attributes and justification is ignored. Rendering engine
-  # will not attempt to read character data from newstroke font and
-  # will draw the path as is. "thickness" will be used as stroke width.
+  // SVG path of the text given as 'd' attribute of svg spec.
+  // If this parameter is specified then height, width, angle,
+  // text attributes and justification is ignored. Rendering engine
+  // will not attempt to read character data from newstroke font and
+  // will draw the path as is. "thickness" will be used as stroke width.
   "svgpath": svgpath,
   "height": height,
   "width": width,
@@ -179,7 +211,12 @@ Footprints are a collection of pads, drawings and some metadata.
   "ref": reference,
   "center": [x, y],
   "bbox": {
+    // Position of the rotation center of the bounding box.
     "pos": [x, y],
+    // Rotation angle in degrees.
+    "angle": angle,
+    // Left top corner position relative to center (after rotation)
+    "relpos": [x, y],
     "size": [x, y],
   },
   "pads": [
@@ -197,16 +234,23 @@ Footprints are a collection of pads, drawings and some metadata.
       // OR footprint has no pads named as one of above and
       // current pad's name is lexicographically smallest.
       "pin1": 1,
-      // Shape is one of "rect", "oval", "circle", "roundrect", "custom".
+      // Shape is one of "rect", "oval", "circle", "roundrect", "chamfrect", custom".
       "shape": shape,
       // Only present if shape is "custom".
+      // SVG path of the polygon given as 'd' attribute of svg spec.
+      // If "svgpath" is present "polygons", "pos", "angle" are ignored. 
+      "svgpath": svgpath,
       "polygons": [
         // Set of polylines same as in polygon drawing.
         [[point1x, point1y], [point2x, point2y], ...],
         ...
       ],
-      // Only present if shape is "roundrect".
+      // Only present if shape is "roundrect" or "chamfrect".
       "radius": radius,
+      // Only present if shape is "chamfrect".
+      // chamfpos is a bitmask, left = 1, right = 2, bottom left = 4, bottom right = 8
+      "chamfpos": chamfpos, 
+      "chamfratio": ratio,
       // Pad type is "th" for standard and NPTH pads
       // "smd" otherwise.
       "type": type,
@@ -215,6 +259,8 @@ Footprints are a collection of pads, drawings and some metadata.
       "drillshape": drillshape,
       // Optional attribute.
       "offset": [x, y],
+      // Optional net name
+      "net": netname,
     },
     ...
   ],
