@@ -42,6 +42,9 @@ class FontParser:
 
     def parse_font_for_string(self, s):
         for c in s:
+            if c == '\t' and ' ' not in self.parsed_font:
+                # tabs rely on space char to calculate offset
+                self.parsed_font[' '] = self.parse_font_char(' ')
             if c not in self.parsed_font and ord(c) >= ord(' '):
                 self.parsed_font[c] = self.parse_font_char(c)
 

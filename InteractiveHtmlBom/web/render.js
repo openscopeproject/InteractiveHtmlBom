@@ -58,7 +58,12 @@ function drawtext(ctx, text, color, flip) {
     var offsety = (-(txt.length - 1) + i * 2) * interline + text.height / 2;
     var lineWidth = 0;
     for (var c of txt[i]) {
-      lineWidth += pcbdata.font_data[c].w * text.width;
+      if (c == '\t') {
+        var fourSpaces = 4 * pcbdata.font_data[' '].w * text.width;
+        lineWidth += fourSpaces - lineWidth % fourSpaces;
+      } else {
+        lineWidth += pcbdata.font_data[c].w * text.width;
+      }
     }
     var offsetx = 0;
     switch (text.horiz_justify) {
@@ -75,6 +80,11 @@ function drawtext(ctx, text, color, flip) {
         break;
     }
     for (var c of txt[i]) {
+      if (c == '\t') {
+        var fourSpaces = 4 * pcbdata.font_data[' '].w * text.width;
+        offsetx += fourSpaces - offsetx % fourSpaces;
+        continue;
+      }
       for (var line of pcbdata.font_data[c].l) {
         ctx.beginPath();
         ctx.moveTo(...calcFontPoint(line[0], text, offsetx, offsety, tilt));
