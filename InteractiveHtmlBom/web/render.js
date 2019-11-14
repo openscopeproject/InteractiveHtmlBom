@@ -103,32 +103,32 @@ function drawedge(ctx, scalefactor, edge, color) {
   ctx.strokeStyle = color;
   ctx.lineWidth = Math.max(1 / scalefactor, edge.width);
   ctx.lineCap = "round";
-  if (edge.type == "segment") {
+  if (edge.svgpath) {
+    ctx.stroke(new Path2D(edge.svgpath));
+  } else {
     ctx.beginPath();
-    ctx.moveTo(...edge.start);
-    ctx.lineTo(...edge.end);
-    ctx.stroke();
-  }
-  if (edge.type == "arc") {
-    ctx.beginPath();
-    if (edge.svgpath) {
-      ctx.stroke(new Path2D(edge.svgpath));
-    } else {
+    if (edge.type == "segment") {
+      ctx.moveTo(...edge.start);
+      ctx.lineTo(...edge.end);
+    }
+    if (edge.type == "arc") {
       ctx.arc(
         ...edge.start,
         edge.radius,
         deg2rad(edge.startangle),
         deg2rad(edge.endangle));
-      ctx.stroke();
     }
-  }
-  if (edge.type == "circle") {
-    ctx.beginPath();
-    ctx.arc(
-      ...edge.start,
-      edge.radius,
-      0, 2 * Math.PI);
-    ctx.closePath();
+    if (edge.type == "circle") {
+      ctx.arc(
+        ...edge.start,
+        edge.radius,
+        0, 2 * Math.PI);
+      ctx.closePath();
+    }
+    if (edge.type == "curve") {
+      ctx.moveTo(...edge.start);
+      ctx.bezierCurveTo(...edge.cpa, ...edge.cpb, ...edge.end);
+    }
     ctx.stroke();
   }
 }

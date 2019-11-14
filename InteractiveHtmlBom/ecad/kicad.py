@@ -39,11 +39,13 @@ class PcbnewParser(EcadParser):
         return [point[0] * 1e-6, point[1] * 1e-6]
 
     def parse_draw_segment(self, d):
+        # type: (pcbnew.DRAWSEGMENT) -> dict | None
         shape = {
             pcbnew.S_SEGMENT: "segment",
             pcbnew.S_CIRCLE: "circle",
             pcbnew.S_ARC: "arc",
             pcbnew.S_POLYGON: "polygon",
+            pcbnew.S_CURVE: "curve",
         }.get(d.GetShape(), "")
         if shape == "":
             self.logger.info("Unsupported shape %s, skipping", d.GetShape())
@@ -92,6 +94,15 @@ class PcbnewParser(EcadParser):
                 "pos": start,
                 "angle": angle,
                 "polygons": polygons
+            }
+        if shape == "curve":
+            return {
+                "type": shape,
+                "start": start,
+                "cpa": self.normalize(d.GetBezControl1()),
+                "cpb": self.normalize(d.GetBezControl2()),
+                "end": end,
+                "width": d.GetWidth() * 1e-6
             }
 
     def parse_poly_set(self, polygon_set):
@@ -373,7 +384,7 @@ class PcbnewParser(EcadParser):
 
     def parse_zones(self, zones):
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
-        for zone in zones: # type: (pcbnew.ZONE_CONTAINER)
+        for zone in zones:  # type: pcbnew.ZONE_CONTAINER
             if not zone.IsFilled() or zone.GetIsKeepout():
                 continue
             if zone.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
