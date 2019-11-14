@@ -264,6 +264,9 @@ function drawPad(ctx, pad, color, outline, hole) {
     ctx.fill(path);
   }
   if (pad.type == "th" && hole) {
+    if (pad.offset) {
+      ctx.translate(-pad.offset[0], -pad.offset[1]);
+    }
     ctx.fillStyle = "#CCCCCC";
     if (pad.drillshape == "oblong") {
       ctx.fill(getOblongPath(pad.drillsize));
