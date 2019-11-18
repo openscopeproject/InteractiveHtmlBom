@@ -14,6 +14,7 @@
   --track-color-highlight: #D04040;
   --zone-color: #def5f1;
   --zone-color-highlight: #d0404080;
+  background-color: white;
 }
 
 html, body {
@@ -131,6 +132,7 @@ textarea.clipboard-temp {
 
 .button-container {
   font-size: 0;
+  margin: 10px 10px 10px 0px;
 }
 
 .dark .button-container {
@@ -418,8 +420,42 @@ mark.highlight {
   background-repeat: no-repeat;
 }
 
-.dark .statsbtn {
+.iobtn {
+  background-color: white;
+  border: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2' d='M3 33v-7l6.8-7h16.5l6.7 7v7H3zM3.2 26H33M21 9l5-5.9 5 6h-2.5V15h-5V9H21zm-4.9 0l-5 6-5-6h2.5V3h5v6h2.5z'/%3E%3Cpath fill='none' stroke='%23000' d='M6.1 29.5H10'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dark .statsbtn, .dark .savebtn, .dark .menubtn, .dark .iobtn {
   filter: invert(1);
+}
+
+.flexbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.savebtn {
+  background-color: #d6d6d6;
+  width: auto;
+  height: 30px;
+  flex-grow: 1;
+  margin: 5px;
+  border-radius: 4px;
+}
+
+.savebtn:active {
+  background-color: #0a0;
+  color: white;
+}
+
+.dark .savebtn:active {
+  /* This will be inverted */
+  background-color: #b3b;
 }
 
 .stats {
@@ -457,13 +493,10 @@ mark.highlight {
   background-color: rgba(28, 251, 0, 0.6);
 }
 
-.dark .menubtn {
-  filter: invert(1);
-}
-
 .menu {
   position: relative;
   display: inline-block;
+  margin: 10px 10px 10px 0px;
 }
 
 .menu-content {
@@ -485,11 +518,9 @@ mark.highlight {
   display: block;
 }
 
-.menu:hover .menubtn {
+.menu:hover .menubtn, .menu:hover .iobtn, .menu:hover .statsbtn {
   background-color: #eee;
 }
-
-.dark .menu:hover .menubtn {}
 
 .menu-label {
   display: inline-block;
@@ -517,6 +548,10 @@ mark.highlight {
   background-color: #eee;
   transition: background-color 0.2s, border 0.2s;
   width: calc(100% - 10px);
+}
+
+.menu-textbox.invalid, .dark .menu-textbox.invalid {
+  color: red;
 }
 
 .dark .menu-textbox {

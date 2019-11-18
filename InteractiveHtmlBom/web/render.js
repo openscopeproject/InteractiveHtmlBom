@@ -5,6 +5,8 @@ var boardRotation = 0;
 var renderPads = true;
 var renderReferences = true;
 var renderValues = true;
+var renderSilkscreen = true;
+var renderFabrication = true;
 var renderDnpOutline = false;
 var renderTracks = true;
 var renderZones = true;
@@ -383,11 +385,16 @@ function drawZones(canvas, layer, color, highlight) {
   }
 }
 
-function clearCanvas(canvas) {
+function clearCanvas(canvas, color = null) {
   var ctx = canvas.getContext("2d");
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  } else {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
   ctx.restore();
 }
 
@@ -416,8 +423,10 @@ function drawNets(canvas, layer, highlight) {
   }
 }
 
-function drawHighlightsOnLayer(canvasdict) {
-  clearCanvas(canvasdict.highlight);
+function drawHighlightsOnLayer(canvasdict, clear = true) {
+  if (clear) {
+    clearCanvas(canvasdict.highlight);
+  }
   if (highlightedModules.length > 0) {
     drawModules(canvasdict.highlight, canvasdict.layer,
       canvasdict.transform.s * canvasdict.transform.zoom, true);
@@ -432,10 +441,12 @@ function drawHighlights() {
   drawHighlightsOnLayer(allcanvas.back);
 }
 
-function drawBackground(canvasdict) {
-  clearCanvas(canvasdict.bg);
-  clearCanvas(canvasdict.fab);
-  clearCanvas(canvasdict.silk);
+function drawBackground(canvasdict, clear = true) {
+  if (clear) {
+    clearCanvas(canvasdict.bg);
+    clearCanvas(canvasdict.fab);
+    clearCanvas(canvasdict.silk);
+  }
 
   drawNets(canvasdict.bg, canvasdict.layer, false);
   drawModules(canvasdict.bg, canvasdict.layer,
@@ -447,18 +458,21 @@ function drawBackground(canvasdict) {
   var edgeColor = style.getPropertyValue('--silkscreen-edge-color');
   var polygonColor = style.getPropertyValue('--silkscreen-polygon-color');
   var textColor = style.getPropertyValue('--silkscreen-text-color');
-  drawBgLayer(
-    "silkscreen", canvasdict.silk, canvasdict.layer,
-    canvasdict.transform.s * canvasdict.transform.zoom,
-    edgeColor, polygonColor, textColor);
-
+  if (renderSilkscreen) {
+    drawBgLayer(
+      "silkscreen", canvasdict.silk, canvasdict.layer,
+      canvasdict.transform.s * canvasdict.transform.zoom,
+      edgeColor, polygonColor, textColor);
+  }
   edgeColor = style.getPropertyValue('--fabrication-edge-color');
   polygonColor = style.getPropertyValue('--fabrication-polygon-color');
   textColor = style.getPropertyValue('--fabrication-text-color');
-  drawBgLayer(
-    "fabrication", canvasdict.fab, canvasdict.layer,
-    canvasdict.transform.s * canvasdict.transform.zoom,
-    edgeColor, polygonColor, textColor);
+  if (renderFabrication) {
+    drawBgLayer(
+      "fabrication", canvasdict.fab, canvasdict.layer,
+      canvasdict.transform.s * canvasdict.transform.zoom,
+      edgeColor, polygonColor, textColor);
+  }
 }
 
 function prepareCanvas(canvas, flip, transform) {
@@ -506,13 +520,7 @@ function applyRotation(bbox) {
   }
 }
 
-function recalcLayerScale(canvasdict) {
-  var canvasdivid = {
-    "F": "frontcanvas",
-    "B": "backcanvas"
-  } [canvasdict.layer];
-  var width = document.getElementById(canvasdivid).clientWidth * devicePixelRatio;
-  var height = document.getElementById(canvasdivid).clientHeight * devicePixelRatio;
+function recalcLayerScale(layerdict, width, height) {
   var bbox = applyRotation(pcbdata.edges_bbox);
   var scalefactor = 0.98 * Math.min(
     width / (bbox.maxx - bbox.minx),
@@ -521,16 +529,16 @@ function recalcLayerScale(canvasdict) {
   if (scalefactor < 0.1) {
     scalefactor = 1;
   }
-  canvasdict.transform.s = scalefactor;
-  var flip = (canvasdict.layer == "B");
+  layerdict.transform.s = scalefactor;
+  var flip = (layerdict.layer == "B");
   if (flip) {
-    canvasdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor + width) * 0.5;
+    layerdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor + width) * 0.5;
   } else {
-    canvasdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor - width) * 0.5;
+    layerdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor - width) * 0.5;
   }
-  canvasdict.transform.y = -((bbox.maxy + bbox.miny) * scalefactor - height) * 0.5;
+  layerdict.transform.y = -((bbox.maxy + bbox.miny) * scalefactor - height) * 0.5;
   for (var c of ["bg", "fab", "silk", "highlight"]) {
-    canvas = canvasdict[c];
+    canvas = layerdict[c];
     canvas.width = width;
     canvas.height = height;
     canvas.style.width = (width / devicePixelRatio) + "px";
@@ -545,7 +553,13 @@ function redrawCanvas(layerdict) {
 }
 
 function resizeCanvas(layerdict) {
-  recalcLayerScale(layerdict);
+  var canvasdivid = {
+    "F": "frontcanvas",
+    "B": "backcanvas"
+  } [layerdict.layer];
+  var width = document.getElementById(canvasdivid).clientWidth * devicePixelRatio;
+  var height = document.getElementById(canvasdivid).clientHeight * devicePixelRatio;
+  recalcLayerScale(layerdict, width, height);
   redrawCanvas(layerdict);
 }
 

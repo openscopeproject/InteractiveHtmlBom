@@ -75,19 +75,16 @@ function setDarkMode(value) {
   redrawIfInitDone();
 }
 
-function layerVisible(visible, frontCavnas, backCanvas, storageString) {
-  var display = (visible) ? "" : "none";
-  frontCavnas.style.display = display;
-  backCanvas.style.display = display;
-  writeStorage(storageString, visible);
+function fabricationVisible(value) {
+  renderFabrication = value;
+  writeStorage("fabricationVisible", value);
+  redrawIfInitDone();
 }
 
-function fabricationVisible(visible) {
-  layerVisible(visible, allcanvas.front.fab, allcanvas.back.fab, "fabricationVisible");
-}
-
-function silkscreenVisible(visible) {
-  layerVisible(visible, allcanvas.front.silk, allcanvas.back.silk, "silkscreenVisible");
+function silkscreenVisible(value) {
+  renderSilkscreen = value;
+  writeStorage("silkscreenVisible", value);
+  redrawIfInitDone();
 }
 
 function setHighlightPin1(value) {
