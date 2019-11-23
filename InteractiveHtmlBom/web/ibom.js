@@ -2,8 +2,6 @@
 
 var bomsplit;
 var canvassplit;
-var canvaslayout = "default";
-var bomlayout = "default";
 var initDone = false;
 var bomSortFunction = null;
 var currentSortColumn = null;
@@ -13,9 +11,6 @@ var highlightHandlers = [];
 var moduleIndexToHandler = {};
 var highlightedModules = [];
 var highlightedNet = null;
-var checkboxes = [];
-var bomCheckboxes = "";
-var highlightpin1 = false;
 var lastClicked;
 
 function dbg(html) {
@@ -31,37 +26,37 @@ function redrawIfInitDone() {
 
 function padsVisible(value) {
   writeStorage("padsVisible", value);
-  renderPads = value;
+  settings.renderPads = value;
   redrawIfInitDone();
 }
 
 function referencesVisible(value) {
   writeStorage("referencesVisible", value);
-  renderReferences = value;
+  settings.renderReferences = value;
   redrawIfInitDone();
 }
 
 function valuesVisible(value) {
   writeStorage("valuesVisible", value);
-  renderValues = value;
+  settings.renderValues = value;
   redrawIfInitDone();
 }
 
 function tracksVisible(value) {
   writeStorage("tracksVisible", value);
-  renderTracks = value;
+  settings.renderTracks = value;
   redrawIfInitDone();
 }
 
 function zonesVisible(value) {
   writeStorage("zonesVisible", value);
-  renderZones = value;
+  settings.renderZones = value;
   redrawIfInitDone();
 }
 
 function dnpOutline(value) {
   writeStorage("dnpOutline", value);
-  renderDnpOutline = value;
+  settings.renderDnpOutline = value;
   redrawIfInitDone();
 }
 
@@ -72,24 +67,25 @@ function setDarkMode(value) {
     topmostdiv.classList.remove("dark");
   }
   writeStorage("darkmode", value);
+  settings.darkMode = value;
   redrawIfInitDone();
 }
 
 function fabricationVisible(value) {
-  renderFabrication = value;
   writeStorage("fabricationVisible", value);
+  settings.renderFabrication = value;
   redrawIfInitDone();
 }
 
 function silkscreenVisible(value) {
-  renderSilkscreen = value;
   writeStorage("silkscreenVisible", value);
+  settings.renderSilkscreen = value;
   redrawIfInitDone();
 }
 
 function setHighlightPin1(value) {
   writeStorage("highlightpin1", value);
-  highlightpin1 = value;
+  settings.highlightpin1 = value;
   redrawIfInitDone();
 }
 
@@ -107,11 +103,13 @@ function getStoredCheckboxRefs(checkbox) {
       return intref;
     }
   }
-  var existingRefs = readStorage("checkbox_" + checkbox);
-  if (!existingRefs) {
+  if (!(checkbox in settings.checkboxStoredRefs)) {
+    settings.checkboxStoredRefs[checkbox] = readStorage("checkbox_" + checkbox);
+  }
+  if (!settings.checkboxStoredRefs[checkbox]) {
     return new Set();
   } else {
-    return new Set(existingRefs.split(",").map(r => convert(r)));
+    return new Set(settings.checkboxStoredRefs[checkbox].split(",").map(r => convert(r)));
   }
 }
 
@@ -155,7 +153,8 @@ function createCheckboxChangeHandler(checkbox, references) {
         refsSet.delete(ref[1]);
       }
     }
-    writeStorage("checkbox_" + checkbox, [...refsSet].join(","));
+    settings.checkboxStoredRefs[checkbox] = [...refsSet].join(",");
+    writeStorage("checkbox_" + checkbox, settings.checkboxStoredRefs[checkbox]);
     updateCheckboxStats(checkbox);
   }
 }
@@ -237,11 +236,11 @@ function highlightFilter(s) {
 function checkboxSetUnsetAllHandler(checkboxname) {
   return function() {
     var checkboxnum = 0;
-    while (checkboxnum < checkboxes.length &&
-      checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
+    while (checkboxnum < settings.checkboxes.length &&
+      settings.checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
       checkboxnum++;
     }
-    if (checkboxnum >= checkboxes.length) {
+    if (checkboxnum >= settings.checkboxes.length) {
       return;
     }
     var allset = true;
@@ -328,7 +327,7 @@ function populateBomHeader() {
       return 0;
     }
   }
-  for (var checkbox of checkboxes) {
+  for (var checkbox of settings.checkboxes) {
     th = createColumnHeader(
       checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
     th.onclick = fancyDblClickHandler(
@@ -379,7 +378,7 @@ function populateBomBody() {
   moduleIndexToHandler = {};
   currentHighlightedRowId = null;
   var first = true;
-  switch (canvaslayout) {
+  switch (settings.canvaslayout) {
     case 'F':
       bomtable = pcbdata.bom.F;
       break;
@@ -412,7 +411,7 @@ function populateBomBody() {
     td.textContent = rownum;
     tr.appendChild(td);
     // Checkboxes
-    for (var checkbox of checkboxes) {
+    for (var checkbox of settings.checkboxes) {
       if (checkbox) {
         td = document.createElement("TD");
         var input = document.createElement("input");
@@ -536,23 +535,23 @@ function changeCanvasLayout(layout) {
   switch (layout) {
     case 'F':
       document.getElementById("fl-btn").classList.add("depressed");
-      if (bomlayout != "bom-only") {
+      if (settings.bomlayout != "bom-only") {
         canvassplit.collapse(1);
       }
       break;
     case 'B':
       document.getElementById("bl-btn").classList.add("depressed");
-      if (bomlayout != "bom-only") {
+      if (settings.bomlayout != "bom-only") {
         canvassplit.collapse(0);
       }
       break;
     default:
       document.getElementById("fb-btn").classList.add("depressed");
-      if (bomlayout != "bom-only") {
+      if (settings.bomlayout != "bom-only") {
         canvassplit.setSizes([50, 50]);
       }
   }
-  canvaslayout = layout;
+  settings.canvaslayout = layout;
   writeStorage("canvaslayout", layout);
   resizeAll();
   populateBomTable();
@@ -671,9 +670,9 @@ function changeBomLayout(layout) {
         onDragEnd: resizeAll
       });
   }
-  bomlayout = layout;
+  settings.bomlayout = layout;
   writeStorage("bomlayout", layout);
-  changeCanvasLayout(canvaslayout);
+  changeCanvasLayout(settings.canvaslayout);
 }
 
 function focusFilterField() {
@@ -685,7 +684,7 @@ function focusRefLookupField() {
 }
 
 function toggleBomCheckbox(bomrowid, checkboxnum) {
-  if (!bomrowid || checkboxnum > checkboxes.length) {
+  if (!bomrowid || checkboxnum > settings.checkboxes.length) {
     return;
   }
   var bomrow = document.getElementById(bomrowid);
@@ -697,11 +696,11 @@ function toggleBomCheckbox(bomrowid, checkboxnum) {
 
 function checkBomCheckbox(bomrowid, checkboxname) {
   var checkboxnum = 0;
-  while (checkboxnum < checkboxes.length &&
-    checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
+  while (checkboxnum < settings.checkboxes.length &&
+    settings.checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
     checkboxnum++;
   }
-  if (!bomrowid || checkboxnum >= checkboxes.length) {
+  if (!bomrowid || checkboxnum >= settings.checkboxes.length) {
     return;
   }
   var bomrow = document.getElementById(bomrowid);
@@ -712,24 +711,23 @@ function checkBomCheckbox(bomrowid, checkboxname) {
 }
 
 function setBomCheckboxes(value) {
-  bomCheckboxes = value;
   writeStorage("bomCheckboxes", value);
+  settings.checkboxes = value.split(",").filter((e) => e);
   prepCheckboxes();
   populateBomTable();
 }
 
 function prepCheckboxes() {
-  checkboxes = bomCheckboxes.split(",").filter((e) => e);
   var table = document.getElementById("checkbox-stats");
   while (table.childElementCount > 1) {
     table.removeChild(table.lastChild);
   }
-  if (checkboxes.length) {
+  if (settings.checkboxes.length) {
     table.style.display = "";
   } else {
     table.style.display = "none";
   }
-  for (var checkbox of checkboxes) {
+  for (var checkbox of settings.checkboxes) {
     var tr = document.createElement("TR");
     var td = document.createElement("TD");
     td.innerHTML = checkbox;
@@ -823,94 +821,6 @@ document.onkeydown = function(e) {
   }
 }
 
-function getStorageBooleanOrDefault(storageString, def) {
-  var b = readStorage(storageString);
-  if (b === null) {
-    b = def;
-  } else {
-    b = (b == "true");
-  }
-  return b;
-}
-
-function initDefaults() {
-  bomlayout = readStorage("bomlayout");
-  if (bomlayout === null) {
-    bomlayout = config.bom_view;
-  }
-  if (!['bom-only', 'left-right', 'top-bottom'].includes(bomlayout)) {
-    bomlayout = config.bom_view;
-  }
-  canvaslayout = readStorage("canvaslayout");
-  if (canvaslayout === null) {
-    canvaslayout = config.layer_view;
-  }
-  bomCheckboxes = readStorage("bomCheckboxes");
-  if (bomCheckboxes === null) {
-    bomCheckboxes = config.checkboxes;
-  }
-  document.getElementById("bomCheckboxes").value = bomCheckboxes;
-
-  var b = getStorageBooleanOrDefault("padsVisible", config.show_pads);
-  document.getElementById("padsCheckbox").checked = b;
-  padsVisible(b);
-
-  b = getStorageBooleanOrDefault("fabricationVisible", config.show_fabrication);
-  document.getElementById("fabricationCheckbox").checked = b;
-  fabricationVisible(b);
-
-  b = getStorageBooleanOrDefault("silkscreenVisible", config.show_silkscreen);
-  document.getElementById("silkscreenCheckbox").checked = b;
-  silkscreenVisible(b);
-
-  b = getStorageBooleanOrDefault("referencesVisible", true);
-  document.getElementById("referencesCheckbox").checked = b;
-  referencesVisible(b);
-
-  b = getStorageBooleanOrDefault("valuesVisible", true);
-  document.getElementById("valuesCheckbox").checked = b;
-  valuesVisible(b);
-
-  if ("tracks" in pcbdata) {
-    b = getStorageBooleanOrDefault("tracksVisible", true);
-    document.getElementById("tracksCheckbox").checked = b;
-    tracksVisible(b);
-  
-    b = getStorageBooleanOrDefault("zonesVisible", true);
-    document.getElementById("zonesCheckbox").checked = b;
-    zonesVisible(b);
-  } else {
-    document.getElementById("tracksAndZonesCheckboxes").style.display = "none";
-    tracksVisible(false);
-    zonesVisible(false);
-  }
-
-  b = getStorageBooleanOrDefault("dnpOutline", false);
-  document.getElementById("dnpOutlineCheckbox").checked = b;
-  dnpOutline(b);
-
-  b = getStorageBooleanOrDefault("redrawOnDrag", config.redraw_on_drag);
-  document.getElementById("dragCheckbox").checked = b;
-  setRedrawOnDrag(b);
-
-  b = getStorageBooleanOrDefault("darkmode", config.dark_mode);
-  document.getElementById("darkmodeCheckbox").checked = b;
-  setDarkMode(b);
-
-  b = getStorageBooleanOrDefault("highlightpin1", config.highlight_pin1);
-  document.getElementById("highlightpin1Checkbox").checked = b;
-  setHighlightPin1(b);
-
-  boardRotation = readStorage("boardRotation");
-  if (boardRotation === null) {
-    boardRotation = config.board_rotation * 5;
-  } else {
-    boardRotation = parseInt(boardRotation);
-  }
-  document.getElementById("boardRotation").value = boardRotation / 5;
-  document.getElementById("rotationDegree").textContent = boardRotation;
-}
-
 window.onload = function(e) {
   initUtils();
   initRender();
@@ -926,7 +836,7 @@ window.onload = function(e) {
   initDone = true;
   prepCheckboxes();
   // Triggers render
-  changeBomLayout(bomlayout);
+  changeBomLayout(settings.bomlayout);
 }
 
 window.onresize = resizeAll;

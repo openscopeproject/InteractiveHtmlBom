@@ -1,15 +1,5 @@
 /* PCB rendering code */
 
-var redrawOnDrag = true;
-var boardRotation = 0;
-var renderPads = true;
-var renderReferences = true;
-var renderValues = true;
-var renderSilkscreen = true;
-var renderFabrication = true;
-var renderDnpOutline = false;
-var renderTracks = true;
-var renderZones = true;
 var emptyContext2d = document.createElement("canvas").getContext("2d");
 
 function deg2rad(deg) {
@@ -28,8 +18,8 @@ function calcFontPoint(linepoint, text, offsetx, offsety, tilt) {
 }
 
 function drawtext(ctx, text, color, flip) {
-  if ("ref" in text && !renderReferences) return;
-  if ("val" in text && !renderValues) return;
+  if ("ref" in text && !settings.renderReferences) return;
+  if ("val" in text && !settings.renderValues) return;
   ctx.save();
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
@@ -303,11 +293,11 @@ function drawModule(ctx, layer, scalefactor, module, padcolor, outlinecolor, hig
     }
   }
   // draw pads
-  if (renderPads) {
+  if (settings.renderPads) {
     for (var pad of module.pads) {
       if (pad.layers.includes(layer)) {
         drawPad(ctx, pad, padcolor, outline, true);
-        if (pad.pin1 && highlightpin1) {
+        if (pad.pin1 && settings.highlightpin1) {
           drawPad(ctx, pad, outlinecolor, true, false);
         }
       }
@@ -335,7 +325,7 @@ function drawModules(canvas, layer, scalefactor, highlight) {
   }
   for (var i = 0; i < pcbdata.modules.length; i++) {
     var mod = pcbdata.modules[i];
-    var outline = renderDnpOutline && pcbdata.bom.skipped.includes(i);
+    var outline = settings.renderDnpOutline && pcbdata.bom.skipped.includes(i);
     if (!highlight || highlightedModules.includes(i)) {
       drawModule(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight, outline);
     }
@@ -400,15 +390,15 @@ function clearCanvas(canvas, color = null) {
 
 function drawNets(canvas, layer, highlight) {
   var style = getComputedStyle(topmostdiv);
-  if (renderTracks) {
+  if (settings.renderTracks) {
     var trackColor = style.getPropertyValue(highlight ? '--track-color-highlight' : '--track-color');
     drawTracks(canvas, layer, trackColor, highlight);
   }
-  if (renderZones) {
+  if (settings.renderZones) {
     var zoneColor = style.getPropertyValue(highlight ? '--zone-color-highlight' : '--zone-color');
     drawZones(canvas, layer, zoneColor, highlight);
   }
-  if (highlight && renderPads) {
+  if (highlight && settings.renderPads) {
     var padColor = style.getPropertyValue('--pad-color-highlight');
     var ctx = canvas.getContext("2d");
     for (var mod of pcbdata.modules) {
@@ -458,7 +448,7 @@ function drawBackground(canvasdict, clear = true) {
   var edgeColor = style.getPropertyValue('--silkscreen-edge-color');
   var polygonColor = style.getPropertyValue('--silkscreen-polygon-color');
   var textColor = style.getPropertyValue('--silkscreen-text-color');
-  if (renderSilkscreen) {
+  if (settings.renderSilkscreen) {
     drawBgLayer(
       "silkscreen", canvasdict.silk, canvasdict.layer,
       canvasdict.transform.s * canvasdict.transform.zoom,
@@ -467,7 +457,7 @@ function drawBackground(canvasdict, clear = true) {
   edgeColor = style.getPropertyValue('--fabrication-edge-color');
   polygonColor = style.getPropertyValue('--fabrication-polygon-color');
   textColor = style.getPropertyValue('--fabrication-text-color');
-  if (renderFabrication) {
+  if (settings.renderFabrication) {
     drawBgLayer(
       "fabrication", canvasdict.fab, canvasdict.layer,
       canvasdict.transform.s * canvasdict.transform.zoom,
@@ -485,7 +475,7 @@ function prepareCanvas(canvas, flip, transform) {
     ctx.scale(-1, 1);
   }
   ctx.translate(transform.x, transform.y);
-  ctx.rotate(deg2rad(boardRotation));
+  ctx.rotate(deg2rad(settings.boardRotation));
   ctx.scale(transform.s, transform.s);
 }
 
@@ -511,7 +501,7 @@ function applyRotation(bbox) {
     [bbox.maxx, bbox.miny],
     [bbox.maxx, bbox.maxy],
   ];
-  corners = corners.map((v) => rotateVector(v, boardRotation));
+  corners = corners.map((v) => rotateVector(v, settings.boardRotation));
   return {
     minx: corners.reduce((a, v) => Math.min(a, v[0]), Infinity),
     miny: corners.reduce((a, v) => Math.min(a, v[1]), Infinity),
@@ -612,7 +602,7 @@ function pointWithinPad(x, y, pad) {
 
 function netHitScan(layer, x, y) {
   // Check track segments
-  if (renderTracks && pcbdata.tracks) {
+  if (settings.renderTracks && pcbdata.tracks) {
     for(var track of pcbdata.tracks[layer]) {
       if (pointWithinDistanceToSegment(x, y, ...track.start, ...track.end, track.width / 2)) {
         return track.net;
@@ -620,7 +610,7 @@ function netHitScan(layer, x, y) {
     }
   }
   // Check pads
-  if (renderPads) {
+  if (settings.renderPads) {
     for (var mod of pcbdata.modules) {
       for(var pad of mod.pads) {
         if (pad.layers.includes(layer) && pointWithinPad(x, y, pad)) {
@@ -689,7 +679,7 @@ function handleMouseClick(e, layerdict) {
     x = (devicePixelRatio * x / t.zoom - t.panx - t.x) / t.s;
   }
   y = (devicePixelRatio * y / t.zoom - t.y - t.pany) / t.s;
-  var v = rotateVector([x, y], -boardRotation);
+  var v = rotateVector([x, y], -settings.boardRotation);
   if ("nets" in pcbdata) {
     var net = netHitScan(layerdict.layer, ...v);
     if (net !== highlightedNet) {
@@ -710,7 +700,7 @@ function handlePointerLeave(e, layerdict) {
   e.preventDefault();
   e.stopPropagation();
 
-  if (!redrawOnDrag) {
+  if (!settings.redrawOnDrag) {
     redrawCanvas(layerdict);
   }
 
@@ -760,7 +750,7 @@ function handlePointerUp(e, layerdict) {
       layerdict.anotherPointerTapped = true;
     }
   } else {
-    if (!redrawOnDrag) {
+    if (!settings.redrawOnDrag) {
       redrawCanvas(layerdict);
     }
     layerdict.anotherPointerTapped = false;
@@ -814,7 +804,7 @@ function handlePointerMove(e, layerdict) {
   thisPtr.lastX = e.offsetX;
   thisPtr.lastY = e.offsetY;
 
-  if (redrawOnDrag) {
+  if (settings.redrawOnDrag) {
     redrawCanvas(layerdict);
   }
 }
@@ -872,14 +862,14 @@ function addMouseHandlers(div, layerdict) {
 }
 
 function setRedrawOnDrag(value) {
-  redrawOnDrag = value;
+  settings.redrawOnDrag = value;
   writeStorage("redrawOnDrag", value);
 }
 
 function setBoardRotation(value) {
-  boardRotation = value * 5;
-  writeStorage("boardRotation", boardRotation);
-  document.getElementById("rotationDegree").textContent = boardRotation;
+  settings.boardRotation = value * 5;
+  writeStorage("boardRotation", settings.boardRotation);
+  document.getElementById("rotationDegree").textContent = settings.boardRotation;
   resizeAll();
 }
 
