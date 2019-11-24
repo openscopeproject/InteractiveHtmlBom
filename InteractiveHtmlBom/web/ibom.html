@@ -184,7 +184,7 @@
       <div class="hideonprint menu" style="float: right; top: 8px;">
         <button class="iobtn"></button>
         <div class="menu-content">
-          <label class="menu-label menu-label-top">
+          <div class="menu-label menu-label-top">
             <div style="margin-left: 5px;">Save board image</div>
             <div class="flexbox">
               <input id="render-save-width" class="menu-textbox" type="text" value="1000" placeholder="Width"
@@ -193,19 +193,22 @@
               <input id="render-save-height" class="menu-textbox" type="text" value="1000" placeholder="Height"
                   style="flex-grow: 1; width: 50px;" oninput="validateSaveImgDimension(this)">
             </div>
-            <input id="render-save-transparent" type="checkbox">
-            Transparent background
+            <label>
+              <input id="render-save-transparent" type="checkbox">
+              Transparent background
+            </label>
             <div class="flexbox">
               <button class="savebtn" onclick="saveImage('F')">Front</button>
               <button class="savebtn" onclick="saveImage('B')">Back</button>
             </div>
-          </label>
-          <label class="menu-label">
+          </div>
+          <div class="menu-label">
             <span style="margin-left: 5px;">Config and checkbox state</span>
             <div class="flexbox">
-              <button class="savebtn">Export</button>
-              <button class="savebtn">Import</button>
+              <button class="savebtn" onclick="saveSettings()">Export</button>
+              <button class="savebtn" onclick="loadSettings()">Import</button>
             </div>
+          </div>
         </div>
       </div>
     </div>
