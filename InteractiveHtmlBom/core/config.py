@@ -81,6 +81,10 @@ class Config:
         """Splits string by ',' and drops empty strings from resulting array."""
         return [a.replace('\\,', ',') for a in re.split(r'(?<!\\),', s) if a]
 
+    @staticmethod
+    def _join(lst):
+        return ','.join([s.replace(',', '\\,') for s in lst])
+
     def __init__(self):
         """Init from config file if it exists."""
         if not os.path.isfile(self.config_file):
@@ -121,7 +125,7 @@ class Config:
         f.SetPath('/extra_fields')
         self.extra_fields = self._split(f.Read(
                 'extra_fields',
-                ','.join(self.extra_fields)))
+                self._join(self.extra_fields)))
         self.normalize_field_case = f.ReadBool(
                 'normalize_field_case', self.normalize_field_case)
         self.board_variant_field = f.Read(
@@ -167,7 +171,7 @@ class Config:
         f.WriteBool('include_nets', self.include_nets)
 
         f.SetPath('/extra_fields')
-        f.Write('extra_fields', ','.join(self.extra_fields))
+        f.Write('extra_fields', self._join(self.extra_fields))
         f.WriteBool('normalize_field_case', self.normalize_field_case)
         f.Write('board_variant_field', self.board_variant_field)
         f.Write('board_variant_whitelist',
@@ -258,7 +262,12 @@ class Config:
 
         def safe_set_checked_strings(clb, strings):
             safe_strings = list(clb.GetStrings())
-            clb.SetCheckedStrings([s for s in strings if s in safe_strings])
+            if safe_strings:
+                present_strings = [s for s in strings if s in safe_strings]
+                not_present_strings = [s for s in safe_strings if s not in strings]
+                clb.Clear()
+                clb.InsertItems(present_strings + not_present_strings, 0)
+                clb.SetCheckedStrings(present_strings)
 
         safe_set_checked_strings(dlg.extra.extraFieldsList, self.extra_fields)
         dlg.extra.normalizeCaseCheckbox.Value = self.normalize_field_case
@@ -340,7 +349,7 @@ class Config:
         parser.add_argument('--netlist-file',
                             help='Path to netlist or xml file.')
         parser.add_argument('--extra-fields',
-                            default=','.join(self.extra_fields),
+                            default=self._join(self.extra_fields),
                             help='Comma separated list of extra fields to '
                                  'pull from netlist or xml file.')
         parser.add_argument('--normalize-field-case',
@@ -393,8 +402,8 @@ class Config:
         self.extra_fields = self._split(args.extra_fields)
         self.normalize_field_case = args.normalize_field_case
         self.board_variant_field = args.variant_field
-        self.board_variant_whitelist = args.variants_whitelist
-        self.board_variant_blacklist = args.variants_blacklist
+        self.board_variant_whitelist = self._split(args.variants_whitelist)
+        self.board_variant_blacklist = self._split(args.variants_blacklist)
         self.dnp_field = args.dnp_field
 
     def get_html_config(self):
