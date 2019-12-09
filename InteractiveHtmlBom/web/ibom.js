@@ -104,12 +104,13 @@ function getStoredCheckboxRefs(checkbox) {
     }
   }
   if (!(checkbox in settings.checkboxStoredRefs)) {
-    settings.checkboxStoredRefs[checkbox] = readStorage("checkbox_" + checkbox);
+    var val = readStorage("checkbox_" + checkbox);
+    settings.checkboxStoredRefs[checkbox] = val ? val : "";
   }
   if (!settings.checkboxStoredRefs[checkbox]) {
     return new Set();
   } else {
-    return new Set(settings.checkboxStoredRefs[checkbox].split(",").map(r => convert(r)));
+    return new Set(settings.checkboxStoredRefs[checkbox].split(",").map(r => convert(r)).filter(a => a >= 0));
   }
 }
 

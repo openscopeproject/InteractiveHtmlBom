@@ -177,16 +177,15 @@ function getPolygonsPath(shape) {
   if (shape.svgpath) {
     shape.path2d = new Path2D(shape.svgpath);
   } else {
-    var combinedPath = new Path2D();
+    var path = new Path2D();
     for (var polygon of shape.polygons) {
-      var path = new Path2D();
-      for (var vertex of polygon) {
-        path.lineTo(...vertex)
+      path.moveTo(...polygon[0]);
+      for (var i = 1; i < polygon.length; i++) {
+        path.lineTo(...polygon[i]);
       }
       path.closePath();
-      combinedPath.addPath(path);
     }
-    shape.path2d = combinedPath;
+    shape.path2d = path;
   }
   return shape.path2d;
 }
