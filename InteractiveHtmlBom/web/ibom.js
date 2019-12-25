@@ -425,7 +425,28 @@ function populateBomBody() {
     }
     // References
     td = document.createElement("TD");
-    td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
+    var groupedRefs = [];
+    references.map(r => {
+        var match = r[0].match(/^(.*?)([0-9]+)$/);
+
+        if (match) {
+          return [match[1], parseInt(match[2]), r[0]];
+        } else {
+          return [r[0], NaN, r[0]];
+        }
+    }).forEach(([prefix, num, r]) => {
+      if (groupedRefs.length > 0) {
+        var last = groupedRefs[groupedRefs.length-1];
+        if (last[0] === prefix && last[1] === num-1) {
+          last[1] = num;
+          last[3] = r;
+          return;
+        }
+      }
+      groupedRefs.push([prefix, num, r, r]);
+    });
+
+    td.innerHTML = highlightFilter(groupedRefs.map(([prefix, num, r1, r2]) => (r1 === r2 ? r1 : r1+"-"+r2)).join(", "));
     tr.appendChild(td);
     // Extra fields
     for (var i in config.extra_fields) {
