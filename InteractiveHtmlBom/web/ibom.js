@@ -9,6 +9,7 @@ var currentSortOrder = null;
 var currentHighlightedRowId;
 var highlightHandlers = [];
 var moduleIndexToHandler = {};
+var netsToHandler = {};
 var highlightedModules = [];
 var highlightedNet = null;
 var lastClicked;
@@ -165,10 +166,11 @@ function clearHighlightedModules() {
     document.getElementById(currentHighlightedRowId).classList.remove("highlighted");
     currentHighlightedRowId = null;
     highlightedModules = [];
+    highlightedNet = null;
   }
 }
 
-function createRowHighlightHandler(rowid, refs) {
+function createRowHighlightHandler(rowid, refs, net) {
   return function() {
     if (currentHighlightedRowId) {
       if (currentHighlightedRowId == rowid) {
@@ -178,12 +180,17 @@ function createRowHighlightHandler(rowid, refs) {
     }
     document.getElementById(rowid).classList.add("highlighted");
     currentHighlightedRowId = rowid;
-    highlightedModules = refs.map(r => r[1]);
+    highlightedModules = refs ? refs.map(r => r[1]) : [];
+    highlightedNet = net;
     drawHighlights();
   }
 }
 
 function entryMatches(entry) {
+  if (settings.bommode == "netlist") {
+    // entry is just a net name
+    return entry.toLowerCase().indexOf(filter) >= 0;
+  }
   // check refs
   for (var ref of entry[3]) {
     if (ref[0].toLowerCase().indexOf(filter) >= 0) {
@@ -328,46 +335,57 @@ function populateBomHeader() {
       return 0;
     }
   }
-  for (var checkbox of settings.checkboxes) {
-    th = createColumnHeader(
-      checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
-    th.onclick = fancyDblClickHandler(
-      th, th.onclick.bind(th), checkboxSetUnsetAllHandler(checkbox));
+  if (settings.bommode == "netlist") {
+    th = createColumnHeader("Net name", "bom-netname", (a, b) => {
+      if (a > b) return -1;
+      if (a < b) return 1;
+      return 0;
+    });
     tr.appendChild(th);
-  }
-  tr.appendChild(createColumnHeader("References", "References", (a, b) => {
-    var i = 0;
-    while (i < a[3].length && i < b[3].length) {
-      if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
-      i++;
+  } else {
+    for (var checkbox of settings.checkboxes) {
+      th = createColumnHeader(
+        checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
+      th.onclick = fancyDblClickHandler(
+        th, th.onclick.bind(th), checkboxSetUnsetAllHandler(checkbox));
+      tr.appendChild(th);
     }
-    return a[3].length - b[3].length;
-  }));
-  // Extra fields
-  if (config.extra_fields.length > 0) {
-    var extraFieldCompareClosure = function(fieldIndex) {
-      return (a, b) => {
-        var fa = a[4][fieldIndex];
-        var fb = b[4][fieldIndex];
-        if (fa != fb) return fa > fb ? 1 : -1;
-        else return 0;
+    tr.appendChild(createColumnHeader("References", "References", (a, b) => {
+      var i = 0;
+      while (i < a[3].length && i < b[3].length) {
+        if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
+        i++;
+      }
+      return a[3].length - b[3].length;
+    }));
+    // Extra fields
+    if (config.extra_fields.length > 0) {
+      var extraFieldCompareClosure = function(fieldIndex) {
+        return (a, b) => {
+          var fa = a[4][fieldIndex];
+          var fb = b[4][fieldIndex];
+          if (fa != fb) return fa > fb ? 1 : -1;
+          else return 0;
+        }
+      }
+      for (var i in config.extra_fields) {
+        tr.appendChild(createColumnHeader(
+          config.extra_fields[i], "extra", extraFieldCompareClosure(i)));
       }
     }
-    for (var i in config.extra_fields) {
-      tr.appendChild(createColumnHeader(
-        config.extra_fields[i], "extra", extraFieldCompareClosure(i)));
+    tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
+      return valueCompare(a[5], b[5], a[1], b[1]);
+    }));
+    tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
+      if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
+      else return 0;
+    }));
+    if (settings.bommode == "grouped") {
+      tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
+        return a[3].length - b[3].length;
+      }));
     }
   }
-  tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
-    return valueCompare(a[5], b[5], a[1], b[1]);
-  }));
-  tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
-    if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
-    else return 0;
-  }));
-  tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
-    return a[3].length - b[3].length;
-  }));
   bomhead.appendChild(tr);
 }
 
@@ -377,84 +395,115 @@ function populateBomBody() {
   }
   highlightHandlers = [];
   moduleIndexToHandler = {};
+  netsToHandler = {};
   currentHighlightedRowId = null;
   var first = true;
-  switch (settings.canvaslayout) {
-    case 'F':
-      bomtable = pcbdata.bom.F;
-      break;
-    case 'FB':
-      bomtable = pcbdata.bom.both;
-      break;
-    case 'B':
-      bomtable = pcbdata.bom.B;
-      break;
+  if (settings.bommode == "netlist") {
+    bomtable = pcbdata.nets.slice();
+  } else {
+    switch (settings.canvaslayout) {
+      case 'F':
+        bomtable = pcbdata.bom.F.slice();
+        break;
+      case 'FB':
+        bomtable = pcbdata.bom.both.slice();
+        break;
+      case 'B':
+        bomtable = pcbdata.bom.B.slice();
+        break;
+    }
+    if (settings.bommode == "ungrouped") {
+      // expand bom table
+      expandedTable = []
+      for (var bomentry of bomtable) {
+        for (var ref of bomentry[3]) {
+          expandedTable.push([1, bomentry[1], bomentry[2], [ref], bomentry[4], bomentry[5]]);
+        }
+      }
+      bomtable = expandedTable;
+    }
   }
   if (bomSortFunction) {
-    bomtable = bomtable.slice().sort(bomSortFunction);
+    bomtable = bomtable.sort(bomSortFunction);
   }
   for (var i in bomtable) {
     var bomentry = bomtable[i];
     if (filter && !entryMatches(bomentry)) {
       continue;
     }
-    var references = bomentry[3];
-    if (reflookup) {
-      references = findRefInEntry(bomentry);
-      if (references.length == 0) {
-        continue;
-      }
-    }
+    var references = null;
+    var netname = null;
     var tr = document.createElement("TR");
     var td = document.createElement("TD");
     var rownum = +i + 1;
     tr.id = "bomrow" + rownum;
     td.textContent = rownum;
     tr.appendChild(td);
-    // Checkboxes
-    for (var checkbox of settings.checkboxes) {
-      if (checkbox) {
+    if (settings.bommode == "netlist") {
+      netname = bomentry;
+      td = document.createElement("TD");
+      td.innerHTML = highlightFilter(netname ? netname : "&lt;no net&gt;");
+      tr.appendChild(td);
+    } else {
+      if (reflookup) {
+        references = findRefInEntry(bomentry);
+        if (references.length == 0) {
+          continue;
+        }
+      } else {
+        references = bomentry[3];
+      }
+      // Checkboxes
+      for (var checkbox of settings.checkboxes) {
+        if (checkbox) {
+          td = document.createElement("TD");
+          var input = document.createElement("input");
+          input.type = "checkbox";
+          input.onchange = createCheckboxChangeHandler(checkbox, references);
+          setBomCheckboxState(checkbox, input, references);
+          td.appendChild(input);
+          tr.appendChild(td);
+        }
+      }
+      // References
+      td = document.createElement("TD");
+      td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
+      tr.appendChild(td);
+      // Extra fields
+      for (var i in config.extra_fields) {
         td = document.createElement("TD");
-        var input = document.createElement("input");
-        input.type = "checkbox";
-        input.onchange = createCheckboxChangeHandler(checkbox, references);
-        setBomCheckboxState(checkbox, input, references);
-        td.appendChild(input);
+        td.innerHTML = highlightFilter(bomentry[4][i]);
+        tr.appendChild(td);
+      }
+      // Value
+      td = document.createElement("TD");
+      td.innerHTML = highlightFilter(bomentry[1]);
+      tr.appendChild(td);
+      // Footprint
+      td = document.createElement("TD");
+      td.innerHTML = highlightFilter(bomentry[2]);
+      tr.appendChild(td);
+      if (settings.bommode == "grouped") {
+        // Quantity
+        td = document.createElement("TD");
+        td.textContent = bomentry[3].length;
         tr.appendChild(td);
       }
     }
-    // References
-    td = document.createElement("TD");
-    td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
-    tr.appendChild(td);
-    // Extra fields
-    for (var i in config.extra_fields) {
-      td = document.createElement("TD");
-      td.innerHTML = highlightFilter(bomentry[4][i]);
-      tr.appendChild(td);
-    }
-    // Value
-    td = document.createElement("TD");
-    td.innerHTML = highlightFilter(bomentry[1]);
-    tr.appendChild(td);
-    // Footprint
-    td = document.createElement("TD");
-    td.innerHTML = highlightFilter(bomentry[2]);
-    tr.appendChild(td);
-    // Quantity
-    td = document.createElement("TD");
-    td.textContent = bomentry[3].length;
-    tr.appendChild(td);
     bom.appendChild(tr);
-    var handler = createRowHighlightHandler(tr.id, references);
+    var handler = createRowHighlightHandler(tr.id, references, netname);
     tr.onmousemove = handler;
     highlightHandlers.push({
       id: tr.id,
       handler: handler,
-      refs: references
     });
-    for (var refIndex of references.map(r => r[1])) {
-      moduleIndexToHandler[refIndex] = handler;
+    if (references !== null) {
+      for (var refIndex of references.map(r => r[1])) {
+        moduleIndexToHandler[refIndex] = handler;
+      }
+    }
+    if (netname !== null) {
+      netsToHandler[netname] = handler;
     }
     if ((filter || reflookup) && first) {
       handler();
@@ -519,6 +568,17 @@ function modulesClicked(moduleIndexes) {
   }
 }
 
+function netClicked(net) {
+  if (net in netsToHandler) {
+    netsToHandler[net]();
+    smoothScrollToRow(currentHighlightedRowId);
+  } else {
+    clearHighlightedModules();
+    highlightedNet = net;
+    drawHighlights();
+  }
+}
+
 function updateFilter(input) {
   filter = input.toLowerCase();
   populateBomTable();
@@ -555,7 +615,7 @@ function changeCanvasLayout(layout) {
   settings.canvaslayout = layout;
   writeStorage("canvaslayout", layout);
   resizeAll();
-  populateBomTable();
+  changeBomMode(settings.bommode);
 }
 
 function populateMetadata() {
@@ -674,6 +734,31 @@ function changeBomLayout(layout) {
   settings.bomlayout = layout;
   writeStorage("bomlayout", layout);
   changeCanvasLayout(settings.canvaslayout);
+}
+
+function changeBomMode(mode) {
+  document.getElementById("bom-grouped-btn").classList.remove("depressed");
+  document.getElementById("bom-ungrouped-btn").classList.remove("depressed");
+  document.getElementById("bom-netlist-btn").classList.remove("depressed");
+  switch (mode) {
+    case 'grouped':
+      document.getElementById("bom-grouped-btn").classList.add("depressed");
+      break;
+    case 'ungrouped':
+      document.getElementById("bom-ungrouped-btn").classList.add("depressed");
+      break;
+    case 'netlist':
+      document.getElementById("bom-netlist-btn").classList.add("depressed");
+  }
+  writeStorage("bommode", mode);
+  if (mode != settings.bommode) {
+    settings.bommode = mode;
+    bomSortFunction = null;
+    currentSortColumn = null;
+    currentSortOrder = null;
+    clearHighlightedModules();
+  }
+  populateBomTable();
 }
 
 function focusFilterField() {
@@ -822,6 +907,12 @@ document.onkeydown = function(e) {
   }
 }
 
+function hideNetlistButton() {
+  document.getElementById("bom-ungrouped-btn").classList.remove("middle-button");
+  document.getElementById("bom-ungrouped-btn").classList.add("right-most-button");
+  document.getElementById("bom-netlist-btn").style.display = "none";
+}
+
 window.onload = function(e) {
   initUtils();
   initRender();
@@ -834,6 +925,9 @@ window.onload = function(e) {
   bomhead = document.getElementById("bomhead");
   filter = "";
   reflookup = "";
+  if (!("nets" in pcbdata)) {
+    hideNetlistButton();
+  }
   initDone = true;
   prepCheckboxes();
   // Triggers render

@@ -419,11 +419,11 @@ function drawHighlightsOnLayer(canvasdict, clear = true) {
   if (highlightedModules.length > 0) {
     drawModules(canvasdict.highlight, canvasdict.layer,
       canvasdict.transform.s * canvasdict.transform.zoom, true);
-  }    
+  }
   if (highlightedNet !== null) {
     drawNets(canvasdict.highlight, canvasdict.layer, true);
-  }  
-}  
+  }
+}
 
 function drawHighlights() {
   drawHighlightsOnLayer(allcanvas.front);
@@ -682,9 +682,7 @@ function handleMouseClick(e, layerdict) {
   if ("nets" in pcbdata) {
     var net = netHitScan(layerdict.layer, ...v);
     if (net !== highlightedNet) {
-      highlightedNet = net;
-      clearHighlightedModules();
-      drawHighlights();
+      netClicked(net);
     }
   }
   if (highlightedNet === null) {

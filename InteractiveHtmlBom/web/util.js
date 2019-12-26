@@ -280,7 +280,7 @@ function saveImage(layer) {
     bgcolor = style.getPropertyValue("background-color");
   }
   if (!width || !height) return;
-  
+
   // Prepare image
   var canvas = document.createElement("canvas");
   var layerdict = {
@@ -375,8 +375,9 @@ function loadSettings() {
 
 function overwriteSettings(newSettings) {
   initDone = false;
-  settings = newSettings;
+  Object.assign(settings, newSettings);
   writeStorage("bomlayout", settings.bomlayout);
+  writeStorage("bommode", settings.bommode);
   writeStorage("canvaslayout", settings.canvaslayout);
   writeStorage("bomCheckboxes", settings.checkboxes.join(","));
   document.getElementById("bomCheckboxes").value = settings.checkboxes.join(",");
@@ -433,6 +434,7 @@ function dataURLtoBlob(dataurl) {
 var settings = {
   canvaslayout: "default",
   bomlayout: "default",
+  bommode: "grouped",
   checkboxes: [],
   checkboxStoredRefs: {},
   darkMode: false,
@@ -456,6 +458,13 @@ function initDefaults() {
   }
   if (!['bom-only', 'left-right', 'top-bottom'].includes(settings.bomlayout)) {
     settings.bomlayout = config.bom_view;
+  }
+  settings.bommode = readStorage("bommode");
+  if (settings.bommode === null) {
+    settings.bommode = "grouped";
+  }
+  if (!["grouped", "ungrouped", "netlist"].includes(settings.bommode)) {
+    settings.bommode = "grouped";
   }
   settings.canvaslayout = readStorage("canvaslayout");
   if (settings.canvaslayout === null) {
