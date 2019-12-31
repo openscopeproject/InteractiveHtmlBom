@@ -17,7 +17,8 @@ as additional columns in the BOM table (for example manufacturer id) or it can b
 used to indicate which components should be omitted altogether (dnp field). For
 full description of functionality see [wiki](https://github.com/openscopeproject/InteractiveHtmlBom/wiki).
 
-Generated html page is fully self contained, doesn't need internet connection to work and can be packaged with documentation of your project or hosted anywhere on the web.
+Generated html page is fully self contained, doesn't need internet connection to work
+and can be packaged with documentation of your project or hosted anywhere on the web.
 
 [Demo is worth a thousand words.](https://openscopeproject.org/InteractiveHtmlBomDemo/)
 
@@ -29,8 +30,9 @@ See [project wiki](https://github.com/openscopeproject/InteractiveHtmlBom/wiki) 
 
 Plugin code is licensed under MIT license, see `LICENSE` for more info.
 
-Html page uses [Split.js](https://github.com/nathancahill/Split.js)
-and [PEP.js](https://github.com/jquery/PEP) libraries that get embedded into
+Html page uses [Split.js](https://github.com/nathancahill/Split.js),
+[PEP.js](https://github.com/jquery/PEP) and (stripped down)
+[lz-strings.js](https://github.com/pieroxy/lz-string) libraries that get embedded into
 generated bom page.
 
 `units.py` is borrowed from [KiBom](https://github.com/SchrodingersGat/KiBoM)

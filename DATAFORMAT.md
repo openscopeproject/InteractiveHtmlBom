@@ -55,7 +55,7 @@ pcbdata = {
     "F": [
       {
         // SVG path of the polygon given as 'd' attribute of svg spec.
-        // If "svgpath" is present "polygons" is ignored. 
+        // If "svgpath" is present "polygons" is ignored.
         "svgpath": svgpath,
         "polygons": [
           // Set of polylines same as in polygon drawing.
@@ -105,8 +105,9 @@ pcbdata = {
 
 # drawing struct
 
-All drawings are either graphical items (arcs, lines, circles)
+All drawings are either graphical items (arcs, lines, circles, curves)
 or text.
+
 Rendering method and properties are determined based on `type`
 attribute.
 
@@ -148,6 +149,19 @@ attribute.
   "radius": radius,
   "startangle": angle1,
   "endangle": angle2,
+}
+```
+
+### curve
+
+```js
+{
+  "type": "curve", // Bezier curve
+  "start": [x, y],
+  "end": [x, y],
+  "cpa": [x, y], // control point A
+  "cpb": [x, y], // control point B
+  "width": width,
 }
 ```
 
@@ -238,7 +252,7 @@ Footprints are a collection of pads, drawings and some metadata.
       "shape": shape,
       // Only present if shape is "custom".
       // SVG path of the polygon given as 'd' attribute of svg spec.
-      // If "svgpath" is present "polygons", "pos", "angle" are ignored. 
+      // If "svgpath" is present "polygons", "pos", "angle" are ignored.
       "svgpath": svgpath,
       "polygons": [
         // Set of polylines same as in polygon drawing.
@@ -249,7 +263,7 @@ Footprints are a collection of pads, drawings and some metadata.
       "radius": radius,
       // Only present if shape is "chamfrect".
       // chamfpos is a bitmask, left = 1, right = 2, bottom left = 4, bottom right = 8
-      "chamfpos": chamfpos, 
+      "chamfpos": chamfpos,
       "chamfratio": ratio,
       // Pad type is "th" for standard and NPTH pads
       // "smd" otherwise.
