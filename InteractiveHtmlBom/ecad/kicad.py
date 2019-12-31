@@ -115,7 +115,7 @@ class PcbnewParser(EcadParser):
                 return result
             parsed_outline = []
             for point_index in range(outline.PointCount()):
-                point = outline.Point(point_index)
+                point = outline.CPoint(point_index)
                 parsed_outline.append(self.normalize([point.x, point.y]))
             result.append(parsed_outline)
 
