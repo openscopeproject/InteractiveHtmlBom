@@ -510,7 +510,9 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
         pass
 
     def Run(self):
-        config = Config()
+        from ..version import version
+        self.version = version
+        config = Config(self.version)
         board = pcbnew.GetBoard()
         pcb_file_name = board.GetFileName()
 

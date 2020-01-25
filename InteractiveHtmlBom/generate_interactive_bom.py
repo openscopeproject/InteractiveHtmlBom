@@ -27,6 +27,7 @@ if __name__ == "__main__":
     from .core import ibom
     from .core.config import Config
     from .ecad import get_parser_by_extension
+    from .version import version
 
     app = wx.App()
 
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     parser.add_argument('file',
                         type=lambda s: to_utf(s),
                         help="KiCad PCB file")
-    config = Config()
+    config = Config(version)
     config.add_options(parser, config.FILE_NAME_FORMAT_HINT)
     args = parser.parse_args()
     if not os.path.isfile(args.file):

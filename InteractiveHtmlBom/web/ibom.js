@@ -626,6 +626,7 @@ function populateMetadata() {
   if (pcbdata.metadata.title != "") {
     document.title = pcbdata.metadata.title + " BOM";
   }
+  // Calculate board stats
   var fp_f = 0, fp_b = 0, pads_f = 0, pads_b = 0, pads_th = 0;
   for (var i = 0; i < pcbdata.modules.length; i++) {
     if (pcbdata.bom.skipped.includes(i)) continue;
@@ -658,6 +659,9 @@ function populateMetadata() {
   document.getElementById("stats-smd-pads-back").innerHTML = pads_b;
   document.getElementById("stats-smd-pads-total").innerHTML = pads_f + pads_b;
   document.getElementById("stats-th-pads").innerHTML = pads_th;
+  // Update version string
+  document.getElementById("github-link").innerHTML = "InteractiveHtmlBom&nbsp;" +
+    /^v\d+\.\d+/.exec(pcbdata.ibom_version)[0];
 }
 
 function changeBomLayout(layout) {

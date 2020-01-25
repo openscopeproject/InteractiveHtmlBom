@@ -85,8 +85,9 @@ class Config:
     def _join(lst):
         return ','.join([s.replace(',', '\\,') for s in lst])
 
-    def __init__(self):
+    def __init__(self, version):
         """Init from config file if it exists."""
+        self.version = version
         if not os.path.isfile(self.config_file):
             return
         f = FileConfig(localFilename=self.config_file)

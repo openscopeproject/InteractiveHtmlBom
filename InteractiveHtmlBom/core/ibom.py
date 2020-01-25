@@ -296,6 +296,7 @@ def main(parser, config, logger):
         return
 
     pcbdata["bom"] = generate_bom(components, config, extra_fields)
+    pcbdata["ibom_version"] = config.version
 
     # build BOM
     bom_file = generate_file(pcb_file_dir, pcb_file_name, pcbdata, config)
@@ -315,6 +316,7 @@ def run_with_dialog(parser, config, logger):
             extra_data_func=parser.extra_data_func,
             config_save_func=save_config,
             file_name_format_hint=config.FILE_NAME_FORMAT_HINT,
+            version=config.version
     )
     try:
         config.netlist_initial_directory = os.path.dirname(parser.file_name)

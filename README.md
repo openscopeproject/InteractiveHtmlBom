@@ -32,7 +32,7 @@ Plugin code is licensed under MIT license, see `LICENSE` for more info.
 
 Html page uses [Split.js](https://github.com/nathancahill/Split.js),
 [PEP.js](https://github.com/jquery/PEP) and (stripped down)
-[lz-strings.js](https://github.com/pieroxy/lz-string) libraries that get embedded into
+[lz-string.js](https://github.com/pieroxy/lz-string) libraries that get embedded into
 generated bom page.
 
 `units.py` is borrowed from [KiBom](https://github.com/SchrodingersGat/KiBoM)

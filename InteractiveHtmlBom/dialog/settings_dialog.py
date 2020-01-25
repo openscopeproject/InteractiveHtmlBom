@@ -13,7 +13,7 @@ def pop_error(msg):
 
 class SettingsDialog(dialog_base.SettingsDialogBase):
     def __init__(self, extra_data_func, config_save_func,
-                 file_name_format_hint):
+                 file_name_format_hint, version):
         dialog_base.SettingsDialogBase.__init__(self, None)
         self.panel = SettingsDialogPanel(
                 self, extra_data_func, config_save_func, file_name_format_hint)
@@ -21,6 +21,7 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
         # hack for some gtk themes that incorrectly calculate best size
         best_size.IncBy(dx=0, dy=30)
         self.SetClientSize(best_size)
+        self.SetTitle('InteractiveHtmlBom %s' % version)
 
     # hack for new wxFormBuilder generating code incompatible with old wxPython
     # noinspection PyMethodOverriding
