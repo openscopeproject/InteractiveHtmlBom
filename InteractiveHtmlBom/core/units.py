@@ -14,8 +14,10 @@ in different formats e.g.
 import re
 import locale
 
+current_locale = locale.setlocale(locale.LC_NUMERIC)
 locale.setlocale(locale.LC_NUMERIC, '')
 decimal_separator = locale.localeconv()['decimal_point']
+locale.setlocale(locale.LC_NUMERIC, current_locale)
 
 PREFIX_MICRO = [u"μ", "u", "micro"]
 PREFIX_MILLI = ["milli", "m"]
