@@ -72,6 +72,15 @@ function setDarkMode(value) {
   redrawIfInitDone();
 }
 
+function setFullscreen(value) {
+  if (value) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+  redrawIfInitDone();
+}
+
 function fabricationVisible(value) {
   writeStorage("fabricationVisible", value);
   settings.renderFabrication = value;
@@ -936,6 +945,13 @@ window.onload = function(e) {
   prepCheckboxes();
   // Triggers render
   changeBomLayout(settings.bomlayout);
+
+  // Users may leave fullscreen without touching the checkbox. Uncheck.
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement)
+      document.getElementById('fullscreenCheckbox').checked = false;
+    console.log("Fullscreen changed:", document.fullscreenElement);
+  });
 }
 
 window.onresize = resizeAll;
