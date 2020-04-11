@@ -10,7 +10,7 @@ echo                                                                            
 echo --------------------------------------------------------------------------------------------------------------------
 echo --------------------------------------------------------------------------------------------------------------------
 
-::delete --show-dialog after frist sart up and setting
+::delete --show-dialog after frist start up and setting
 set option=--show-dialog
 
 set FilePath=%~dp0
