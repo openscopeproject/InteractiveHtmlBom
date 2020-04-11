@@ -3,9 +3,9 @@
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
 echo                                                                                                                                                                                    -
-echo                                  Thankyou For Using Generate InteractiveBom
-echo                                              Powered By Qu1ck
-echo                                Bat Version : Powered By Scarrrr0725
+echo                                  Thank you for using InteractiveHtmlBom
+echo                           https://github.com/openscopeproject/InteractiveHtmlBom
+echo                                         Bat file by Scarrrr0725
 echo                                                                                                                                                                                    -
 echo --------------------------------------------------------------------------------------------------------------------
 echo --------------------------------------------------------------------------------------------------------------------
@@ -21,13 +21,11 @@ set /p pathofEDASourceFile=Please Drag the EasyEDA PCB source file here :
 
 echo  Converting. . . . . . . . . .
 python %pyFilePath% %pathofEDASourceFile% %option%
-echo %pyFilePath% %pathofEDASourceFile%%option%
 
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
 echo                                                                                                                                                                                    -
-echo                              EDA Source File is Converted  to Bom Successfully ! ! ! !
-echo                                    Thankyou For Using Generate InteractiveBom
+echo                                 EDA source file is converted to bom successfully!
 echo                                                                                                                                                                                    -
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
