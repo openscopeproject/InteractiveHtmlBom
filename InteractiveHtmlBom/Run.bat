@@ -1,5 +1,7 @@
 @echo off
 
+set pathofEDASourceFile=%1
+
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
 echo                                                                                                                                                                                    -
@@ -17,7 +19,9 @@ set FilePath=%~dp0
 set pyFilePath=%FilePath%generate_interactive_bom.py
 
 :convert
-set /p pathofEDASourceFile=Please Drag the EasyEDA PCB source file here :
+if not defined pathofEDASourceFile (
+	set /p pathofEDASourceFile=Please Drag the EasyEDA PCB source file here :
+) 
 
 echo  Converting. . . . . . . . . .
 python %pyFilePath% %pathofEDASourceFile% %option%
