@@ -1,6 +1,6 @@
 @echo off
 
-language=en 
+set language=zh
 ::supported language :English and Chinese-Simplified
 
 ::delete --show-dialog after frist start up and setting
@@ -9,16 +9,26 @@ set option=--show-dialog
 set FilePath=%~dp0
 set pyFilePath=%FilePath%generate_interactive_bom.py
 
-if language==en (
-	call :convert_en 
+if %language%==en (
+	call :startupEcho_en
+	goto:convert_en
 
+) else (
+	set PYTHONIOENCODING=utf-8
+	chcp 65001
+	call :startupEcho_zh
+	goto:convert_zh
 )
 
 
 :convert_en
+
 set /p pathofEDASourceFile=Please Drag the EasyEDA PCB source file here :
 
+echo .
 echo  Converting. . . . . . . . . .
+echo .
+
 python %pyFilePath% %pathofEDASourceFile% %option%
 
 echo -------------------------------------------------------------------------------------------------------------------
@@ -35,9 +45,12 @@ CHOICE /C YN /N /M "Do you want to convert another file? [Y/N]
 
 
 :convert_zh
+
 set /p pathofEDASourceFile=请将您的EDA PCB源文件拖移至此:
 
+echo .
 echo  导出中. . . . . . . . . .
+echo.
 python %pyFilePath% %pathofEDASourceFile% %option%
 
 echo -------------------------------------------------------------------------------------------------------------------
@@ -63,6 +76,7 @@ echo                                         Bat file by Scarrrr0725
 echo .                                                                                                                                                                                  -
 echo --------------------------------------------------------------------------------------------------------------------
 echo --------------------------------------------------------------------------------------------------------------------
+goto:eof
 
 :startupEcho_zh
 echo -------------------------------------------------------------------------------------------------------------------
@@ -74,3 +88,4 @@ echo                                    Bat ( EasyEDA）版本 : Powered By Scar
 echo .                                                                                                                                                                 
 echo --------------------------------------------------------------------------------------------------------------------
 echo --------------------------------------------------------------------------------------------------------------------
+goto:eof
