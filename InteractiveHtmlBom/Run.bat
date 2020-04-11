@@ -22,6 +22,7 @@ if not defined pathofEDASourceFile (
 ) 
 echo  Converting. . . . . . . . . .
 python %pyFilePath% %pathofEDASourceFile% %option%
+set pathofEDASourceFile=
 
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
@@ -31,6 +32,6 @@ echo                                                                            
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
 
-CHOICE /C YN /N /M "Do you want to convert another file? [Y/N"
+CHOICE /C YN /N /M "Do you want to convert another file? [Y/N]"
 	if errorlevel 2 exit
 	if errorlevel 1 goto convert
