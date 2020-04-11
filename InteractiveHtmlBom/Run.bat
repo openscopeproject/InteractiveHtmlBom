@@ -30,6 +30,6 @@ echo                                                                            
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
 
-CHOICE /C YN /N /M "Do you Want to Convert Next File  ? [Y/N]"
+CHOICE /C YN /N /M "Do you want to convert another file? [Y/N"
 	if errorlevel 2 exit
 	if errorlevel 1 goto convert
