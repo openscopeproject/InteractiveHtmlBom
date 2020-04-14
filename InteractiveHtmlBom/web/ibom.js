@@ -150,17 +150,24 @@ function setBomCheckboxState(checkbox, element, references) {
 }
 
 function createCheckboxChangeHandler(checkbox, references) {
-  return function() {
+  return function(evt) {
     refsSet = getStoredCheckboxRefs(checkbox);
+    var darkenWhenChecked = settings.darkenWhenChecked == checkbox;
     if (this.checked) {
       // checkbox ticked
       for (var ref of references) {
         refsSet.add(ref[1]);
       }
+      if (darkenWhenChecked) {
+        evt.target.parentElement.parentElement.classList.add("checked");
+      }
     } else {
       // checkbox unticked
       for (var ref of references) {
         refsSet.delete(ref[1]);
+      }
+      if (darkenWhenChecked) {
+        evt.target.parentElement.parentElement.classList.remove("checked");
       }
     }
     settings.checkboxStoredRefs[checkbox] = [...refsSet].join(",");
@@ -469,6 +476,9 @@ function populateBomBody() {
           input.type = "checkbox";
           input.onchange = createCheckboxChangeHandler(checkbox, references);
           setBomCheckboxState(checkbox, input, references);
+          if (input.checked && settings.darkenWhenChecked == checkbox) {
+            tr.classList.add("checked");
+          }
           td.appendChild(input);
           tr.appendChild(td);
         }
@@ -813,6 +823,13 @@ function setBomCheckboxes(value) {
   settings.checkboxes = value.split(",").filter((e) => e);
   prepCheckboxes();
   populateBomTable();
+  populateDarkenWhenCheckedOptions();
+}
+
+function setDarkenWhenChecked(value) {
+  writeStorage("darkenWhenChecked", value);
+  settings.darkenWhenChecked = value;
+  populateBomTable();
 }
 
 function prepCheckboxes() {
@@ -841,6 +858,49 @@ function prepCheckboxes() {
     tr.appendChild(td);
     table.appendChild(tr);
     updateCheckboxStats(checkbox);
+  }
+}
+
+function populateDarkenWhenCheckedOptions() {
+  var container = document.getElementById("darkenWhenCheckedContainer");
+
+  if (settings.checkboxes.length == 0) {
+    container.parentElement.style.display = "none";
+    return;
+  }
+
+  container.innerHTML = '';
+  container.parentElement.style.display = "inline-block";
+  
+  function createOption(name, displayName) {
+    var id = "darkenWhenChecked-" + name;
+
+    var div = document.createElement("div");
+    div.classList.add("radio-container");
+
+    var input = document.createElement("input");
+    input.type = "radio";
+    input.name = "darkenWhenChecked";
+    input.value = name;
+    input.id = id;
+    input.onchange = () => setDarkenWhenChecked(name);
+    div.appendChild(input);
+
+    // Preserve the selected element when the checkboxes change
+    if (name == settings.darkenWhenChecked) {
+      input.checked = true;
+    }
+
+    var label = document.createElement("label");
+    label.innerHTML = displayName;
+    label.htmlFor = id;
+    div.appendChild(label);
+
+    container.appendChild(div);
+  }
+  createOption("", "None");
+  for (var checkbox of settings.checkboxes) {
+    createOption(checkbox, checkbox);
   }
 }
 

@@ -227,6 +227,14 @@ canvas:active {
   background-color: #313b40;
 }
 
+.bom tr.checked {
+  color: #aaa;
+}
+
+.dark .bom tr.checked {
+  color: #666;
+}
+
 .bom tr {
   transition: background-color 0.2s;
 }
@@ -565,6 +573,10 @@ mark.highlight {
 .dark .menu-textbox {
   background-color: #222;
   color: #eee;
+}
+
+.radio-container {
+  margin: 4px;
 }
 
 .topmostdiv {

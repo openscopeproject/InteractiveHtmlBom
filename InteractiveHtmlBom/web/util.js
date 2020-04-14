@@ -384,6 +384,7 @@ function overwriteSettings(newSettings) {
   for (var checkbox of settings.checkboxes) {
     writeStorage("checkbox_" + checkbox, settings.checkboxStoredRefs[checkbox]);
   }
+  writeStorage("darkenWhenChecked", settings.darkenWhenChecked);
   padsVisible(settings.renderPads);
   document.getElementById("padsCheckbox").checked = settings.renderPads;
   fabricationVisible(settings.renderFabrication);
@@ -476,6 +477,9 @@ function initDefaults() {
   }
   settings.checkboxes = bomCheckboxes.split(",").filter((e) => e);
   document.getElementById("bomCheckboxes").value = bomCheckboxes;
+
+  settings.darkenWhenChecked = readStorage("darkenWhenChecked") || "";
+  populateDarkenWhenCheckedOptions();
 
   function initBooleanSetting(storageString, def, elementId, func) {
     var b = readStorage(storageString);
