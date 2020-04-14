@@ -78,7 +78,6 @@ function setFullscreen(value) {
   } else {
     document.exitFullscreen();
   }
-  redrawIfInitDone();
 }
 
 function fabricationVisible(value) {
@@ -950,7 +949,6 @@ window.onload = function(e) {
   document.addEventListener('fullscreenchange', () => {
     if (!document.fullscreenElement)
       document.getElementById('fullscreenCheckbox').checked = false;
-    console.log("Fullscreen changed:", document.fullscreenElement);
   });
 }
 
