@@ -5,7 +5,7 @@ set FilePath=%~dp0
 ::delete --show-dialog after frist start up and setting
 set option=--show-dialog
 
-::detect current language of user code of chinese:0804(zh-cn),0404(zh-tw),1004(zh-sg),0C04(zh-hk)
+::detect current language of user.    code of Chinese:0804(zh-cn),0404(zh-tw),1004(zh-sg),0C04(zh-hk)
 for /f "delims=" %%a in ('reg query "HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Nls\Language" /v InstallLanguage ^| findstr "0804"') do set language=%%a
 set language=%language:~33,37%
 if  "%language%"=="0804" (set language=zh) else if  "%language%"=="0404" (set language=zh) else if  "%language%"=="1004" (set language=zh) else if  /i "%language%"=="0C04" (set language=zh) else (set language=en)
