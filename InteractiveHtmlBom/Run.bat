@@ -1,5 +1,6 @@
 @echo off
 set pathofEDASourceFile=%1
+set FilePath=%~dp0
 
 ::delete --show-dialog after frist start up and setting
 set option=--show-dialog
@@ -9,11 +10,11 @@ for /f "delims=" %%a in ('reg query "HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Con
 set language=%language:~33,37%
 if  "%language%"=="0804" (set language=zh) else if  "%language%"=="0404" (set language=zh) else if  "%language%"=="1004" (set language=zh) else if  /i "%language%"=="0C04" (set language=zh) else (set language=en)
 if %language%==en (
-	call .\i18n\en_UK\language_en.bat
+	call %FilePath%\i18n\en_UK\language_en.bat
 ) else (
 	set PYTHONIOENCODING=utf-8
 	chcp 65001
-	call .\i18n\zh_CN\language_zh.bat
+	call %FilePath%\i18n\zh_CN\language_zh.bat
 )
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
@@ -26,8 +27,6 @@ echo                                                                            
 echo --------------------------------------------------------------------------------------------------------------------
 echo --------------------------------------------------------------------------------------------------------------------
 
-
-set FilePath=%~dp0
 set pyFilePath=%FilePath%generate_interactive_bom.py
 
 :convert
