@@ -138,6 +138,10 @@ class PcbnewParser(EcadParser):
         else:
             height = d.GetHeight() * 1e-6
             width = d.GetWidth() * 1e-6
+        if hasattr(d, "GetTextThickness"):
+            thickness = d.GetTextThickness() * 1e-6
+        else:
+            thickness = d.GetThickness() * 1e-6
         if hasattr(d, "GetShownText"):
             text = d.GetShownText()
         else:
@@ -156,7 +160,7 @@ class PcbnewParser(EcadParser):
             "height": height,
             "width": width,
             "horiz_justify": d.GetHorizJustify(),
-            "thickness": d.GetThickness() * 1e-6,
+            "thickness": thickness,
             "attr": attributes,
             "angle": angle
         }
