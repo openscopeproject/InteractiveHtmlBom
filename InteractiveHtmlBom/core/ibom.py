@@ -224,10 +224,11 @@ def get_compressed_pcbdata(pcbdata):
 def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     def get_file_content(file_name):
         path = os.path.join(os.path.dirname(__file__), "..", "web", file_name)
+        if not os.path.exists(path):
+            return ""
         with io.open(path, 'r', encoding='utf-8') as f:
             return f.read()
 
-    log.info("Dumping pcb json data")
 
     if os.path.isabs(config.bom_dest_dir):
         bom_file_dir = config.bom_dest_dir
@@ -239,18 +240,26 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     bom_file_dir = os.path.dirname(bom_file_name)
     if not os.path.isdir(bom_file_dir):
         os.makedirs(bom_file_dir)
+    log.info("Compressing pcb data")
+    compressed_pcbdata = get_compressed_pcbdata(pcbdata)
+    log.info("Dumping pcb data")
     config_js = "var config = " + config.get_html_config()
     html = get_file_content("ibom.html")
     html = html.replace('///CSS///', get_file_content('ibom.css'))
+    html = html.replace('///USERCSS///', get_file_content('user.css'))
     html = html.replace('///SPLITJS///', get_file_content('split.js'))
     html = html.replace('///LZ-STRING///', get_file_content('lz-string.js'))
     html = html.replace('///POINTER_EVENTS_POLYFILL///',
                         get_file_content('pep.js'))
     html = html.replace('///CONFIG///', config_js)
-    html = html.replace('///PCBDATA///', get_compressed_pcbdata(pcbdata))
+    html = html.replace('///PCBDATA///', compressed_pcbdata)
     html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
+    html = html.replace('///USERJS///', get_file_content('user.js'))
+    html = html.replace('///USERHEADER///', get_file_content('userheader.html'))
+    html = html.replace('///USERFOOTER///', get_file_content('userfooter.html'))
+
     with io.open(bom_file_name, 'wt', encoding='utf-8') as bom:
         bom.write(html)
     log.info("Created file %s", bom_file_name)

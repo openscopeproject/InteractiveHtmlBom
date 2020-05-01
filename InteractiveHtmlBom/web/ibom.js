@@ -153,6 +153,10 @@ function createCheckboxChangeHandler(checkbox, references) {
   return function(evt) {
     refsSet = getStoredCheckboxRefs(checkbox);
     var darkenWhenChecked = settings.darkenWhenChecked == checkbox;
+    eventArgs = {
+      checkbox: checkbox,
+      refs: references,
+    }
     if (this.checked) {
       // checkbox ticked
       for (var ref of references) {
@@ -161,6 +165,7 @@ function createCheckboxChangeHandler(checkbox, references) {
       if (darkenWhenChecked) {
         evt.target.parentElement.parentElement.classList.add("checked");
       }
+      eventArgs.state = 'checked';
     } else {
       // checkbox unticked
       for (var ref of references) {
@@ -169,10 +174,12 @@ function createCheckboxChangeHandler(checkbox, references) {
       if (darkenWhenChecked) {
         evt.target.parentElement.parentElement.classList.remove("checked");
       }
+      eventArgs.state = 'unchecked';
     }
     settings.checkboxStoredRefs[checkbox] = [...refsSet].join(",");
     writeStorage("checkbox_" + checkbox, settings.checkboxStoredRefs[checkbox]);
     updateCheckboxStats(checkbox);
+    EventHandler.emitEvent(IBOM_EVENT_TYPES.CHECKBOX_CHANGE_EVENT, eventArgs);
   }
 }
 
@@ -198,6 +205,13 @@ function createRowHighlightHandler(rowid, refs, net) {
     highlightedModules = refs ? refs.map(r => r[1]) : [];
     highlightedNet = net;
     drawHighlights();
+    EventHandler.emitEvent(
+      IBOM_EVENT_TYPES.HIGHLIGHT_EVENT,
+      {
+        rowid: rowid,
+        refs: refs,
+        net: net
+      });
   }
 }
 
@@ -871,7 +885,7 @@ function populateDarkenWhenCheckedOptions() {
 
   container.innerHTML = '';
   container.parentElement.style.display = "inline-block";
-  
+
   function createOption(name, displayName) {
     var id = "darkenWhenChecked-" + name;
 
