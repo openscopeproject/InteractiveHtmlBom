@@ -2,6 +2,7 @@
 .idea
 .vscode
 *.iml
+*.bak
 test
 releases
 demo
