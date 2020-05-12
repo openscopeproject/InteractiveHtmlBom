@@ -11,9 +11,8 @@ function calcFontPoint(linepoint, text, offsetx, offsety, tilt) {
     linepoint[0] * text.width + offsetx,
     linepoint[1] * text.height + offsety
   ];
-  // Adding half a line height here is technically a bug
-  // but pcbnew currently does the same, text is slightly shifted.
-  point[0] -= (point[1] + text.height * 0.5) * tilt;
+  // This approximates pcbnew behavior with how text tilts depending on horizontal justification
+  point[0] -= (linepoint[1] + 0.5 * (1 + text.horiz_justify)) * text.height * tilt;
   return point;
 }
 
@@ -32,6 +31,7 @@ function drawtext(ctx, text, color, flip) {
     return;
   }
   ctx.translate(...text.pos);
+  ctx.translate(text.thickness * 0.5, 0);
   var angle = -text.angle;
   if (text.attr.includes("mirrored")) {
     ctx.scale(-1, 1);
@@ -48,13 +48,18 @@ function drawtext(ctx, text, color, flip) {
   ctx.rotate(deg2rad(angle));
   for (var i in txt) {
     var offsety = (-(txt.length - 1) + i * 2) * interline + text.height / 2;
-    var lineWidth = 0;
-    for (var c of txt[i]) {
-      if (c == '\t') {
+    var lineWidth = text.thickness + interline * tilt;
+    for (var j = 0; j < txt[i].length; j++) {
+      if (txt[i][j] == '\t') {
         var fourSpaces = 4 * pcbdata.font_data[' '].w * text.width;
         lineWidth += fourSpaces - lineWidth % fourSpaces;
       } else {
-        lineWidth += pcbdata.font_data[c].w * text.width;
+        if (txt[i][j] == '~') {
+          j++;
+          if (j == txt[i].length)
+            break;
+        }
+        lineWidth += pcbdata.font_data[txt[i][j]].w * text.width;
       }
     }
     var offsetx = 0;
@@ -71,21 +76,45 @@ function drawtext(ctx, text, color, flip) {
         offsetx -= lineWidth;
         break;
     }
-    for (var c of txt[i]) {
-      if (c == '\t') {
+    var inOverbar = false;
+    for (var j = 0; j < txt[i].length; j++) {
+      if (txt[i][j] == '\t') {
         var fourSpaces = 4 * pcbdata.font_data[' '].w * text.width;
         offsetx += fourSpaces - offsetx % fourSpaces;
         continue;
+      } else if (txt[i][j] == '~') {
+        j++;
+        if (j == txt[i].length)
+          break;
+        if (txt[i][j] != '~') {
+          inOverbar = !inOverbar;
+        }
       }
-      for (var line of pcbdata.font_data[c].l) {
+      var glyph = pcbdata.font_data[txt[i][j]];
+      if (inOverbar) {
+        var overbarStart = [offsetx, -text.height * 1.4 + offsety];
+        var overbarEnd = [offsetx + text.width * glyph.w, overbarStart[1]];
+
+        if (!lastHadOverbar) {
+          overbarStart[0] += text.height * 1.4 * tilt;
+          lastHadOverbar = true;
+        }
+        ctx.beginPath();
+        ctx.moveTo(...overbarStart);
+        ctx.lineTo(...overbarEnd);
+        ctx.stroke();
+      } else {
+        lastHadOverbar = false;
+      }
+      for (var line of glyph.l) {
         ctx.beginPath();
         ctx.moveTo(...calcFontPoint(line[0], text, offsetx, offsety, tilt));
-        for (var i = 1; i < line.length; i++) {
-          ctx.lineTo(...calcFontPoint(line[i], text, offsetx, offsety, tilt));
+        for (var k = 1; k < line.length; k++) {
+          ctx.lineTo(...calcFontPoint(line[k], text, offsetx, offsety, tilt));
         }
         ctx.stroke();
       }
-      offsetx += pcbdata.font_data[c].w * text.width;
+      offsetx += glyph.w * text.width;
     }
   }
   ctx.restore();
