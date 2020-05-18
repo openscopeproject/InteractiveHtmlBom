@@ -15,7 +15,11 @@ import re
 import locale
 
 current_locale = locale.setlocale(locale.LC_NUMERIC)
-locale.setlocale(locale.LC_NUMERIC, '')
+try:
+    locale.setlocale(locale.LC_NUMERIC, '')
+except Exception as ignore:
+    # sometimes setlocale with empty string doesn't work on OSX
+    pass
 decimal_separator = locale.localeconv()['decimal_point']
 locale.setlocale(locale.LC_NUMERIC, current_locale)
 
