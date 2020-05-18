@@ -543,7 +543,7 @@ function populateBomBody() {
     }
   }
   EventHandler.emitEvent(
-    IBOM_EVENT_TYPES.BOM_BODY_CHANGED_EVENT,
+    IBOM_EVENT_TYPES.BOM_BODY_CHANGE_EVENT,
     {
       filter: filter,
       reflookup: reflookup,
