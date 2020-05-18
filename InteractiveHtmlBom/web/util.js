@@ -525,6 +525,7 @@ const IBOM_EVENT_TYPES = {
   ALL: "all",
   HIGHLIGHT_EVENT: "highlightEvent",
   CHECKBOX_CHANGE_EVENT: "checkboxChangeEvent",
+  BOM_BODY_CHANGED_EVENT: "bomBodyChangedEvent",
 }
 
 const EventHandler = {

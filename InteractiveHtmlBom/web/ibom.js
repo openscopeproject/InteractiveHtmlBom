@@ -542,6 +542,14 @@ function populateBomBody() {
       first = false;
     }
   }
+  EventHandler.emitEvent(
+    IBOM_EVENT_TYPES.BOM_BODY_CHANGED_EVENT,
+    {
+      filter: filter,
+      reflookup: reflookup,
+      checkboxes: settings.checkboxes,
+      bommode: settings.bommode,
+    });
 }
 
 function highlightPreviousRow() {
