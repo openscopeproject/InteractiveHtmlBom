@@ -149,8 +149,8 @@ function setBomCheckboxState(checkbox, element, references) {
   element.indeterminate = (state == "indeterminate");
 }
 
-function createCheckboxChangeHandler(checkbox, references) {
-  return function(evt) {
+function createCheckboxChangeHandler(checkbox, references, row) {
+  return function() {
     refsSet = getStoredCheckboxRefs(checkbox);
     var darkenWhenChecked = settings.darkenWhenChecked == checkbox;
     eventArgs = {
@@ -163,7 +163,7 @@ function createCheckboxChangeHandler(checkbox, references) {
         refsSet.add(ref[1]);
       }
       if (darkenWhenChecked) {
-        evt.target.parentElement.parentElement.classList.add("checked");
+        row.classList.add("checked");
       }
       eventArgs.state = 'checked';
     } else {
@@ -172,7 +172,7 @@ function createCheckboxChangeHandler(checkbox, references) {
         refsSet.delete(ref[1]);
       }
       if (darkenWhenChecked) {
-        evt.target.parentElement.parentElement.classList.remove("checked");
+        row.classList.remove("checked");
       }
       eventArgs.state = 'unchecked';
     }
@@ -488,7 +488,7 @@ function populateBomBody() {
           td = document.createElement("TD");
           var input = document.createElement("input");
           input.type = "checkbox";
-          input.onchange = createCheckboxChangeHandler(checkbox, references);
+          input.onchange = createCheckboxChangeHandler(checkbox, references, tr);
           setBomCheckboxState(checkbox, input, references);
           if (input.checked && settings.darkenWhenChecked == checkbox) {
             tr.classList.add("checked");
