@@ -4,8 +4,6 @@ import argparse
 import os
 import sys
 
-import wx
-
 
 # python 2 and 3 compatibility hack
 def to_utf(s):
@@ -29,7 +27,13 @@ if __name__ == "__main__":
     from .ecad import get_parser_by_extension
     from .version import version
 
-    app = wx.App()
+    delay_wx = False
+    if os.environ.get('INTERACTIVE_HTML_NO_X11') == 'True':
+        # Create the app only if we are going to create the dialog
+        delay_wx = True
+    if not delay_wx:
+        import wx
+        app = wx.App()
 
     parser = argparse.ArgumentParser(
             description='KiCad InteractiveHtmlBom plugin CLI.',
@@ -47,6 +51,9 @@ if __name__ == "__main__":
     logger = ibom.Logger(cli=True)
     parser = get_parser_by_extension(os.path.abspath(args.file), config, logger)
     if args.show_dialog:
+        if delay_wx:
+            import wx
+            app = wx.App()
         ibom.run_with_dialog(parser, config, logger)
     else:
         config.set_from_args(args)
