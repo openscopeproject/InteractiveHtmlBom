@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # Add ../ to the path
     # Works if this script is executed without installing the module
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.dirname(script_dir))
+    sys.path.insert(0, os.path.dirname(script_dir))
     os.environ['INTERACTIVE_HTML_BOM_CLI_MODE'] = 'True'
     import InteractiveHtmlBom
 
