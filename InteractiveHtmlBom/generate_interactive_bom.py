@@ -17,18 +17,17 @@ def to_utf(s):
 
 
 if __name__ == "__main__":
-    # Circumvent the "scripts can't do relative imports because they are not
-    # packages" restriction by asserting dominance and making it a package!
-    dirname = os.path.dirname(os.path.abspath(__file__))
-    __package__ = os.path.basename(dirname)
-    sys.path.insert(0, os.path.dirname(dirname))
+    # Add ../ to the path
+    # Works if this script is executed without installing the module
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, os.path.dirname(script_dir))
     os.environ['INTERACTIVE_HTML_BOM_CLI_MODE'] = 'True'
-    __import__(__package__)
+    import InteractiveHtmlBom
 
-    from .core import ibom
-    from .core.config import Config
-    from .ecad import get_parser_by_extension
-    from .version import version
+    from InteractiveHtmlBom.core import ibom
+    from InteractiveHtmlBom.core.config import Config
+    from InteractiveHtmlBom.ecad import get_parser_by_extension
+    from InteractiveHtmlBom.version import version
 
     app = wx.App()
 
