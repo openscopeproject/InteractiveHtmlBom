@@ -53,7 +53,7 @@ if __name__ == "__main__":
     parser = get_parser_by_extension(os.path.abspath(args.file), config, logger)
     if args.show_dialog:
         if not create_wx_app:
-            print("Can not show dialog when INTERACTIVE_HTML_BOM_NO_DISPLAY is set.")
+            print("Can not show dialog when DISPLAY isn't defined.")
             exit(1)
         ibom.run_with_dialog(parser, config, logger)
     else:
