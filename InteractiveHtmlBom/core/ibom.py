@@ -321,6 +321,7 @@ def run_with_dialog(parser, config, logger):
         config.set_from_dialog(dialog_panel)
         config.save()
 
+    config.load_from_ini()
     dlg = SettingsDialog(
             extra_data_func=parser.extra_data_func,
             config_save_func=save_config,

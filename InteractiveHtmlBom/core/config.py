@@ -86,8 +86,10 @@ class Config:
         return ','.join([s.replace(',', '\\,') for s in lst])
 
     def __init__(self, version):
-        """Init from config file if it exists."""
         self.version = version
+
+    def load_from_ini(self):
+        """Init from config file if it exists."""
         if not os.path.isfile(self.config_file):
             return
         f = FileConfig(localFilename=self.config_file)
