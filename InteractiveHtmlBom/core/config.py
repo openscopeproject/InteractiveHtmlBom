@@ -362,10 +362,10 @@ class Config:
         parser.add_argument('--variant-field',
                             help='Name of the extra field that stores board '
                                  'variant for component.')
-        parser.add_argument('--variants-whitelist', default='', nargs='+',
+        parser.add_argument('--variants-whitelist', default='',
                             help='List of board variants to '
                                  'include in the BOM.')
-        parser.add_argument('--variants-blacklist', default='', nargs='+',
+        parser.add_argument('--variants-blacklist', default='',
                             help='List of board variants to '
                                  'exclude from the BOM.')
         parser.add_argument('--dnp-field', default=self.dnp_field,
