@@ -54,4 +54,5 @@ if __name__ == "__main__":
         ibom.run_with_dialog(parser, config, logger)
     else:
         config.set_from_args(args)
-        ibom.main(parser, config, logger)
+        if not ibom.main(parser, config, logger):
+            exit(1)
