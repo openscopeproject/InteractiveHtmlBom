@@ -14,6 +14,7 @@ from . import units
 from .config import Config
 from ..dialog import SettingsDialog
 from ..ecad.common import EcadParser, Component
+from ..errors import ParsingException
 
 
 class Logger(object):
@@ -294,15 +295,13 @@ def main(parser, config, logger):
         need_extra_fields = False
 
     if extra_fields is None and need_extra_fields:
-        logger.error('Failed parsing %s' % config.netlist_file)
-        return False
+        raise ParsingException('Failed parsing %s' % config.netlist_file)
 
     extra_fields = extra_fields[1] if extra_fields else None
 
     pcbdata, components = parser.parse()
     if not pcbdata or not components:
-        logger.error('Parsing failed.')
-        return False
+        raise ParsingException('Parsing failed.')
 
     pcbdata["bom"] = generate_bom(components, config, extra_fields)
     pcbdata["ibom_version"] = config.version
@@ -313,8 +312,6 @@ def main(parser, config, logger):
     if config.open_browser:
         logger.info("Opening file in browser")
         open_file(bom_file)
-
-    return True
 
 
 def run_with_dialog(parser, config, logger):

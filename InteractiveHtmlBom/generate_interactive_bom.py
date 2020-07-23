@@ -26,6 +26,9 @@ if __name__ == "__main__":
     from InteractiveHtmlBom.core.config import Config
     from InteractiveHtmlBom.ecad import get_parser_by_extension
     from InteractiveHtmlBom.version import version
+    from InteractiveHtmlBom.errors import (ERROR_PARSE, ERROR_FILE_NOT_FOUND,
+                                          ERROR_NO_DISPLAY, ParsingException,
+                                          exit_error)
 
     create_wx_app = 'INTERACTIVE_HTML_BOM_NO_DISPLAY' not in os.environ
     if create_wx_app:
@@ -41,18 +44,23 @@ if __name__ == "__main__":
     config = Config(version)
     config.add_options(parser, config.FILE_NAME_FORMAT_HINT)
     args = parser.parse_args()
-    if not os.path.isfile(args.file):
-        print("File %s does not exist." % args.file)
-        exit(1)
-    print("Loading %s" % args.file)
     logger = ibom.Logger(cli=True)
+    if not os.path.isfile(args.file):
+        exit_error(logger, ERROR_FILE_NOT_FOUND,
+                   "File %s does not exist." % args.file)
+    print("Loading %s" % args.file)
     parser = get_parser_by_extension(os.path.abspath(args.file), config, logger)
     if args.show_dialog:
         if not create_wx_app:
-            print("Can not show dialog when INTERACTIVE_HTML_BOM_NO_DISPLAY is set.")
-            exit(1)
-        ibom.run_with_dialog(parser, config, logger)
+            exit_error(logger, ERROR_NO_DISPLAY, "Can not show dialog when "
+                       "INTERACTIVE_HTML_BOM_NO_DISPLAY is set.")
+        try:
+            ibom.run_with_dialog(parser, config, logger)
+        except ParsingException as e:
+            exit_error(logger, ERROR_PARSE, e)
     else:
         config.set_from_args(args)
-        if not ibom.main(parser, config, logger):
-            exit(1)
+        try:
+            ibom.main(parser, config, logger)
+        except ParsingException as e:
+            exit_error(logger, ERROR_PARSE, e)
