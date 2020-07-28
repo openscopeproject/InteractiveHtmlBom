@@ -515,6 +515,7 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
 
     def Run(self):
         from ..version import version
+        from ..errors import ParsingException
         self.version = version
         config = Config(self.version)
         board = pcbnew.GetBoard()
@@ -526,4 +527,7 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
             return
 
         parser = PcbnewParser(pcb_file_name, config, logger, board)
-        ibom.run_with_dialog(parser, config, logger)
+        try:
+            ibom.run_with_dialog(parser, config, logger)
+        except ParsingException as e:
+            logger.error(str(e))
