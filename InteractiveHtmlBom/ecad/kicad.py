@@ -391,14 +391,20 @@ class PcbnewParser(EcadParser):
         for zone in zones:  # type: pcbnew.ZONE_CONTAINER
             if not zone.IsFilled() or zone.GetIsKeepout():
                 continue
-            if zone.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
+            layers = [l for l in list(zone.GetLayerSet().Seq())
+                      if l in [pcbnew.F_Cu, pcbnew.B_Cu]]
+            for layer in layers:
+                try:
+                    poly_set = zone.GetFilledPolysList()
+                except TypeError:
+                    poly_set = zone.GetFilledPolysList(layer)
                 zone_dict = {
-                    "polygons": self.parse_poly_set(zone.GetFilledPolysList()),
+                    "polygons": self.parse_poly_set(poly_set),
                     "width": zone.GetMinThickness() * 1e-6,
                 }
                 if self.config.include_nets:
                     zone_dict["net"] = zone.GetNetname()
-                result[zone.GetLayer()].append(zone_dict)
+                result[layer].append(zone_dict)
 
         return {
             'F': result.get(pcbnew.F_Cu),
