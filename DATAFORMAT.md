@@ -68,6 +68,8 @@ pcbdata = {
     ],
     "B": [...]
   }
+  // Optional net name list.
+  "nets": [net1, net2, ...],
   // PCB metadata from the title block.
   "metadata": {
     "title": "title",
@@ -142,8 +144,8 @@ attribute.
 {
   "type": "arc",
   "width": width,
-  # SVG path of the arc given as 'd' attribute of svg spec.
-  # If this parameter is specified everything below it is ignored.
+  // SVG path of the arc given as 'd' attribute of svg spec.
+  // If this parameter is specified everything below it is ignored.
   "svgpath": svgpath,
   "start": [x, y],
   "radius": radius,
@@ -271,6 +273,8 @@ Footprints are a collection of pads, drawings and some metadata.
       // Present only if type is "th".
       // One of "circle", "oblong".
       "drillshape": drillshape,
+      // Present only if type is "th". In case of circle shape x is diameter, y is ignored.
+      "drillsize": [x, y],
       // Optional attribute.
       "offset": [x, y],
       // Optional net name
