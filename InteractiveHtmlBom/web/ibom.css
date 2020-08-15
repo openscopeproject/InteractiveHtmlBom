@@ -10,7 +10,7 @@
   --fabrication-edge-color: #907651;
   --fabrication-polygon-color: #907651;
   --fabrication-text-color: #a27c24;
-  --track-color: #def5f1;
+  --track-color: #c59946;
   --track-color-highlight: #D04040;
   --zone-color: #def5f1;
   --zone-color-highlight: #d0404080;
@@ -27,7 +27,7 @@ html, body {
   --pad-color: #808080;
   --pin1-outline-color: #ffa800;
   --pin1-outline-color-highlight: #ccff00;
-  --track-color: #42524f;
+  --track-color: #8a825f;
   --zone-color: #42524f;
   background-color: #252c30;
   color: #eee;
