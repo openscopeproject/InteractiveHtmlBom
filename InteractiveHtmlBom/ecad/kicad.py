@@ -261,7 +261,11 @@ class PcbnewParser(EcadParser):
             "shape": shape
         }
         if shape == "custom":
-            polygon_set = pad.GetCustomShapeAsPolygon()
+            if hasattr(pad, "GetCustomShapeAsPolygon"):
+                polygon_set = pad.GetCustomShapeAsPolygon()
+            else: # KiCad Nightly has removed "GetCustomShapeAsPolygon"
+                polygon_set = pcbnew.SHAPE_POLY_SET()
+                pad.MergePrimitivesAsPolygon(polygon_set)
             if polygon_set.HasHoles():
                 self.logger.warn('Detected holes in custom pad polygons')
             if polygon_set.IsSelfIntersecting():
