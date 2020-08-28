@@ -283,6 +283,7 @@ def main(parser, config, logger):
     need_extra_fields = (config.extra_fields or
                          config.board_variant_whitelist or
                          config.board_variant_blacklist or
+                         config.board_variant_field or
                          config.dnp_field)
 
     if not config.netlist_file and need_extra_fields:
