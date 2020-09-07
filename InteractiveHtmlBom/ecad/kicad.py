@@ -46,13 +46,14 @@ class PcbnewParser(EcadParser):
             pcbnew.S_ARC: "arc",
             pcbnew.S_POLYGON: "polygon",
             pcbnew.S_CURVE: "curve",
+            pcbnew.S_RECT: "rect",
         }.get(d.GetShape(), "")
         if shape == "":
             self.logger.info("Unsupported shape %s, skipping", d.GetShape())
             return None
         start = self.normalize(d.GetStart())
         end = self.normalize(d.GetEnd())
-        if shape == "segment":
+        if shape in ["segment", "rect"]:
             return {
                 "type": shape,
                 "start": start,

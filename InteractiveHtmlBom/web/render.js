@@ -132,6 +132,13 @@ function drawedge(ctx, scalefactor, edge, color) {
       ctx.moveTo(...edge.start);
       ctx.lineTo(...edge.end);
     }
+    if (edge.type == "rect") {
+      ctx.moveTo(...edge.start);
+      ctx.lineTo(edge.start[0], edge.end[1]);
+      ctx.lineTo(...edge.end);
+      ctx.lineTo(edge.end[0], edge.start[1]);
+      ctx.lineTo(...edge.start);
+    }
     if (edge.type == "arc") {
       ctx.arc(
         ...edge.start,
@@ -363,7 +370,7 @@ function drawModules(canvas, layer, scalefactor, highlight) {
 function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonColor, textColor) {
   var ctx = canvas.getContext("2d");
   for (var d of pcbdata[layername][layer]) {
-    if (["segment", "arc", "circle", "curve"].includes(d.type)) {
+    if (["segment", "arc", "circle", "curve", "rect"].includes(d.type)) {
       drawedge(ctx, scalefactor, d, edgeColor);
     } else if (d.type == "polygon") {
       drawPolygonShape(ctx, d, polygonColor);
