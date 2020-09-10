@@ -429,12 +429,13 @@ class PcbnewParser(EcadParser):
         except AttributeError:
             footprint = str(module.GetFPID().GetLibItemName())
 
-        attr = module.GetAttributes()
-        attr = {
-            0: 'Normal',
-            1: 'Normal+Insert',
-            2: 'Virtual'
-        }.get(attr, str(attr))
+        attr = 'Normal'
+        if hasattr(pcbnew, 'MOD_EXCLUDE_FROM_BOM'):
+            if module.GetAttributes() & pcbnew.MOD_EXCLUDE_FROM_BOM:
+                attr = 'Virtual'
+        elif hasattr(pcbnew, 'MOD_VIRTUAL'):
+            if module.GetAttributes() == pcbnew.MOD_VIRTUAL:
+                attr = 'Virtual'
         layer = {
             pcbnew.F_Cu: 'F',
             pcbnew.B_Cu: 'B',
