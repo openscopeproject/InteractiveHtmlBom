@@ -400,9 +400,13 @@ class PcbnewParser(EcadParser):
                     poly_set = zone.GetFilledPolysList()
                 except TypeError:
                     poly_set = zone.GetFilledPolysList(layer)
+                width = zone.GetMinThickness() * 1e-6
+                if (hasattr(zone, 'GetFilledPolysUseThickness') and
+                        not zone.GetFilledPolysUseThickness()):
+                    width = 0
                 zone_dict = {
                     "polygons": self.parse_poly_set(poly_set),
-                    "width": zone.GetMinThickness() * 1e-6,
+                    "width": width,
                 }
                 if self.config.include_nets:
                     zone_dict["net"] = zone.GetNetname()
