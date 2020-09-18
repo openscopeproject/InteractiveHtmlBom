@@ -12,7 +12,7 @@ function calcFontPoint(linepoint, text, offsetx, offsety, tilt) {
     linepoint[1] * text.height + offsety
   ];
   // This approximates pcbnew behavior with how text tilts depending on horizontal justification
-  point[0] -= (linepoint[1] + 0.5 * (1 + text.horiz_justify)) * text.height * tilt;
+  point[0] -= (linepoint[1] + 0.5 * (1 + text.justify[0])) * text.height * tilt;
   return point;
 }
 
@@ -41,14 +41,15 @@ function drawtext(ctx, text, color, flip) {
   if (text.attr.includes("italic")) {
     tilt = 0.125;
   }
-  var interline = (text.height * 1.5 + text.thickness) / 2;
+  var interline = text.height * 1.5 + text.thickness;
   var txt = text.text.split("\n");
   // KiCad ignores last empty line.
   if (txt[txt.length - 1] == '') txt.pop();
   ctx.rotate(deg2rad(angle));
+  var offsety = (1 - text.justify[1]) / 2 * text.height; // One line offset
+  offsety -= (txt.length - 1) * (text.justify[1] + 1) / 2 * interline; // Multiline offset
   for (var i in txt) {
-    var offsety = (-(txt.length - 1) + i * 2) * interline + text.height / 2;
-    var lineWidth = text.thickness + interline * tilt;
+    var lineWidth = text.thickness + interline / 2 * tilt;
     for (var j = 0; j < txt[i].length; j++) {
       if (txt[i][j] == '\t') {
         var fourSpaces = 4 * pcbdata.font_data[' '].w * text.width;
@@ -62,20 +63,7 @@ function drawtext(ctx, text, color, flip) {
         lineWidth += pcbdata.font_data[txt[i][j]].w * text.width;
       }
     }
-    var offsetx = 0;
-    switch (text.horiz_justify) {
-      case -1:
-        // Justify left, do nothing
-        break;
-      case 0:
-        // Justify center
-        offsetx -= lineWidth / 2;
-        break;
-      case 1:
-        // Justify right
-        offsetx -= lineWidth;
-        break;
-    }
+    var offsetx = -lineWidth * (text.justify[0] + 1) / 2;
     var inOverbar = false;
     for (var j = 0; j < txt[i].length; j++) {
       if (txt[i][j] == '\t') {
@@ -116,6 +104,7 @@ function drawtext(ctx, text, color, flip) {
       }
       offsetx += glyph.w * text.width;
     }
+    offsety += interline;
   }
   ctx.restore();
 }

@@ -160,7 +160,7 @@ class PcbnewParser(EcadParser):
             "text": text,
             "height": height,
             "width": width,
-            "horiz_justify": d.GetHorizJustify(),
+            "justify": [d.GetHorizJustify(), d.GetVertJustify()],
             "thickness": thickness,
             "attr": attributes,
             "angle": angle

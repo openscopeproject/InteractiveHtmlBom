@@ -212,10 +212,10 @@ attribute.
   "svgpath": svgpath,
   "height": height,
   "width": width,
-  // -1: justify left
+  // -1: justify left/top
   // 0: justify center
-  // 1: justify right
-  "horiz_justify": justify,
+  // 1: justify right/bot
+  "justify": [horizontal, vertical],
   "thickness": thickness,
   "attr": [
     // may include none, one or both
