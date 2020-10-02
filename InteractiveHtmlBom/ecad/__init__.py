@@ -7,6 +7,8 @@ def get_parser_by_extension(file_name, config, logger):
         return get_kicad_parser(file_name, config, logger)
     elif ext == '.json':
         return get_easyeda_parser(file_name, config, logger)
+    elif ext == '.xy':
+        return get_generic_parser(file_name, config, logger)
     else:
         return None
 
@@ -19,3 +21,7 @@ def get_kicad_parser(file_name, config, logger, board=None):
 def get_easyeda_parser(file_name, config, logger):
     from .easyeda import EasyEdaParser
     return EasyEdaParser(file_name, config, logger)
+
+def get_generic_parser(file_name, config, logger):
+    from .generic import GenericCentroidParser
+    return GenericCentroidParser(file_name, config, logger)
