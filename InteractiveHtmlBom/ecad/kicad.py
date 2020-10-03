@@ -274,8 +274,8 @@ class PcbnewParser(EcadParser):
         if shape == "chamfrect":
             pad_dict["chamfpos"] = pad.GetChamferPositions()
             pad_dict["chamfratio"] = pad.GetChamferRectRatio()
-        if (pad.GetAttribute() == pcbnew.PAD_ATTRIB_STANDARD or
-            pad.GetAttribute() == pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED):
+        if (pad.GetAttribute() == pcbnew.PAD_ATTRIB_PTH or
+            pad.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH):
             pad_dict["type"] = "th"
             pad_dict["drillshape"] = {
                 pcbnew.PAD_DRILL_SHAPE_CIRCLE: "circle",
