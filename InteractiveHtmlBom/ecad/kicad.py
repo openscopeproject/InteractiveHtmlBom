@@ -38,7 +38,7 @@ class PcbnewParser(EcadParser):
     def normalize(point):
         return [point[0] * 1e-6, point[1] * 1e-6]
 
-    def parse_draw_segment(self, d):
+    def parse_shape(self, d):
         # type: (pcbnew.DRAWSEGMENT) -> dict | None
         shape = {
             pcbnew.S_SEGMENT: "segment",
@@ -167,8 +167,8 @@ class PcbnewParser(EcadParser):
         }
 
     def parse_drawing(self, d):
-        if d.GetClass() in ["DRAWSEGMENT", "MGRAPHIC"]:
-            return self.parse_draw_segment(d)
+        if d.GetClass() in ["DRAWSEGMENT", "MGRAPHIC", "PCB_SHAPE"]:
+            return self.parse_shape(d)
         elif d.GetClass() in ["PTEXT", "MTEXT"]:
             return self.parse_text(d)
         else:
@@ -274,8 +274,13 @@ class PcbnewParser(EcadParser):
         if shape == "chamfrect":
             pad_dict["chamfpos"] = pad.GetChamferPositions()
             pad_dict["chamfratio"] = pad.GetChamferRectRatio()
-        if (pad.GetAttribute() == pcbnew.PAD_ATTRIB_STANDARD or
-            pad.GetAttribute() == pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED):
+        if hasattr(pcbnew, 'PAD_ATTRIB_PTH'):
+            through_hole_attributes = [pcbnew.PAD_ATTRIB_PTH,
+                                       pcbnew.PAD_ATTRIB_NPTH]
+        else:
+            through_hole_attributes = [pcbnew.PAD_ATTRIB_STANDARD,
+                                       pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED]
+        if pad.GetAttribute() in through_hole_attributes:
             pad_dict["type"] = "th"
             pad_dict["drillshape"] = {
                 pcbnew.PAD_DRILL_SHAPE_CIRCLE: "circle",
@@ -391,7 +396,9 @@ class PcbnewParser(EcadParser):
     def parse_zones(self, zones):
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
         for zone in zones:  # type: pcbnew.ZONE_CONTAINER
-            if not zone.IsFilled() or zone.GetIsKeepout():
+            if (not zone.IsFilled() or
+                    hasattr(zone, 'GetIsKeepout') and zone.GetIsKeepout() or
+                    hasattr(zone, 'GetIsRuleArea') and zone.GetIsRuleArea()):
                 continue
             layers = [l for l in list(zone.GetLayerSet().Seq())
                       if l in [pcbnew.F_Cu, pcbnew.B_Cu]]
