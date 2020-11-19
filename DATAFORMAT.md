@@ -31,7 +31,7 @@ pcbdata = {
   // Describes footprints.
   // See footprint structure description below.
   // index of entry corresponds to component's numeric ID
-  "modules": [
+  "footprints": [
     footprint1,
     footprint2,
     ...

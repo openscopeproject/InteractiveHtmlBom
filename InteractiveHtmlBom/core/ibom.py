@@ -88,11 +88,11 @@ def skip_component(m, config, extra_data):
     return False
 
 
-def generate_bom(pcb_modules, config, extra_data):
+def generate_bom(pcb_footprints, config, extra_data):
     # type: (list, Config, dict) -> dict
     """
     Generate BOM from pcb layout.
-    :param pcb_modules: list of modules on the pcb
+    :param pcb_footprints: list of footprints on the pcb
     :param config: Config object
     :param extra_data: Extra fields data
     :return: dict of BOM tables (qty, value, footprint, refs) and dnp components
@@ -116,30 +116,30 @@ def generate_bom(pcb_modules, config, extra_data):
     warning_shown = False
     skipped_components = []
     part_groups = {}
-    for i, m in enumerate(pcb_modules):
-        if skip_component(m, config, extra_data):
+    for i, f in enumerate(pcb_footprints):
+        if skip_component(f, config, extra_data):
             skipped_components.append(i)
             continue
 
         # group part refs by value and footprint
-        norm_value = units.componentValue(m.val)
+        norm_value = units.componentValue(f.val)
 
         extras = []
         if config.extra_fields:
-            if m.ref in extra_data:
-                extras = [extra_data[m.ref].get(f, '')
+            if f.ref in extra_data:
+                extras = [extra_data[f.ref].get(f, '')
                           for f in config.extra_fields]
             else:
                 # Some components are on pcb but not in schematic data.
                 # Show a warning about possibly outdated netlist/xml file.
                 log.warn(
-                        'Component %s is missing from schematic data.' % m.ref)
+                        'Component %s is missing from schematic data.' % f.ref)
                 warning_shown = True
                 extras = [''] * len(config.extra_fields)
 
-        group_key = (norm_value, tuple(extras), m.footprint, m.attr)
-        valrefs = part_groups.setdefault(group_key, [m.val, []])
-        valrefs[1].append((m.ref, i))
+        group_key = (norm_value, tuple(extras), f.footprint, f.attr)
+        valrefs = part_groups.setdefault(group_key, [f.val, []])
+        valrefs[1].append((f.ref, i))
 
     if warning_shown:
         log.warn('Netlist/xml file is likely out of date.')
@@ -174,7 +174,7 @@ def generate_bom(pcb_modules, config, extra_data):
         filtered_table = []
         for row in bom_table:
             filtered_refs = [ref for ref in row[3]
-                             if pcb_modules[ref[1]].layer == layer]
+                             if pcb_footprints[ref[1]].layer == layer]
             if filtered_refs:
                 filtered_table.append((len(filtered_refs), row[1],
                                        row[2], filtered_refs, row[4]))
@@ -300,7 +300,7 @@ def main(parser, config, logger):
     extra_fields = extra_fields[1] if extra_fields else None
 
     pcbdata, components = parser.parse()
-    if not pcbdata or not components:
+    if not pcbdata and not components:
         raise ParsingException('Parsing failed.')
 
     pcbdata["bom"] = generate_bom(components, config, extra_fields)

@@ -363,7 +363,7 @@ class EasyEdaParser(EcadParser):
             # if bounding box is not calculated yet set it to 100x100 mil square
             bbox.add_rectangle(x, y, 10, 10, 0)
 
-        module_json = {
+        footprint_json = {
             "ref": ref,
             "center": [x, y],
             "bbox": bbox.to_component_dict(),
@@ -374,11 +374,11 @@ class EasyEdaParser(EcadParser):
 
         component = Component(ref, val, footprint, fp_layer)
 
-        return fp_layer, component, module_json, extra_drawings
+        return fp_layer, component, footprint_json, extra_drawings
 
     def parse_shapes(self, shapes):
         drawings = {}
-        modules = []
+        footprints = []
         components = []
 
         for shape_str in shapes:
@@ -400,10 +400,10 @@ class EasyEdaParser(EcadParser):
                 layer, component, json, extras = self.parse_lib(shape[1])
                 for drawing_layer, drawing in extras:
                     drawings.setdefault(drawing_layer, []).append(drawing)
-                modules.append(json)
+                footprints.append(json)
                 components.append(component)
 
-        return drawings, modules, components
+        return drawings, footprints, components
 
     def get_metadata(self, pcb):
         if hasattr(pcb, 'metadata'):
@@ -430,7 +430,7 @@ class EasyEdaParser(EcadParser):
                               ' does not appear to be valid EasyEDA json file.')
             return None, None
 
-        drawings, modules, components = self.parse_shapes(pcb['shape'])
+        drawings, footprints, components = self.parse_shapes(pcb['shape'])
 
         board_outline_bbox = BoundingBox()
         for drawing in drawings.get(self.BOARD_OUTLINE_LAYER, []):
@@ -459,7 +459,7 @@ class EasyEdaParser(EcadParser):
                 'F': drawings.get(self.TOP_ASSEMBLY_LAYER, []),
                 'B': drawings.get(self.BOT_ASSEMBLY_LAYER, []),
             },
-            "modules": modules,
+            "footprints": footprints,
             "metadata": self.get_metadata(pcb),
             "bom": {},
             "font_data": {}

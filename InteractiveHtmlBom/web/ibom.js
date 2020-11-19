@@ -8,9 +8,9 @@ var currentSortColumn = null;
 var currentSortOrder = null;
 var currentHighlightedRowId;
 var highlightHandlers = [];
-var moduleIndexToHandler = {};
+var footprintIndexToHandler = {};
 var netsToHandler = {};
-var highlightedModules = [];
+var highlightedFootprints = [];
 var highlightedNet = null;
 var lastClicked;
 
@@ -102,8 +102,8 @@ function getStoredCheckboxRefs(checkbox) {
   function convert(ref) {
     var intref = parseInt(ref);
     if (isNaN(intref)) {
-      for (var i = 0; i < pcbdata.modules.length; i++) {
-        if (pcbdata.modules[i].ref == ref) {
+      for (var i = 0; i < pcbdata.footprints.length; i++) {
+        if (pcbdata.footprints[i].ref == ref) {
           return i;
         }
       }
@@ -183,11 +183,11 @@ function createCheckboxChangeHandler(checkbox, references, row) {
   }
 }
 
-function clearHighlightedModules() {
+function clearHighlightedFootprints() {
   if (currentHighlightedRowId) {
     document.getElementById(currentHighlightedRowId).classList.remove("highlighted");
     currentHighlightedRowId = null;
-    highlightedModules = [];
+    highlightedFootprints = [];
     highlightedNet = null;
   }
 }
@@ -202,7 +202,7 @@ function createRowHighlightHandler(rowid, refs, net) {
     }
     document.getElementById(rowid).classList.add("highlighted");
     currentHighlightedRowId = rowid;
-    highlightedModules = refs ? refs.map(r => r[1]) : [];
+    highlightedFootprints = refs ? refs.map(r => r[1]) : [];
     highlightedNet = net;
     drawHighlights();
     EventHandler.emitEvent(
@@ -423,7 +423,7 @@ function populateBomBody() {
     bom.removeChild(bom.firstChild);
   }
   highlightHandlers = [];
-  moduleIndexToHandler = {};
+  footprintIndexToHandler = {};
   netsToHandler = {};
   currentHighlightedRowId = null;
   var first = true;
@@ -531,7 +531,7 @@ function populateBomBody() {
     });
     if (references !== null) {
       for (var refIndex of references.map(r => r[1])) {
-        moduleIndexToHandler[refIndex] = handler;
+        footprintIndexToHandler[refIndex] = handler;
       }
     }
     if (netname !== null) {
@@ -595,13 +595,13 @@ function populateBomTable() {
   populateBomBody();
 }
 
-function modulesClicked(moduleIndexes) {
-  var lastClickedIndex = moduleIndexes.indexOf(lastClicked);
-  for (var i = 1; i <= moduleIndexes.length; i++) {
-    var refIndex = moduleIndexes[(lastClickedIndex + i) % moduleIndexes.length];
-    if (refIndex in moduleIndexToHandler) {
+function footprintsClicked(footprintIndexes) {
+  var lastClickedIndex = footprintIndexes.indexOf(lastClicked);
+  for (var i = 1; i <= footprintIndexes.length; i++) {
+    var refIndex = footprintIndexes[(lastClickedIndex + i) % footprintIndexes.length];
+    if (refIndex in footprintIndexToHandler) {
       lastClicked = refIndex;
-      moduleIndexToHandler[refIndex]();
+      footprintIndexToHandler[refIndex]();
       smoothScrollToRow(currentHighlightedRowId);
       break;
     }
@@ -613,7 +613,7 @@ function netClicked(net) {
     netsToHandler[net]();
     smoothScrollToRow(currentHighlightedRowId);
   } else {
-    clearHighlightedModules();
+    clearHighlightedFootprints();
     highlightedNet = net;
     drawHighlights();
   }
@@ -668,9 +668,9 @@ function populateMetadata() {
   }
   // Calculate board stats
   var fp_f = 0, fp_b = 0, pads_f = 0, pads_b = 0, pads_th = 0;
-  for (var i = 0; i < pcbdata.modules.length; i++) {
+  for (var i = 0; i < pcbdata.footprints.length; i++) {
     if (pcbdata.bom.skipped.includes(i)) continue;
-    var mod = pcbdata.modules[i];
+    var mod = pcbdata.footprints[i];
     if (mod.layer == "F") {
       fp_f++;
     } else {
@@ -800,7 +800,7 @@ function changeBomMode(mode) {
     bomSortFunction = null;
     currentSortColumn = null;
     currentSortOrder = null;
-    clearHighlightedModules();
+    clearHighlightedFootprints();
   }
   populateBomTable();
 }
@@ -928,7 +928,7 @@ function populateDarkenWhenCheckedOptions() {
 
 function updateCheckboxStats(checkbox) {
   var checked = getStoredCheckboxRefs(checkbox).size;
-  var total = pcbdata.modules.length - pcbdata.bom.skipped.length;
+  var total = pcbdata.footprints.length - pcbdata.bom.skipped.length;
   var percent = checked * 100.0 / total;
   var td = document.getElementById("checkbox-stats-" + checkbox);
   td.firstChild.style.width = percent + "%";
