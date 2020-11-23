@@ -507,3 +507,15 @@ def parse_path(pathdef, logger, current_pos=0j):
             current_pos = end
 
     return segments
+
+
+def create_path(lines):
+    """Returns a path d-string."""
+
+    parts = []
+    for line in lines:
+        parts.append('M{},{}'.format(line[0][0], line[0][1]))
+        for point in line[1:]:
+            parts.append('L{},{}'.format(point[0], point[1]))
+
+    return ''.join(parts)

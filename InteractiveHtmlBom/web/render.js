@@ -16,7 +16,7 @@ function calcFontPoint(linepoint, text, offsetx, offsety, tilt) {
   return point;
 }
 
-function drawtext(ctx, text, color, flip) {
+function drawText(ctx, text, color) {
   if ("ref" in text && !settings.renderReferences) return;
   if ("val" in text && !settings.renderValues) return;
   ctx.save();
@@ -226,13 +226,13 @@ function drawPolygonShape(ctx, shape, color) {
   ctx.restore();
 }
 
-function drawDrawing(ctx, layer, scalefactor, drawing, color) {
+function drawDrawing(ctx, scalefactor, drawing, color) {
   if (["segment", "arc", "circle", "curve"].includes(drawing.type)) {
     drawedge(ctx, scalefactor, drawing, color);
   } else if (drawing.type == "polygon") {
     drawPolygonShape(ctx, drawing, color);
   } else {
-    drawtext(ctx, drawing, color, layer == "B");
+    drawText(ctx, drawing, color);
   }
 }
 
@@ -313,7 +313,7 @@ function drawFootprint(ctx, layer, scalefactor, footprint, padcolor, outlinecolo
   // draw drawings
   for (var drawing of footprint.drawings) {
     if (drawing.layer == layer) {
-      drawDrawing(ctx, layer, scalefactor, drawing.drawing, padcolor);
+      drawDrawing(ctx, scalefactor, drawing.drawing, padcolor);
     }
   }
   // draw pads
@@ -364,7 +364,7 @@ function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonCo
     } else if (d.type == "polygon") {
       drawPolygonShape(ctx, d, polygonColor);
     } else {
-      drawtext(ctx, d, textColor, layer == "B");
+      drawText(ctx, d, textColor);
     }
   }
 }

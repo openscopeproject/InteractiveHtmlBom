@@ -5,6 +5,7 @@ import pcbnew
 
 from .common import EcadParser, Component
 from .kicad_extra import find_latest_schematic_data, parse_schematic_data
+from .svgpath import create_path
 from ..core import ibom
 from ..core.config import Config
 from ..core.fontparser import FontParser
@@ -134,6 +135,21 @@ class PcbnewParser(EcadParser):
         pos = self.normalize(d.GetPosition())
         if not d.IsVisible():
             return None
+        if hasattr(d, "GetTextThickness"):
+            thickness = d.GetTextThickness() * 1e-6
+        else:
+            thickness = d.GetThickness() * 1e-6
+        if hasattr(d, 'TransformToSegmentList'):
+            segments = [self.normalize(p) for p in d.TransformToSegmentList()]
+            lines = []
+            for i in range(0, len(segments), 2):
+                if i == 0 or segments[i-1] != segments[i]:
+                    lines.append([segments[i]])
+                lines[-1].append(segments[i+1])
+            return {
+                "thickness": thickness,
+                "svgpath": create_path(lines)
+            }
         if d.GetClass() == "MTEXT":
             angle = d.GetDrawRotation() * 0.1
         else:
@@ -147,10 +163,6 @@ class PcbnewParser(EcadParser):
         else:
             height = d.GetHeight() * 1e-6
             width = d.GetWidth() * 1e-6
-        if hasattr(d, "GetTextThickness"):
-            thickness = d.GetTextThickness() * 1e-6
-        else:
-            thickness = d.GetThickness() * 1e-6
         if hasattr(d, "GetShownText"):
             text = d.GetShownText()
         else:
@@ -163,6 +175,7 @@ class PcbnewParser(EcadParser):
             attributes.append("italic")
         if d.IsBold():
             attributes.append("bold")
+
         return {
             "pos": pos,
             "text": text,
@@ -188,8 +201,8 @@ class PcbnewParser(EcadParser):
         edges = []
         drawings = list(pcb.GetDrawings())
         bbox = None
-        for m in self.footprints:
-            for g in m.GraphicalItems():
+        for f in self.footprints:
+            for g in f.GraphicalItems():
                 drawings.append(g)
         for d in drawings:
             if d.GetLayer() == pcbnew.Edge_Cuts:
@@ -228,10 +241,10 @@ class PcbnewParser(EcadParser):
 
     def get_all_drawings(self):
         drawings = [(d.GetClass(), d) for d in list(self.board.GetDrawings())]
-        for m in self.footprints:
-            drawings.append(("ref", m.Reference()))
-            drawings.append(("val", m.Value()))
-            for d in m.GraphicalItems():
+        for f in self.footprints:
+            drawings.append(("ref", f.Reference()))
+            drawings.append(("val", f.Value()))
+            for d in f.GraphicalItems():
                 drawings.append((d.GetClass(), d))
         return drawings
 
