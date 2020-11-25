@@ -10,6 +10,7 @@ var currentHighlightedRowId;
 var highlightHandlers = [];
 var footprintIndexToHandler = {};
 var netsToHandler = {};
+var darkenedFootprints = new Set();
 var highlightedFootprints = [];
 var highlightedNet = null;
 var lastClicked;
@@ -164,6 +165,10 @@ function createCheckboxChangeHandler(checkbox, references, row) {
       }
       if (darkenWhenChecked) {
         row.classList.add("checked");
+        for(var ref of references) {
+          darkenedFootprints.add(ref[1]);
+        }
+        drawHighlights();
       }
       eventArgs.state = 'checked';
     } else {
@@ -173,6 +178,10 @@ function createCheckboxChangeHandler(checkbox, references, row) {
       }
       if (darkenWhenChecked) {
         row.classList.remove("checked");
+        for(var ref of references) {
+          darkenedFootprints.delete(ref[1]);
+        }
+        drawHighlights();
       }
       eventArgs.state = 'unchecked';
     }
@@ -423,6 +432,7 @@ function populateBomBody() {
     bom.removeChild(bom.firstChild);
   }
   highlightHandlers = [];
+  darkenedFootprints.clear();
   footprintIndexToHandler = {};
   netsToHandler = {};
   currentHighlightedRowId = null;
@@ -492,6 +502,9 @@ function populateBomBody() {
           setBomCheckboxState(checkbox, input, references);
           if (input.checked && settings.darkenWhenChecked == checkbox) {
             tr.classList.add("checked");
+            for(var ref of references) {
+              darkenedFootprints.add(ref[1]);
+            }
           }
           td.appendChild(input);
           tr.appendChild(td);

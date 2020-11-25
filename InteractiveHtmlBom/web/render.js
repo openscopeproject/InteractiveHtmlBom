@@ -342,16 +342,34 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
   ctx.lineWidth = 3 / scalefactor;
   var style = getComputedStyle(topmostdiv);
   var padcolor = style.getPropertyValue('--pad-color');
+  var highlightedPadColor = style.getPropertyValue('--pad-color-highlight');
+  var darkenedPadColor = style.getPropertyValue('--pad-color-highlight-darkened');
+  var bothPadColor = style.getPropertyValue('--pad-color-highlight-both');
   var outlinecolor = style.getPropertyValue('--pin1-outline-color');
-  if (highlight) {
-    padcolor = style.getPropertyValue('--pad-color-highlight');
-    outlinecolor = style.getPropertyValue('--pin1-outline-color-highlight');
-  }
+  var highlightedOutlinecolor = style.getPropertyValue('--pin1-outline-color-highlight');
+  var darkenedOutlinecolor = style.getPropertyValue('--pin1-outline-color-highlight-darkened');
+  var bothOutlinecolor = style.getPropertyValue('--pin1-outline-highlight-both');
+
   for (var i = 0; i < pcbdata.footprints.length; i++) {
     var mod = pcbdata.footprints[i];
     var outline = settings.renderDnpOutline && pcbdata.bom.skipped.includes(i);
-    if (!highlight || highlightedFootprints.includes(i)) {
+    if (!highlight) {
       drawFootprint(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight, outline);
+    } else {
+      if(highlightedFootprints.includes(i)) {
+        if(darkenedFootprints.has(i)) {
+          drawFootprint(ctx, layer, scalefactor, mod, bothPadColor, bothOutlinecolor, highlight, outline);
+        } else {
+          drawFootprint(ctx, layer, scalefactor, mod, highlightedPadColor, highlightedOutlinecolor, highlight, outline);
+        }
+      } else {
+        if(darkenedFootprints.has(i)) {
+          console.log("darkened " + darkenedPadColor + "  plain " + padcolor);
+          drawFootprint(ctx, layer, scalefactor, mod, darkenedPadColor, darkenedOutlinecolor, highlight, outline);
+        } else {
+          drawFootprint(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight, outline);
+        }
+      }
     }
   }
 }
@@ -443,7 +461,7 @@ function drawHighlightsOnLayer(canvasdict, clear = true) {
   if (clear) {
     clearCanvas(canvasdict.highlight);
   }
-  if (highlightedFootprints.length > 0) {
+  if (darkenedFootprints.size > 0 || highlightedFootprints.length > 0) {
     drawFootprints(canvasdict.highlight, canvasdict.layer,
       canvasdict.transform.s * canvasdict.transform.zoom, true);
   }
