@@ -364,7 +364,6 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
         }
       } else {
         if(darkenedFootprints.has(i)) {
-          console.log("darkened " + darkenedPadColor + "  plain " + padcolor);
           drawFootprint(ctx, layer, scalefactor, mod, darkenedPadColor, darkenedOutlinecolor, highlight, outline);
         } else {
           drawFootprint(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight, outline);
