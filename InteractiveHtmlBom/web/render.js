@@ -25,7 +25,7 @@ function drawText(ctx, text, color) {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.lineWidth = text.thickness;
-  if (text.svgpath) {
+  if ("svgpath" in text) {
     ctx.stroke(new Path2D(text.svgpath));
     ctx.restore();
     return;
@@ -113,7 +113,7 @@ function drawedge(ctx, scalefactor, edge, color) {
   ctx.strokeStyle = color;
   ctx.lineWidth = Math.max(1 / scalefactor, edge.width);
   ctx.lineCap = "round";
-  if (edge.svgpath) {
+  if ("svgpath" in edge) {
     ctx.stroke(new Path2D(edge.svgpath));
   } else {
     ctx.beginPath();
@@ -199,7 +199,7 @@ function getPolygonsPath(shape) {
   if (shape.path2d) {
     return shape.path2d;
   }
-  if (shape.svgpath) {
+  if ("svgpath" in shape) {
     shape.path2d = new Path2D(shape.svgpath);
   } else {
     var path = new Path2D();
@@ -218,7 +218,7 @@ function getPolygonsPath(shape) {
 function drawPolygonShape(ctx, shape, color) {
   ctx.save();
   ctx.fillStyle = color;
-  if (!shape.svgpath) {
+  if (!("svgpath" in shape)) {
     ctx.translate(...shape.pos);
     ctx.rotate(deg2rad(-shape.angle));
   }
