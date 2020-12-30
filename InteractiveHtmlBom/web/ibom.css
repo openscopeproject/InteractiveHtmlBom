@@ -1,6 +1,7 @@
 :root {
   --pcb-edge-color: black;
   --pad-color: #878787;
+  --pad-hole-color: #CCCCCC;
   --pad-color-highlight: #D04040;
   --pin1-outline-color: #ffb629;
   --pin1-outline-color-highlight: #b4ff03;

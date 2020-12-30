@@ -264,7 +264,7 @@ function getCachedPadPath(pad) {
   return pad.path2d;
 }
 
-function drawPad(ctx, pad, color, outline, hole) {
+function drawPad(ctx, pad, color, outline) {
   ctx.save();
   ctx.translate(...pad.pos);
   ctx.rotate(deg2rad(pad.angle));
@@ -279,21 +279,24 @@ function drawPad(ctx, pad, color, outline, hole) {
   } else {
     ctx.fill(path);
   }
-  if (pad.type == "th" && hole) {
-    if (pad.offset) {
-      ctx.translate(-pad.offset[0], -pad.offset[1]);
-    }
-    ctx.fillStyle = "#CCCCCC";
-    if (pad.drillshape == "oblong") {
-      ctx.fill(getOblongPath(pad.drillsize));
-    } else {
-      ctx.fill(getCirclePath(pad.drillsize[0] / 2));
-    }
+  ctx.restore();
+}
+
+function drawPadHole(ctx, pad, padHoleColor) {
+  if (pad.type != "th") return;
+  ctx.save();
+  ctx.translate(...pad.pos);
+  ctx.rotate(deg2rad(pad.angle));
+  ctx.fillStyle = padHoleColor;
+  if (pad.drillshape == "oblong") {
+    ctx.fill(getOblongPath(pad.drillsize));
+  } else {
+    ctx.fill(getCirclePath(pad.drillsize[0] / 2));
   }
   ctx.restore();
 }
 
-function drawFootprint(ctx, layer, scalefactor, footprint, padcolor, outlinecolor, highlight, outline) {
+function drawFootprint(ctx, layer, scalefactor, footprint, padColor, padHoleColor, outlineColor, highlight, outline) {
   if (highlight) {
     // draw bounding box
     if (footprint.layer == layer) {
@@ -302,10 +305,10 @@ function drawFootprint(ctx, layer, scalefactor, footprint, padcolor, outlinecolo
       ctx.translate(...footprint.bbox.pos);
       ctx.rotate(deg2rad(-footprint.bbox.angle));
       ctx.translate(...footprint.bbox.relpos);
-      ctx.fillStyle = padcolor;
+      ctx.fillStyle = padColor;
       ctx.fillRect(0, 0, ...footprint.bbox.size);
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = padcolor;
+      ctx.strokeStyle = padColor;
       ctx.strokeRect(0, 0, ...footprint.bbox.size);
       ctx.restore();
     }
@@ -313,18 +316,21 @@ function drawFootprint(ctx, layer, scalefactor, footprint, padcolor, outlinecolo
   // draw drawings
   for (var drawing of footprint.drawings) {
     if (drawing.layer == layer) {
-      drawDrawing(ctx, scalefactor, drawing.drawing, padcolor);
+      drawDrawing(ctx, scalefactor, drawing.drawing, padColor);
     }
   }
   // draw pads
   if (settings.renderPads) {
     for (var pad of footprint.pads) {
       if (pad.layers.includes(layer)) {
-        drawPad(ctx, pad, padcolor, outline, true);
+        drawPad(ctx, pad, padColor, outline);
         if (pad.pin1 && settings.highlightpin1) {
-          drawPad(ctx, pad, outlinecolor, true, false);
+          drawPad(ctx, pad, outlineColor, true);
         }
       }
+    }
+    for (var pad of footprint.pads) {
+      drawPadHole(ctx, pad, padHoleColor);
     }
   }
 }
@@ -341,17 +347,18 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 3 / scalefactor;
   var style = getComputedStyle(topmostdiv);
-  var padcolor = style.getPropertyValue('--pad-color');
-  var outlinecolor = style.getPropertyValue('--pin1-outline-color');
+  var padColor = style.getPropertyValue('--pad-color');
+  var padHoleColor = style.getPropertyValue('--pad-hole-color');
+  var outlineColor = style.getPropertyValue('--pin1-outline-color');
   if (highlight) {
-    padcolor = style.getPropertyValue('--pad-color-highlight');
-    outlinecolor = style.getPropertyValue('--pin1-outline-color-highlight');
+    padColor = style.getPropertyValue('--pad-color-highlight');
+    outlineColor = style.getPropertyValue('--pin1-outline-color-highlight');
   }
   for (var i = 0; i < pcbdata.footprints.length; i++) {
     var mod = pcbdata.footprints[i];
     var outline = settings.renderDnpOutline && pcbdata.bom.skipped.includes(i);
     if (!highlight || highlightedFootprints.includes(i)) {
-      drawFootprint(ctx, layer, scalefactor, mod, padcolor, outlinecolor, highlight, outline);
+      drawFootprint(ctx, layer, scalefactor, mod, padColor, padHoleColor, outlineColor, highlight, outline);
     }
   }
 }
@@ -426,13 +433,22 @@ function drawNets(canvas, layer, highlight) {
   }
   if (highlight && settings.renderPads) {
     var padColor = style.getPropertyValue('--pad-color-highlight');
+    var padHoleColor = style.getPropertyValue('--pad-hole-color');
     var ctx = canvas.getContext("2d");
     for (var footprint of pcbdata.footprints) {
       // draw pads
+      var padDrawn = false;
       for (var pad of footprint.pads) {
         if (highlightedNet != pad.net) continue;
         if (pad.layers.includes(layer)) {
-          drawPad(ctx, pad, padColor, false, true);
+          drawPad(ctx, pad, padColor, false);
+          padDrawn = true;
+        }
+      }
+      if (padDrawn) {
+        // redraw all pad holes because some pads may overlap
+        for (var pad of footprint.pads) {
+          drawPadHole(ctx, pad, padHoleColor);
         }
       }
     }
