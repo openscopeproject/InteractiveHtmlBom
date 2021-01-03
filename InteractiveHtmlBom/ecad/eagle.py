@@ -1,24 +1,31 @@
 import io
+import json
 
 from .common import EcadParser, Component
 
 
 class EagleParser(EcadParser):
-    import json
 
     class EagleJsonDecoder(json.JSONDecoder):
         def __init__(self, *args, **kwargs):
-            import json
-            json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+            json.JSONDecoder.__init__(self,
+                                      object_hook=self.object_hook,
+                                      *args,
+                                      **kwargs)
 
         def object_hook(self, obj):
-            if '_type' in obj and obj['_type'] == 'InteractiveHtmlBom.ecad.common.Component':
-                return [Component(c['ref'], c['val'], c['footprint'], c['layer'], c['attr']) for c in obj['object']]
+            if '_type' in obj and obj['_type'] == \
+                    'InteractiveHtmlBom.ecad.common.Component':
+                return [Component(c['ref'],
+                                  c['val'],
+                                  c['footprint'],
+                                  c['layer'],
+                                  c['attr'])
+                        for c in obj['object']]
             else:
                 return obj
 
     def get_eagle_pcb(self):
-        import json
         with io.open(self.file_name, 'r') as f:
             return json.load(f, cls=self.EagleJsonDecoder)
 

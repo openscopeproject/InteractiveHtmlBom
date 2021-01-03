@@ -6,7 +6,8 @@ def get_parser_by_extension(file_name, config, logger):
     if ext == '.kicad_pcb':
         return get_kicad_parser(file_name, config, logger)
     elif ext == '.json':
-        """.json file may be from EasyEDA or Eagle - look for '_source' attribute in the file to disambiguate"""
+        """.json file may be from EasyEDA or Eagle -
+        look for '_source' attribute in the file to disambiguate"""
         import io
         import json
         with io.open(file_name, 'r') as f:
