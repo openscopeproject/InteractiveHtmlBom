@@ -25,7 +25,7 @@ class GenericJsonParser(EcadParser):
         c = pcb['components']
 
         if pcb['_spec_version'] not in self.COMPATIBLE_SPEC_VERSIONS:
-            self.logger.error('Unsupported spec version (%s)'
+            self.logger.error('Unsupported spec version ({})'
                               .format(pcb['_spec_version']))
             return False
 
@@ -40,12 +40,12 @@ class GenericJsonParser(EcadParser):
         pcb = self.get_generic_json_pcb()
 
         if not self._verify(pcb):
-            self.logger.error('File %s does not appear to be valid generic'
+            self.logger.error('File {} does not appear to be valid generic'
                               ' InteractiveHtmlBom json file.'
                               .format(self.file_name))
             return None, None
 
-        self.logger.info('Successfully parsed %s'.format(self.file_name))
+        self.logger.info('Successfully parsed {}'.format(self.file_name))
 
         pcbdata = pcb['pcbdata']
         components = [Component(**c) for c in pcb['components']]
