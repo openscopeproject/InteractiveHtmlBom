@@ -11,7 +11,7 @@ def get_parser_by_extension(file_name, config, logger):
         import json
         with io.open(file_name, 'r') as f:
             obj = json.load(f)
-        if '_type' in obj and obj['_type'] == 'interactivehtmlbom genericjson':
+        if '_type' in obj and obj['_type'] == 'interactivehtmlbom pcbdata':
             return get_generic_json_parser(file_name, config, logger)
         else:
             return get_easyeda_parser(file_name, config, logger)

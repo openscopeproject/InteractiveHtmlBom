@@ -5,65 +5,11 @@ from .common import EcadParser, Component
 
 
 class GenericJsonParser(EcadParser):
-    class GenericJsonDecoder(json.JSONDecoder):
-        COMPATIBLE_SPEC_VERSIONS = [1]
-
-        class GenericJsonDecodeException(Exception):
-            def __init__(self, message):
-                self.message = message
-
-        def __init__(self, *args, **kwargs):
-            json.JSONDecoder.__init__(self,
-                                      object_hook=self.object_hook,
-                                      *args,
-                                      **kwargs)
-
-        class GenericJsonDecodeException(Exception):
-            def __init__(self, message):
-                self.message = message
-
-        def object_hook(self, obj):
-            if ('_type' in obj
-                    and obj['_type'] == 'interactivehtmlbom components'):
-                if ('_spec_version' in obj
-                        and obj['_spec_version']
-                        in self.COMPATIBLE_SPEC_VERSIONS):
-                    if obj['_spec_version'] == 1:
-                        return [Component(c['ref'],
-                                          c['val'],
-                                          c['footprint'],
-                                          c['layer'],
-                                          c['attr'])
-                                for c in obj['object']]
-                else:
-                    v = None if '_spec_version' not in obj \
-                             else obj['_spec_version']
-                    raise self.GenericJsonDecodeException(
-                        'components object spec version ('
-                        + str(v)
-                        + ') not supported')
-
-            elif ('_type' in obj and
-                  obj['_type'] == 'interactivehtmlbom pcbdata'):
-                if ('_spec_version' in obj
-                        and obj['_spec_version']
-                        in self.COMPATIBLE_SPEC_VERSIONS):
-                    if obj['_spec_version'] == 1:
-                        return obj['object']
-                else:
-                    v = None if '_spec_version' not in obj \
-                        else obj['_spec_version']
-                    raise self.GenericJsonDecodeException(
-                        'pcbdata object spec version ('
-                        + str(v)
-                        + ') not supported')
-
-            else:
-                return obj
+    COMPATIBLE_SPEC_VERSIONS = [1]
 
     def get_generic_json_pcb(self):
         with io.open(self.file_name, 'r') as f:
-            return json.load(f, cls=self.GenericJsonDecoder)
+            return json.load(f)
 
     def _verify(self, pcb):
 
@@ -78,12 +24,10 @@ class GenericJsonParser(EcadParser):
             return False
         c = pcb['components']
 
-        if type(p) != dict or len(p) != 8:
-            self.logger.error('invalid pcbdata object')
-            return False
-
-        if type(c) != list:
-            self.logger.error('invalid components object')
+        if pcb['_spec_version'] not in self.COMPATIBLE_SPEC_VERSIONS:
+            self.logger.error('Unsupported spec version ('
+                              + str(pcb['_spec_version'])
+                              + ')')
             return False
 
         if 'footprints' not in p or len(p['footprints']) != len(c):
@@ -94,11 +38,7 @@ class GenericJsonParser(EcadParser):
         return True
 
     def parse(self):
-        try:
-            pcb = self.get_generic_json_pcb()
-        except self.GenericJsonDecoder.GenericJsonDecodeException as exc:
-            self.logger.error("while parsing JSON: " + exc.message)
-            return None, None
+        pcb = self.get_generic_json_pcb()
 
         if not self._verify(pcb):
             self.logger.error('File ' + self.file_name +
@@ -108,4 +48,12 @@ class GenericJsonParser(EcadParser):
 
         self.logger.info('Successfully parsed ' + self.file_name)
 
-        return pcb['pcbdata'], pcb['components']
+        pcbdata = pcb['pcbdata']
+        components = [Component(c['ref'],
+                                c['val'],
+                                c['footprint'],
+                                c['layer'],
+                                c['attr'])
+                      for c in pcb['components']]
+
+        return pcbdata, components
