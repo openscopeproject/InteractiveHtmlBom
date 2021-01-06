@@ -1,0 +1,390 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/GenericJSONPCBData",
+    "definitions": {
+        "GenericJSONPCBData": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "_type": {
+                    "type": "string"
+                },
+                "_spec_version": {
+                    "type": "integer"
+                },
+                "pcbdata": {
+                    "$ref": "#/definitions/Pcbdata"
+                },
+                "components": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Component"
+                    }
+                }
+            },
+            "required": [
+                "_spec_version",
+                "_type",
+                "components",
+                "pcbdata"
+            ],
+            "title": "GenericJSONPCBData"
+        },
+        "Component": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "attr": {
+                    "type": "string"
+                },
+                "footprint": {
+                    "type": "string"
+                },
+                "layer": {
+                    "$ref": "#/definitions/Layer"
+                },
+                "ref": {
+                    "type": "string"
+                },
+                "val": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "attr",
+                "footprint",
+                "layer",
+                "ref",
+                "val"
+            ],
+            "title": "Component"
+        },
+        "Pcbdata": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "edges_bbox": {
+                    "$ref": "#/definitions/EdgesBbox"
+                },
+                "edges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Edge"
+                    }
+                },
+                "silkscreen": {
+                    "$ref": "#/definitions/Fabrication"
+                },
+                "fabrication": {
+                    "$ref": "#/definitions/Fabrication"
+                },
+                "footprints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Footprint"
+                    }
+                },
+                "metadata": {
+                    "$ref": "#/definitions/Metadata"
+                },
+                "bom": {
+                    "$ref": "#/definitions/BOM"
+                },
+                "font_data": {
+                    "$ref": "#/definitions/BOM"
+                }
+            },
+            "required": [
+                "bom",
+                "edges",
+                "edges_bbox",
+                "fabrication",
+                "font_data",
+                "footprints",
+                "metadata",
+                "silkscreen"
+            ],
+            "title": "Pcbdata"
+        },
+        "BOM": {
+            "type": "object",
+            "additionalProperties": false,
+            "title": "BOM"
+        },
+        "Edge": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/EdgeType"
+                },
+                "start": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "end": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "width": {
+                    "type": "number"
+                },
+                "radius": {
+                    "type": "number"
+                },
+                "svgpath": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type",
+                "width"
+            ],
+            "title": "Edge"
+        },
+        "EdgesBbox": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "minx": {
+                    "type": "number"
+                },
+                "miny": {
+                    "type": "number"
+                },
+                "maxx": {
+                    "type": "number"
+                },
+                "maxy": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "maxx",
+                "maxy",
+                "minx",
+                "miny"
+            ],
+            "title": "EdgesBbox"
+        },
+        "Fabrication": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "F": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Edge"
+                    }
+                },
+                "B": {
+                    "type": "array",
+                    "items": {}
+                }
+            },
+            "required": [
+                "B",
+                "F"
+            ],
+            "title": "Fabrication"
+        },
+        "Footprint": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "ref": {
+                    "type": "string"
+                },
+                "center": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "bbox": {
+                    "$ref": "#/definitions/Bbox"
+                },
+                "pads": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pad"
+                    }
+                },
+                "drawings": {
+                    "type": "array",
+                    "items": {}
+                },
+                "layer": {
+                    "$ref": "#/definitions/Layer"
+                }
+            },
+            "required": [
+                "bbox",
+                "center",
+                "drawings",
+                "layer",
+                "pads",
+                "ref"
+            ],
+            "title": "Footprint"
+        },
+        "Bbox": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "pos": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "relpos": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "size": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "angle": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "angle",
+                "pos",
+                "relpos",
+                "size"
+            ],
+            "title": "Bbox"
+        },
+        "Pad": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "layers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Layer"
+                    }
+                },
+                "pos": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "size": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "angle": {
+                    "type": "integer"
+                },
+                "shape": {
+                    "$ref": "#/definitions/Shape"
+                },
+                "type": {
+                    "$ref": "#/definitions/PadType"
+                },
+                "pin1": {
+                    "type": "integer"
+                },
+                "drillshape": {
+                    "$ref": "#/definitions/Drillshape"
+                },
+                "drillsize": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            },
+            "required": [
+                "angle",
+                "layers",
+                "pos",
+                "shape",
+                "size",
+                "type"
+            ],
+            "title": "Pad"
+        },
+        "Metadata": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "revision": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "company",
+                "date",
+                "revision",
+                "title"
+            ],
+            "title": "Metadata"
+        },
+        "EdgeType": {
+            "type": "string",
+            "enum": [
+                "segment",
+                "circle",
+                "arc"
+            ],
+            "title": "EdgeType"
+        },
+        "Drillshape": {
+            "type": "string",
+            "enum": [
+                "oblong"
+            ],
+            "title": "Drillshape"
+        },
+        "Layer": {
+            "type": "string",
+            "enum": [
+                "B",
+                "F"
+            ],
+            "title": "Layer"
+        },
+        "Shape": {
+            "type": "string",
+            "enum": [
+                "rect",
+                "circle",
+                "oval"
+            ],
+            "title": "Shape"
+        },
+        "PadType": {
+            "type": "string",
+            "enum": [
+                "smd",
+                "th"
+            ],
+            "title": "PadType"
+        }
+    }
+}
