@@ -548,7 +548,7 @@
                 { "type": "string" },
                 { "type": "string" },
                 { "$ref": "#/definitions/ReferenceSet" },
-                { "$ref": "#/definitions/ExtraData" }
+                { "type": "array", "items": { "$ref": "#/definitions/ExtraData" } }
             ],
             "additionalItems": false
         },
