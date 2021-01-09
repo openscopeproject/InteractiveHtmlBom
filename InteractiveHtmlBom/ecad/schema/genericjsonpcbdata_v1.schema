@@ -22,12 +22,7 @@
                     }
                 }
             },
-            "required": [
-                "_spec_version",
-                "_type",
-                "components",
-                "pcbdata"
-            ],
+            "minProperties": 4,
             "title": "GenericJSONPCBData"
         },
         "Component": {
@@ -50,13 +45,7 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "attr",
-                "footprint",
-                "layer",
-                "ref",
-                "val"
-            ],
+            "minProperties": 5,
             "title": "Component"
         },
         "Pcbdata": {
@@ -67,16 +56,13 @@
                     "$ref": "#/definitions/EdgesBbox"
                 },
                 "edges": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Edge"
-                    }
+                    "$ref": "#/definitions/DrawingArray"
                 },
                 "silkscreen": {
-                    "$ref": "#/definitions/Fabrication"
+                    "$ref": "#/definitions/DrawingSet"
                 },
                 "fabrication": {
-                    "$ref": "#/definitions/Fabrication"
+                    "$ref": "#/definitions/DrawingSet"
                 },
                 "footprints": {
                     "type": "array",
@@ -91,61 +77,45 @@
                     "$ref": "#/definitions/BOM"
                 },
                 "font_data": {
-                    "$ref": "#/definitions/BOM"
+                    "$ref": "#/definitions/FontData"
+                },
+                "tracks": { 
+                    "$ref": "#/definitions/Tracks"
+                },
+                "zones": {
+                    "$ref": "#/definitions/Zones"
+                },
+                "nets": { 
+                    "type": "array",
+                    "items": { "type": "string" }
                 }
             },
             "required": [
-                "bom",
-                "edges",
                 "edges_bbox",
+                "edges",
+                "silkscreen",
                 "fabrication",
-                "font_data",
                 "footprints",
                 "metadata",
-                "silkscreen"
+                "bom",
+                "font_data"
             ],
             "title": "Pcbdata"
         },
         "BOM": {
             "type": "object",
             "additionalProperties": false,
-            "title": "BOM"
-        },
-        "Edge": {
-            "type": "object",
-            "additionalProperties": false,
             "properties": {
-                "type": {
-                    "$ref": "#/definitions/EdgeType"
-                },
-                "start": {
+                "both": { "$ref": "#/definitions/BomRows" },
+                "F": { "$ref": "#/definitions/BomRows" },
+                "B": { "$ref": "#/definitions/BomRows" },
+                "skipped": {
                     "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
-                },
-                "end": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
-                },
-                "width": {
-                    "type": "number"
-                },
-                "radius": {
-                    "type": "number"
-                },
-                "svgpath": {
-                    "type": "string"
+                    "items": { "type": "integer" }
                 }
             },
-            "required": [
-                "type",
-                "width"
-            ],
-            "title": "Edge"
-        },
+            "title": "BOM"
+        },        
         "EdgesBbox": {
             "type": "object",
             "additionalProperties": false,
@@ -163,34 +133,22 @@
                     "type": "number"
                 }
             },
-            "required": [
-                "maxx",
-                "maxy",
-                "minx",
-                "miny"
-            ],
+            "minProperties": 4,
             "title": "EdgesBbox"
         },
-        "Fabrication": {
+        "DrawingSet": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "F": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Edge"
-                    }
+                    "$ref": "#/definitions/DrawingArray"
                 },
                 "B": {
-                    "type": "array",
-                    "items": {}
+                    "$ref": "#/definitions/DrawingArray"
                 }
             },
-            "required": [
-                "B",
-                "F"
-            ],
-            "title": "Fabrication"
+            "minProperties": 2,
+            "title": "DrawingSet"
         },
         "Footprint": {
             "type": "object",
@@ -200,10 +158,7 @@
                     "type": "string"
                 },
                 "center": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
+                    "$ref": "#/definitions/XY"
                 },
                 "bbox": {
                     "$ref": "#/definitions/Bbox"
@@ -216,20 +171,21 @@
                 },
                 "drawings": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "layer": { "$ref": "#/definitions/Layer" },
+                            "drawing": { "$ref": "#/definitions/Drawing" }
+                        },
+                        "required": [ "layer", "drawing" ]
+                    }
                 },
                 "layer": {
                     "$ref": "#/definitions/Layer"
                 }
             },
-            "required": [
-                "bbox",
-                "center",
-                "drawings",
-                "layer",
-                "pads",
-                "ref"
-            ],
+            "minProperties": 6,
             "title": "Footprint"
         },
         "Bbox": {
@@ -237,33 +193,19 @@
             "additionalProperties": false,
             "properties": {
                 "pos": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
+                    "$ref": "#/definitions/XY"
                 },
                 "relpos": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "$ref": "#/definitions/XY"
                 },
                 "size": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
+                    "$ref": "#/definitions/XY"
                 },
                 "angle": {
-                    "type": "integer"
+                    "type": "number"
                 }
             },
-            "required": [
-                "angle",
-                "pos",
-                "relpos",
-                "size"
-            ],
+            "minProperties": 4,
             "title": "Bbox"
         },
         "Pad": {
@@ -274,48 +216,50 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/Layer"
-                    }
+                    },
+                    "minItems": 1,
+                    "maxItems": 2
                 },
                 "pos": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
+                    "$ref": "#/definitions/XY"
                 },
                 "size": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
+                    "$ref": "#/definitions/XY"
                 },
                 "angle": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "shape": {
                     "$ref": "#/definitions/Shape"
                 },
+                "svgpath": { "type": "string" },
+                "polygons": { "$ref": "#/definitions/Polygons" },
+                "radius": { "type": "number" },
+                "chamfpos": { "type": "integer" },
+                "chamfratio": { "type": "number" },
                 "type": {
                     "$ref": "#/definitions/PadType"
                 },
                 "pin1": {
-                    "type": "integer"
+                    "type": "integer", "minimum": 1, "maximum": 1
                 },
                 "drillshape": {
                     "$ref": "#/definitions/Drillshape"
                 },
                 "drillsize": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
-                }
+                    "$ref": "#/definitions/XY"
+                },
+                "offset": {
+                    "$ref": "#/definitions/XY"
+                },
+                "net": { "type": "string" }
             },
             "required": [
-                "angle",
                 "layers",
                 "pos",
-                "shape",
                 "size",
+                "angle",
+                "shape",
                 "type"
             ],
             "title": "Pad"
@@ -337,26 +281,154 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "company",
-                "date",
-                "revision",
-                "title"
-            ],
+            "minProperties": 4,
             "title": "Metadata"
         },
-        "EdgeType": {
-            "type": "string",
-            "enum": [
-                "segment",
-                "circle",
-                "arc"
+        "DrawingArray": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Drawing" 
+            }
+        },
+        "Drawing": {
+            "type": "object",
+            "oneOf": [
+                { "$ref": "#/definitions/DrawingSegment" },
+                { "$ref": "#/definitions/DrawingRect" },
+                { "$ref": "#/definitions/DrawingCircle" },
+                { "$ref": "#/definitions/DrawingArc" },
+                { "$ref": "#/definitions/DrawingCurve" },
+                { "$ref": "#/definitions/DrawingPolygon" },
+                { "$ref": "#/definitions/DrawingText" }
+            ]
+        },
+        "DrawingSegment": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": { "type": "string", "const": "segment" },
+                "start": { "$ref": "#/definitions/XY" },
+                "end": { "$ref": "#/definitions/XY" },
+                "width": { "type": "number" }
+            },
+            "minProperties": 4,
+            "title": "DrawingSegment"
+        },
+        "DrawingRect": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": { "const": "rect" },
+                "start": { "$ref": "#/definitions/XY" },
+                "end": { "$ref": "#/definitions/XY" },
+                "width": { "type": "number" }
+            },
+            "minProperties": 4,
+            "title": "DrawingRect"
+        },
+        "DrawingCircle": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": { "const": "circle" },
+                "start": { "$ref": "#/definitions/XY" },
+                "radius": { "type": "number" },
+                "width": { "type": "number" }
+            },
+            "minProperties": 4,
+            "title": "DrawingCircle"            
+        },
+        "DrawingArc": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": { "const": "arc" },
+                "width": { "type": "number" },
+                "svgpath": { "type": "string" },
+                "start": { "$ref": "#/definitions/XY" },
+                "radius": { "type": "number" },
+                "startangle": { "type": "number" }, 
+                "endangle": { "type": "number" }
+            },
+            "required": [
+                "type",
+                "width",
+                "svgpath"
             ],
-            "title": "EdgeType"
+            "title": "DrawingArc"            
+        },
+        "DrawingCurve": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": { "const": "curve" },
+                "start": { "$ref": "#/definitions/XY" },
+                "end": { "$ref": "#/definitions/XY" },
+                "cpa": { "$ref": "#/definitions/XY" },
+                "cpb": { "$ref": "#/definitions/XY" },
+                "width": { "type": "number" }
+            },
+            "minProperties": 6,
+            "title": "DrawingCurve"            
+        },
+        "DrawingPolygon": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": { "const": "polygon" },
+                "svgpath": { "type": "string" },
+                "pos": { "$ref": "#/definitions/XY" },
+                "angle": { "type": "number" }, 
+                "polygons": { 
+                    "type": "array",
+                    "items": { 
+                        "type": "array",
+                        "items": { "$ref": "#/definitions/XY" }
+                    }
+                }
+            },
+            "minProperties": 5,
+            "title": "DrawingPolygon"            
+        },
+        "DrawingText": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "pos": { "$ref": "#/definitions/XY" },
+                "text": { "type": "string" },
+                "svgpath": { "type": "string" },
+                "height": { "type": "number" },
+                "width": { "type": "number" },
+                "justify": { "type": "string", "enum": [ "horizontal", "vertical" ] },
+                "thickness": { "type": "number" },
+                "attr": { "type": "array", "items": { "type": "string", "enum": [ "italic", "mirrored" ] }, "maxItems": 2 },
+                "angle": { "type": "number" },
+                "ref": { "type": "integer" , "minimum": 1, "maximum": 1 },
+                "val": { "type": "integer" , "minimum": 1, "maximum": 1 }
+            },
+            "required": [
+                "pos",
+                "text",
+                "svgpath",
+                "height",
+                "width",
+                "justify",
+                "thickness",
+                "attr",
+                "angle"
+            ],
+            "title": "DrawingText"            
+        },
+        "XY": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 2,
+            "maxItems": 2
         },
         "Drillshape": {
             "type": "string",
             "enum": [
+                "circle",
                 "oblong"
             ],
             "title": "Drillshape"
@@ -374,7 +446,10 @@
             "enum": [
                 "rect",
                 "circle",
-                "oval"
+                "oval",
+                "roundrect",
+                "chamfrect",
+                "custom"
             ],
             "title": "Shape"
         },
@@ -385,6 +460,115 @@
                 "th"
             ],
             "title": "PadType"
+        },
+        "Tracks": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "F": { 
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Track" }
+                },
+                "B": { 
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Track" }
+                }
+            },
+            "required": [ "F", "B" ],
+            "title": "Tracks"
+        },
+        "Track": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "start": { "$ref": "#/definitions/XY" }, 
+                "end": { "$ref": "#/definitions/XY" }, 
+                "width": { "type": "number" },
+                "net": { "type": "string" }
+            },
+            "required": [
+                "start",
+                "end",
+                "width"
+            ]
+        },
+        "Zones": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "F": { 
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Zone" }
+                },
+                "B": { 
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Zone" }
+                }
+            },
+            "required": [ "F", "B" ],
+            "title": "Zones"
+        },
+        "Zone": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "svgpath": { "type": "string" },
+                "polygons": {
+                    "$ref": "#/definitions/Polygons"
+                },
+                "net": { "type": "string" }
+            },
+            "required": [ "svgpath", "polygons" ],
+            "title": "Zone"
+        },
+        "Polygons": {
+            "type": "array",
+            "items": { 
+                "type": "array",
+                "items": { 
+                    "$ref": "#/definitions/XY" 
+                }
+            }
+        },
+        "FontData": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {                
+            },
+            "title": "FontData"
+        },
+        "BomRows": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/BomRow" }
+        },
+        "BomRow": {
+            "type": "array",
+            "items": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "string" },
+                { "$ref": "#/definitions/ReferenceSet" },
+                { "$ref": "#/definitions/ExtraData" }
+            ],
+            "additionalItems": false
+        },
+        "ReferenceSet": {
+            "type": "array",
+            "items": {                
+                "type": "array",
+                "items": [
+                    { "type": "string" },
+                    { "type": "integer" }
+                ],
+                "additionalItems": false
+            }
+        },
+        "ExtraData": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {                
+            },
+            "title": "ExtraData"
         }
     }
 }
