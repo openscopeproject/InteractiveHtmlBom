@@ -43,9 +43,20 @@
                 },
                 "val": {
                     "type": "string"
+                },
+                "extra_fields": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "title": "Extra Fields"
                 }
             },
-            "minProperties": 5,
+            "required": [
+                "attr",
+                "footprint",
+                "layer",
+                "ref",
+                "val"
+            ],
             "title": "Component"
         },
         "Pcbdata": {

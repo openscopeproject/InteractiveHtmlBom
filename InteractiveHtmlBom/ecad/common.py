@@ -39,12 +39,13 @@ class EcadParser(object):
 class Component(object):
     """Simple data object to store component data needed for bom table."""
 
-    def __init__(self, ref, val, footprint, layer, attr=None):
+    def __init__(self, ref, val, footprint, layer, attr=None, extra_fields={}):
         self.ref = ref
         self.val = val
         self.footprint = footprint
         self.layer = layer
-        self.attr = attr
+        self.attr = attr,
+        self.extra_fields = extra_fields
 
 
 class BoundingBox(object):
