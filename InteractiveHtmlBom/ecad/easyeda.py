@@ -451,13 +451,15 @@ class EasyEdaParser(EcadParser):
         pcbdata = {
             "edges_bbox": bbox,
             "edges": drawings.get(self.BOARD_OUTLINE_LAYER, []),
-            "silkscreen": {
-                'F': drawings.get(self.TOP_SILK_LAYER, []),
-                'B': drawings.get(self.BOT_SILK_LAYER, []),
-            },
-            "fabrication": {
-                'F': drawings.get(self.TOP_ASSEMBLY_LAYER, []),
-                'B': drawings.get(self.BOT_ASSEMBLY_LAYER, []),
+            "drawings": {
+                "silkscreen": {
+                    'F': drawings.get(self.TOP_SILK_LAYER, []),
+                    'B': drawings.get(self.BOT_SILK_LAYER, []),
+                },
+                "fabrication": {
+                    'F': drawings.get(self.TOP_ASSEMBLY_LAYER, []),
+                    'B': drawings.get(self.BOT_ASSEMBLY_LAYER, []),
+                },
             },
             "footprints": footprints,
             "metadata": self.get_metadata(pcb),
