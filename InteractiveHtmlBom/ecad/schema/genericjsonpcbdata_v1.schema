@@ -6,10 +6,7 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "_type": {
-                    "type": "string"
-                },
-                "_spec_version": {
+                "spec_version": {
                     "type": "integer"
                 },
                 "pcbdata": {
@@ -22,7 +19,11 @@
                     }
                 }
             },
-            "minProperties": 4,
+            "required": [
+                "spec_version",
+                "pcbdata",
+                "components"
+            ],
             "title": "GenericJSONPCBData"
         },
         "Component": {
@@ -43,9 +44,20 @@
                 },
                 "val": {
                     "type": "string"
+                },
+                "extra_fields": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "title": "Extra Fields"
                 }
             },
-            "minProperties": 5,
+            "required": [
+                "attr",
+                "footprint",
+                "layer",
+                "ref",
+                "val"
+            ],
             "title": "Component"
         },
         "Pcbdata": {
@@ -58,11 +70,8 @@
                 "edges": {
                     "$ref": "#/definitions/DrawingArray"
                 },
-                "silkscreen": {
-                    "$ref": "#/definitions/DrawingSet"
-                },
-                "fabrication": {
-                    "$ref": "#/definitions/DrawingSet"
+                "drawings": {
+                    "$ref": "#/definitions/Drawings"
                 },
                 "footprints": {
                     "type": "array",
@@ -72,9 +81,6 @@
                 },
                 "metadata": {
                     "$ref": "#/definitions/Metadata"
-                },
-                "bom": {
-                    "$ref": "#/definitions/BOM"
                 },
                 "font_data": {
                     "$ref": "#/definitions/FontData"
@@ -93,29 +99,13 @@
             "required": [
                 "edges_bbox",
                 "edges",
-                "silkscreen",
-                "fabrication",
+                "drawings",
                 "footprints",
                 "metadata",
-                "bom",
                 "font_data"
             ],
             "title": "Pcbdata"
         },
-        "BOM": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "both": { "$ref": "#/definitions/BomRows" },
-                "F": { "$ref": "#/definitions/BomRows" },
-                "B": { "$ref": "#/definitions/BomRows" },
-                "skipped": {
-                    "type": "array",
-                    "items": { "type": "integer" }
-                }
-            },
-            "title": "BOM"
-        },        
         "EdgesBbox": {
             "type": "object",
             "additionalProperties": false,
@@ -158,7 +148,7 @@
                     "type": "string"
                 },
                 "center": {
-                    "$ref": "#/definitions/XY"
+                    "$ref": "#/definitions/Coordinates"
                 },
                 "bbox": {
                     "$ref": "#/definitions/Bbox"
@@ -193,13 +183,13 @@
             "additionalProperties": false,
             "properties": {
                 "pos": {
-                    "$ref": "#/definitions/XY"
+                    "$ref": "#/definitions/Coordinates"
                 },
                 "relpos": {
-                    "$ref": "#/definitions/XY"
+                    "$ref": "#/definitions/Coordinates"
                 },
                 "size": {
-                    "$ref": "#/definitions/XY"
+                    "$ref": "#/definitions/Coordinates"
                 },
                 "angle": {
                     "type": "number"
@@ -221,10 +211,10 @@
                     "maxItems": 2
                 },
                 "pos": {
-                    "$ref": "#/definitions/XY"
+                    "$ref": "#/definitions/Coordinates"
                 },
                 "size": {
-                    "$ref": "#/definitions/XY"
+                    "$ref": "#/definitions/Coordinates"
                 },
                 "angle": {
                     "type": "number"
@@ -241,16 +231,16 @@
                     "$ref": "#/definitions/PadType"
                 },
                 "pin1": {
-                    "type": "integer", "minimum": 1, "maximum": 1
+                    "type": "integer", "const": 1
                 },
                 "drillshape": {
                     "$ref": "#/definitions/Drillshape"
                 },
                 "drillsize": {
-                    "$ref": "#/definitions/XY"
+                    "$ref": "#/definitions/Coordinates"
                 },
                 "offset": {
-                    "$ref": "#/definitions/XY"
+                    "$ref": "#/definitions/Coordinates"
                 },
                 "net": { "type": "string" }
             },
@@ -284,6 +274,17 @@
             "minProperties": 4,
             "title": "Metadata"
         },
+        "Drawings": {
+            "type": "object",
+            "items": {
+                "silkscreen": {
+                    "$ref": "#/definitions/DrawingSet"
+                },
+                "fabrication": {
+                    "$ref": "#/definitions/DrawingSet"
+                }
+            }
+        },
         "DrawingArray": {
             "type": "array",
             "items": {
@@ -307,8 +308,8 @@
             "additionalProperties": false,
             "properties": {
                 "type": { "type": "string", "const": "segment" },
-                "start": { "$ref": "#/definitions/XY" },
-                "end": { "$ref": "#/definitions/XY" },
+                "start": { "$ref": "#/definitions/Coordinates" },
+                "end": { "$ref": "#/definitions/Coordinates" },
                 "width": { "type": "number" }
             },
             "minProperties": 4,
@@ -319,8 +320,8 @@
             "additionalProperties": false,
             "properties": {
                 "type": { "const": "rect" },
-                "start": { "$ref": "#/definitions/XY" },
-                "end": { "$ref": "#/definitions/XY" },
+                "start": { "$ref": "#/definitions/Coordinates" },
+                "end": { "$ref": "#/definitions/Coordinates" },
                 "width": { "type": "number" }
             },
             "minProperties": 4,
@@ -331,7 +332,7 @@
             "additionalProperties": false,
             "properties": {
                 "type": { "const": "circle" },
-                "start": { "$ref": "#/definitions/XY" },
+                "start": { "$ref": "#/definitions/Coordinates" },
                 "radius": { "type": "number" },
                 "width": { "type": "number" }
             },
@@ -345,7 +346,7 @@
                 "type": { "const": "arc" },
                 "width": { "type": "number" },
                 "svgpath": { "type": "string" },
-                "start": { "$ref": "#/definitions/XY" },
+                "start": { "$ref": "#/definitions/Coordinates" },
                 "radius": { "type": "number" },
                 "startangle": { "type": "number" }, 
                 "endangle": { "type": "number" }
@@ -362,10 +363,10 @@
             "additionalProperties": false,
             "properties": {
                 "type": { "const": "curve" },
-                "start": { "$ref": "#/definitions/XY" },
-                "end": { "$ref": "#/definitions/XY" },
-                "cpa": { "$ref": "#/definitions/XY" },
-                "cpb": { "$ref": "#/definitions/XY" },
+                "start": { "$ref": "#/definitions/Coordinates" },
+                "end": { "$ref": "#/definitions/Coordinates" },
+                "cpa": { "$ref": "#/definitions/Coordinates" },
+                "cpb": { "$ref": "#/definitions/Coordinates" },
                 "width": { "type": "number" }
             },
             "minProperties": 6,
@@ -377,13 +378,13 @@
             "properties": {
                 "type": { "const": "polygon" },
                 "svgpath": { "type": "string" },
-                "pos": { "$ref": "#/definitions/XY" },
+                "pos": { "$ref": "#/definitions/Coordinates" },
                 "angle": { "type": "number" }, 
                 "polygons": { 
                     "type": "array",
                     "items": { 
                         "type": "array",
-                        "items": { "$ref": "#/definitions/XY" }
+                        "items": { "$ref": "#/definitions/Coordinates" }
                     }
                 }
             },
@@ -394,7 +395,7 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "pos": { "$ref": "#/definitions/XY" },
+                "pos": { "$ref": "#/definitions/Coordinates" },
                 "text": { "type": "string" },
                 "svgpath": { "type": "string" },
                 "height": { "type": "number" },
@@ -403,8 +404,8 @@
                 "thickness": { "type": "number" },
                 "attr": { "type": "array", "items": { "type": "string", "enum": [ "italic", "mirrored" ] }, "maxItems": 2 },
                 "angle": { "type": "number" },
-                "ref": { "type": "integer" , "minimum": 1, "maximum": 1 },
-                "val": { "type": "integer" , "minimum": 1, "maximum": 1 }
+                "ref": { "type": "integer" , "const": 1 },
+                "val": { "type": "integer" , "const": 1 }
             },
             "required": [
                 "pos",
@@ -419,7 +420,7 @@
             ],
             "title": "DrawingText"            
         },
-        "XY": {
+        "Coordinates": {
             "type": "array",
             "items": { "type": "number" },
             "minItems": 2,
@@ -481,8 +482,8 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "start": { "$ref": "#/definitions/XY" }, 
-                "end": { "$ref": "#/definitions/XY" }, 
+                "start": { "$ref": "#/definitions/Coordinates" }, 
+                "end": { "$ref": "#/definitions/Coordinates" }, 
                 "width": { "type": "number" },
                 "net": { "type": "string" }
             },
@@ -526,7 +527,7 @@
             "items": { 
                 "type": "array",
                 "items": { 
-                    "$ref": "#/definitions/XY" 
+                    "$ref": "#/definitions/Coordinates" 
                 }
             }
         },

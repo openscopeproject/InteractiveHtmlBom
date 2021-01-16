@@ -15,6 +15,7 @@ from .config import Config
 from ..dialog import SettingsDialog
 from ..ecad.common import EcadParser, Component
 from ..errors import ParsingException
+from ..ecad.genericjson import GenericJsonParser
 
 
 class Logger(object):
@@ -128,7 +129,7 @@ def generate_bom(pcb_footprints, config, extra_data):
         if config.extra_fields:
             if f.ref in extra_data:
                 extras = [extra_data[f.ref].get(ef, '')
-                          for ef in config.extra_fields]
+                            for ef in config.extra_fields]
             else:
                 # Some components are on pcb but not in schematic data.
                 # Show a warning about possibly outdated netlist/xml file.
@@ -230,7 +231,6 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
         with io.open(path, 'r', encoding='utf-8') as f:
             return f.read()
 
-
     if os.path.isabs(config.bom_dest_dir):
         bom_file_dir = config.bom_dest_dir
     else:
@@ -274,11 +274,12 @@ def main(parser, config, logger):
     pcb_file_name = os.path.basename(parser.file_name)
     pcb_file_dir = os.path.dirname(parser.file_name)
 
+    ## if not isinstance(parser, GenericJsonParser):
     # Get extra field data
     extra_fields = None
     if config.netlist_file and os.path.isfile(config.netlist_file):
         extra_fields = parser.extra_data_func(
-                config.netlist_file, config.normalize_field_case)
+            config.netlist_file, config.normalize_field_case)
 
     need_extra_fields = (config.extra_fields or
                          config.board_variant_whitelist or
@@ -302,6 +303,14 @@ def main(parser, config, logger):
     pcbdata, components = parser.parse()
     if not pcbdata and not components:
         raise ParsingException('Parsing failed.')
+
+    """if isinstance(parser, GenericJsonParser) and config.extra_fields:
+        extra_fields = {}
+        for c in components:
+            extra_fields[c.ref] = {}
+            for f in config.extra_fields:
+                fv = ("" if f not in c.extra_fields else c.extra_fields[f])
+                extra_fields[c.ref][f] = fv"""
 
     pcbdata["bom"] = generate_bom(components, config, extra_fields)
     pcbdata["ibom_version"] = config.version
