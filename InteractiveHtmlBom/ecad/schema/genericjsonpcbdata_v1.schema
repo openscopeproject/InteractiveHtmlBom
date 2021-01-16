@@ -46,9 +46,7 @@
                     "type": "string"
                 },
                 "extra_fields": {
-                    "type": "object",
-                    "additionalProperties": true,
-                    "title": "Extra Fields"
+                    "$ref": "#/definitions/ExtraData"
                 }
             },
             "required": [
@@ -82,9 +80,6 @@
                 "metadata": {
                     "$ref": "#/definitions/Metadata"
                 },
-                "font_data": {
-                    "$ref": "#/definitions/FontData"
-                },
                 "tracks": { 
                     "$ref": "#/definitions/Tracks"
                 },
@@ -101,9 +96,12 @@
                 "edges",
                 "drawings",
                 "footprints",
-                "metadata",
-                "font_data"
+                "metadata"
             ],
+            "dependencies": {
+                "tracks": { "required": ["zones"] },
+                "zones": { "required": ["tracks"] }
+            },
             "title": "Pcbdata"
         },
         "EdgesBbox": {
@@ -123,7 +121,7 @@
                     "type": "number"
                 }
             },
-            "minProperties": 4,
+            "required": ["minx", "miny", "maxx", "maxy"],
             "title": "EdgesBbox"
         },
         "DrawingSet": {
@@ -137,7 +135,7 @@
                     "$ref": "#/definitions/DrawingArray"
                 }
             },
-            "minProperties": 2,
+            "required": ["F", "B"],
             "title": "DrawingSet"
         },
         "Footprint": {
@@ -175,7 +173,7 @@
                     "$ref": "#/definitions/Layer"
                 }
             },
-            "minProperties": 6,
+            "required": ["ref", "center", "bbox", "pads", "drawings", "layer"],
             "title": "Footprint"
         },
         "Bbox": {
@@ -195,7 +193,7 @@
                     "type": "number"
                 }
             },
-            "minProperties": 4,
+            "required": ["pos", "relpos", "size", "angle"],
             "title": "Bbox"
         },
         "Pad": {
@@ -248,9 +246,45 @@
                 "layers",
                 "pos",
                 "size",
-                "angle",
                 "shape",
                 "type"
+            ],
+            "allOf": [
+                { 
+                    "if": {
+                        "properties": { "shape": { "const": "custom" } }
+                    },
+                    "then": {
+                        "anyOf": [
+                            { "required": [ "svgpath" ] },
+                            { "required": [ "pos", "angle", "polygons" ] }
+                        ]
+                    }
+                },
+                {
+                    "if": { 
+                        "properties": { "shape": { "const": "roundrect" } }
+                    },
+                    "then": {
+                        "required": [ "radius" ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": { "shape": { "const": "chamfrect" } }
+                    },
+                    "then": {
+                        "required": [ "radius", "chamfpos", "chamfratio" ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": { "type": { "const": "th" } }
+                    },
+                    "then": {
+                        "required": [ "drillshape", "drillsize" ]
+                    }
+                }
             ],
             "title": "Pad"
         },
@@ -271,7 +305,7 @@
                     "type": "string"
                 }
             },
-            "minProperties": 4,
+            "required": ["title", "revision", "company", "date"],
             "title": "Metadata"
         },
         "Drawings": {
@@ -312,7 +346,7 @@
                 "end": { "$ref": "#/definitions/Coordinates" },
                 "width": { "type": "number" }
             },
-            "minProperties": 4,
+            "required": ["type", "start", "end", "width"],
             "title": "DrawingSegment"
         },
         "DrawingRect": {
@@ -324,7 +358,7 @@
                 "end": { "$ref": "#/definitions/Coordinates" },
                 "width": { "type": "number" }
             },
-            "minProperties": 4,
+            "required": ["type", "start", "end", "width"],
             "title": "DrawingRect"
         },
         "DrawingCircle": {
@@ -336,7 +370,7 @@
                 "radius": { "type": "number" },
                 "width": { "type": "number" }
             },
-            "minProperties": 4,
+            "required": ["type", "start", "radius", "width"],
             "title": "DrawingCircle"            
         },
         "DrawingArc": {
@@ -353,8 +387,11 @@
             },
             "required": [
                 "type",
-                "width",
-                "svgpath"
+                "width"
+            ],
+            "anyOf": [
+                { "required": ["svgpath"] },
+                { "required": ["start", "radius", "startangle", "endangle"] }
             ],
             "title": "DrawingArc"            
         },
@@ -369,7 +406,7 @@
                 "cpb": { "$ref": "#/definitions/Coordinates" },
                 "width": { "type": "number" }
             },
-            "minProperties": 6,
+            "required": ["type", "start", "end", "cpa", "cpb", "width"],
             "title": "DrawingCurve"            
         },
         "DrawingPolygon": {
@@ -388,35 +425,25 @@
                     }
                 }
             },
-            "minProperties": 5,
+            "required": ["type"],
+            "anyOf": [
+                { "required": ["svgpath"] },
+                { "required": ["pos", "angle", "polygons"] }
+            ],
             "title": "DrawingPolygon"            
         },
         "DrawingText": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "pos": { "$ref": "#/definitions/Coordinates" },
-                "text": { "type": "string" },
                 "svgpath": { "type": "string" },
-                "height": { "type": "number" },
-                "width": { "type": "number" },
-                "justify": { "type": "string", "enum": [ "horizontal", "vertical" ] },
                 "thickness": { "type": "number" },
-                "attr": { "type": "array", "items": { "type": "string", "enum": [ "italic", "mirrored" ] }, "maxItems": 2 },
-                "angle": { "type": "number" },
                 "ref": { "type": "integer" , "const": 1 },
                 "val": { "type": "integer" , "const": 1 }
             },
             "required": [
-                "pos",
-                "text",
                 "svgpath",
-                "height",
-                "width",
-                "justify",
-                "thickness",
-                "attr",
-                "angle"
+                "thickness"
             ],
             "title": "DrawingText"            
         },
@@ -519,7 +546,10 @@
                 },
                 "net": { "type": "string" }
             },
-            "required": [ "svgpath", "polygons" ],
+            "anyOf": [
+                { "required": [ "svgpath" ] },
+                { "required": [ "polygons" ] }
+            ],
             "title": "Zone"
         },
         "Polygons": {
@@ -530,28 +560,6 @@
                     "$ref": "#/definitions/Coordinates" 
                 }
             }
-        },
-        "FontData": {
-            "type": "object",
-            "additionalProperties": true,
-            "properties": {                
-            },
-            "title": "FontData"
-        },
-        "BomRows": {
-            "type": "array",
-            "items": { "$ref": "#/definitions/BomRow" }
-        },
-        "BomRow": {
-            "type": "array",
-            "items": [
-                { "type": "integer" },
-                { "type": "string" },
-                { "type": "string" },
-                { "$ref": "#/definitions/ReferenceSet" },
-                { "type": "array", "items": { "$ref": "#/definitions/ExtraData" } }
-            ],
-            "additionalItems": false
         },
         "ReferenceSet": {
             "type": "array",
