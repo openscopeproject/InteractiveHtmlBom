@@ -274,43 +274,43 @@ def main(parser, config, logger):
     pcb_file_name = os.path.basename(parser.file_name)
     pcb_file_dir = os.path.dirname(parser.file_name)
 
-    if not isinstance(parser, GenericJsonParser):
-        # Get extra field data
-        extra_fields = None
-        if config.netlist_file and os.path.isfile(config.netlist_file):
-            extra_fields = parser.extra_data_func(
-                config.netlist_file, config.normalize_field_case)
+    ## if not isinstance(parser, GenericJsonParser):
+    # Get extra field data
+    extra_fields = None
+    if config.netlist_file and os.path.isfile(config.netlist_file):
+        extra_fields = parser.extra_data_func(
+            config.netlist_file, config.normalize_field_case)
 
-        need_extra_fields = (config.extra_fields or
-                             config.board_variant_whitelist or
-                             config.board_variant_blacklist or
-                             config.dnp_field)
+    need_extra_fields = (config.extra_fields or
+                         config.board_variant_whitelist or
+                         config.board_variant_blacklist or
+                         config.dnp_field)
 
-        if not config.netlist_file and need_extra_fields:
-            logger.warn('Ignoring extra fields related config parameters '
-                        'since no netlist/xml file was specified.')
-            config.extra_fields = []
-            config.board_variant_whitelist = []
-            config.board_variant_blacklist = []
-            config.dnp_field = ''
-            need_extra_fields = False
+    if not config.netlist_file and need_extra_fields:
+        logger.warn('Ignoring extra fields related config parameters '
+                    'since no netlist/xml file was specified.')
+        config.extra_fields = []
+        config.board_variant_whitelist = []
+        config.board_variant_blacklist = []
+        config.dnp_field = ''
+        need_extra_fields = False
 
-        if extra_fields is None and need_extra_fields:
-            raise ParsingException('Failed parsing %s' % config.netlist_file)
+    if extra_fields is None and need_extra_fields:
+        raise ParsingException('Failed parsing %s' % config.netlist_file)
 
-        extra_fields = extra_fields[1] if extra_fields else None
+    extra_fields = extra_fields[1] if extra_fields else None
 
     pcbdata, components = parser.parse()
     if not pcbdata and not components:
         raise ParsingException('Parsing failed.')
 
-    if isinstance(parser, GenericJsonParser) and config.extra_fields:
+    """if isinstance(parser, GenericJsonParser) and config.extra_fields:
         extra_fields = {}
         for c in components:
             extra_fields[c.ref] = {}
             for f in config.extra_fields:
                 fv = ("" if f not in c.extra_fields else c.extra_fields[f])
-                extra_fields[c.ref][f] = fv
+                extra_fields[c.ref][f] = fv"""
 
     pcbdata["bom"] = generate_bom(components, config, extra_fields)
     pcbdata["ibom_version"] = config.version

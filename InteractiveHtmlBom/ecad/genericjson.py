@@ -13,18 +13,18 @@ class GenericJsonParser(EcadParser):
         with io.open(self.file_name, 'r') as f:
             pcb = json.load(f)
 
-        if '_spec_version' not in pcb:
-            raise ValidationError("'_spec_version' is a required property")
+        if 'spec_version' not in pcb:
+            raise ValidationError("'spec_version' is a required property")
 
-        if pcb['_spec_version'] not in self.COMPATIBLE_SPEC_VERSIONS:
-            raise ValidationError("Unsupported _spec_version ({})"
-                                  .format(pcb['_spec_version']))
+        if pcb['spec_version'] not in self.COMPATIBLE_SPEC_VERSIONS:
+            raise ValidationError("Unsupported spec_version ({})"
+                                  .format(pcb['spec_version']))
 
         schema_dir = path.join(path.dirname(__file__), 'schema')
-        if pcb['_spec_version'] == 1:
+        if pcb['spec_version'] == 1:
             schema_file_name = path.join(schema_dir,
                                          'genericjsonpcbdata_v{}.schema'
-                                         .format(pcb['_spec_version']))
+                                         .format(pcb['spec_version']))
 
         with io.open(schema_file_name, 'r') as f:
             schema = json.load(f)

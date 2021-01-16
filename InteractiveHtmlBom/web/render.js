@@ -365,7 +365,7 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
 
 function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonColor, textColor) {
   var ctx = canvas.getContext("2d");
-  for (var d of pcbdata[layername][layer]) {
+  for (var d of pcbdata.drawings[layername][layer]) {
     if (["segment", "arc", "circle", "curve", "rect"].includes(d.type)) {
       drawedge(ctx, scalefactor, d, edgeColor);
     } else if (d.type == "polygon") {

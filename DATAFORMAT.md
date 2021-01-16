@@ -17,16 +17,18 @@ pcbdata = {
   // Describes all edge cut drawings including ones in footprints.
   // See drawing structure description below.
   "edges": [drawing1, drawing2, ...],
-  // Contains all drawings + reference + value texts on silkscreen
-  // layer grouped by front and back.
-  "silkscreen": {
-    "F": [drawing1, drawing2, ...],
-    "B": [drawing1, drawing2, ...],
-  },
-  // Same as above but for fabrication layer.
-  "fabrication": {
-    "F": [drawing1, drawing2, ...],
-    "B": [drawing1, drawing2, ...],
+  "drawings": {
+    // Contains all drawings + reference + value texts on silkscreen
+    // layer grouped by front and back.
+    "silkscreen": {
+      "F": [drawing1, drawing2, ...],
+      "B": [drawing1, drawing2, ...],
+    },
+    // Same as above but for fabrication layer.
+    "fabrication": {
+      "F": [drawing1, drawing2, ...],
+      "B": [drawing1, drawing2, ...],
+    },
   },
   // Describes footprints.
   // See footprint structure description below.
@@ -49,7 +51,7 @@ pcbdata = {
       ...
     ],
     "B": [...]
-  }
+  },
   // Optional zone data (should be present if tracks are present).
   "zones": {
     "F": [
@@ -67,7 +69,7 @@ pcbdata = {
       ...
     ],
     "B": [...]
-  }
+  },
   // Optional net name list.
   "nets": [net1, net2, ...],
   // PCB metadata from the title block.

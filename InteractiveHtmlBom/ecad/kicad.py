@@ -511,10 +511,12 @@ class PcbnewParser(EcadParser):
         pcbdata = {
             "edges_bbox": bbox,
             "edges": edges,
-            "silkscreen": self.parse_drawings_on_layers(
-                    drawings, pcbnew.F_SilkS, pcbnew.B_SilkS),
-            "fabrication": self.parse_drawings_on_layers(
-                    drawings, pcbnew.F_Fab, pcbnew.B_Fab),
+            "drawings": {
+                "silkscreen": self.parse_drawings_on_layers(
+                        drawings, pcbnew.F_SilkS, pcbnew.B_SilkS),
+                "fabrication": self.parse_drawings_on_layers(
+                        drawings, pcbnew.F_Fab, pcbnew.B_Fab),
+            },
             "footprints": self.parse_footprints(),
             "metadata": {
                 "title": title,
