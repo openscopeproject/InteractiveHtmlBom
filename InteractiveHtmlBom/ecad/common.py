@@ -19,9 +19,12 @@ class EcadParser(object):
     def parse(self):
         """
         Abstract method that should be overridden in implementations.
-        Performs all the parsing and returns a tuple of (pcbdata, components)
+        Performs all the parsing and returns a tuple of
+        (pcbdata, components, extra_field_data)
         pcbdata is described in DATAFORMAT.md
         components is list of Component objects
+        extra_field_data is a dict with entries for each field name in
+        self.config.extra_fields, or None if unable to parse extra data
         :return:
         """
         pass

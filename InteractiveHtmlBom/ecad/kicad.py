@@ -10,7 +10,6 @@ from ..core import ibom
 from ..core.config import Config
 from ..core.fontparser import FontParser
 
-
 class PcbnewParser(EcadParser):
 
     def __init__(self, file_name, config, logger, board=None):
@@ -482,6 +481,30 @@ class PcbnewParser(EcadParser):
                          attr)
 
     def parse(self):
+        from ..errors import ParsingException
+
+        # Get extra field data from netlist
+        extra_field_data = None
+        need_extra_fields = (config.extra_fields or
+                             config.board_variant_whitelist or
+                             config.board_variant_blacklist or
+                             config.dnp_field)
+
+        if not self.config.netlist_file and self.config.need_extra_fields:
+            self.logger.warn('Ignoring extra fields related config parameters '
+                             'since no netlist/xml file was specified.')
+            need_extra_fields = False
+
+        if (self.config.netlist_file and
+                os.path.isfile(self.config.netlist_file)):
+            extra_field_data = self.extra_data_func(
+                self.config.netlist_file, self.config.normalize_field_case)
+
+        if extra_field_data is None and need_extra_fields:
+            raise ParsingException('Failed parsing %s' % config.netlist_file)
+
+        extra_field_data = extra_field_data[1] if extra_field_data else None
+
         title_block = self.board.GetTitleBlock()
         file_date = title_block.GetDate()
         if not file_date:
@@ -538,7 +561,7 @@ class PcbnewParser(EcadParser):
             pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
         components = [self.footprint_to_component(f) for f in self.footprints]
 
-        return pcbdata, components
+        return pcbdata, components, extra_field_data
 
 
 class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
