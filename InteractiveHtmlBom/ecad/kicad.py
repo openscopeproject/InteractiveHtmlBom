@@ -485,7 +485,6 @@ class PcbnewParser(EcadParser):
         from ..errors import ParsingException
 
         # Get extra field data from netlist
-        extra_field_data = None
         need_extra_fields = (self.config.extra_fields or
                              self.config.board_variant_whitelist or
                              self.config.board_variant_blacklist or
@@ -562,7 +561,7 @@ class PcbnewParser(EcadParser):
             pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
         components = [self.footprint_to_component(f) for f in self.footprints]
 
-        return pcbdata, components, extra_field_data
+        return pcbdata, components
 
 
 class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):

@@ -487,4 +487,4 @@ class EasyEdaParser(EcadParser):
             # zones are not supported
             pcbdata["zones"] = {'F': [], 'B': []}
 
-        return pcbdata, components, None
+        return pcbdata, components

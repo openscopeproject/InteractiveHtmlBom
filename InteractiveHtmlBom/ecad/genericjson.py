@@ -62,12 +62,12 @@ class GenericJsonParser(EcadParser):
         pcbdata = pcb['pcbdata']
         components = [Component(**c) for c in pcb['components']]
 
-        extra_field_data = {}
         if self.config.extra_fields:
             for c in components:
-                extra_field_data[c.ref] = {}
+                extra_field_data = {}
                 for f in self.config.extra_fields:
                     fv = ("" if f not in c.extra_fields else c.extra_fields[f])
-                    extra_field_data[c.ref][f] = fv
+                    extra_field_data[f] = fv
+                c.extra_fields = extra_field_data
 
-        return pcbdata, components, extra_field_data
+        return pcbdata, components

@@ -23,8 +23,6 @@ class EcadParser(object):
         (pcbdata, components, extra_field_data)
         pcbdata is described in DATAFORMAT.md
         components is list of Component objects
-        extra_field_data is a dict with entries for each field name in
-        self.config.extra_fields, or None if unable to parse extra data
         :return:
         """
         pass

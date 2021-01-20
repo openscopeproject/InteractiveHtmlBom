@@ -273,7 +273,7 @@ def main(parser, config, logger):
     pcb_file_name = os.path.basename(parser.file_name)
     pcb_file_dir = os.path.dirname(parser.file_name)
 
-    pcbdata, components, extra_fields = parser.parse()
+    pcbdata, components = parser.parse()
     if not pcbdata and not components:
         raise ParsingException('Parsing failed.')
 
