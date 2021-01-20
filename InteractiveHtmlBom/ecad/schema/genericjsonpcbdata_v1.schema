@@ -50,7 +50,6 @@
                 }
             },
             "required": [
-                "attr",
                 "footprint",
                 "layer",
                 "ref",
@@ -69,7 +68,7 @@
                     "$ref": "#/definitions/DrawingArray"
                 },
                 "drawings": {
-                    "$ref": "#/definitions/Drawings"
+                    "$ref": "#/definitions/LayerDrawings"
                 },
                 "footprints": {
                     "type": "array",
@@ -308,7 +307,7 @@
             "required": ["title", "revision", "company", "date"],
             "title": "Metadata"
         },
-        "Drawings": {
+        "LayerDrawings": {
             "type": "object",
             "items": {
                 "silkscreen": {

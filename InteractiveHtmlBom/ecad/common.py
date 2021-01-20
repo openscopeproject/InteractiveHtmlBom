@@ -47,7 +47,7 @@ class Component(object):
         self.val = val
         self.footprint = footprint
         self.layer = layer
-        self.attr = attr,
+        self.attr = attr
         self.extra_fields = extra_fields
 
 

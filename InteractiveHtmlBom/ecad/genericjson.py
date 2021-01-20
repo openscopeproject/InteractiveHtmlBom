@@ -21,10 +21,9 @@ class GenericJsonParser(EcadParser):
                                   .format(pcb['spec_version']))
 
         schema_dir = path.join(path.dirname(__file__), 'schema')
-        if pcb['spec_version'] == 1:
-            schema_file_name = path.join(schema_dir,
-                                         'genericjsonpcbdata_v{}.schema'
-                                         .format(pcb['spec_version']))
+        schema_file_name = path.join(schema_dir,
+                                     'genericjsonpcbdata_v{}.schema'
+                                     .format(pcb['spec_version']))
 
         with io.open(schema_file_name, 'r') as f:
             schema = json.load(f)
@@ -48,7 +47,8 @@ class GenericJsonParser(EcadParser):
         try:
             pcb = self.get_generic_json_pcb()
         except ValidationError as e:
-            self.logger.error(e.message)
+            self.logger.error('File {f} does not comply with json schema. {m}'
+                              .format(f=self.file_name, m=e.message))
             return None, None
 
         if not self._verify(pcb):
@@ -62,8 +62,8 @@ class GenericJsonParser(EcadParser):
         pcbdata = pcb['pcbdata']
         components = [Component(**c) for c in pcb['components']]
 
+        extra_field_data = {}
         if self.config.extra_fields:
-            extra_field_data = {}
             for c in components:
                 extra_field_data[c.ref] = {}
                 for f in self.config.extra_fields:

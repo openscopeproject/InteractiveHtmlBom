@@ -128,7 +128,7 @@ def generate_bom(pcb_footprints, config, extra_data):
         if config.extra_fields:
             if f.ref in extra_data:
                 extras = [extra_data[f.ref].get(ef, '')
-                            for ef in config.extra_fields]
+                          for ef in config.extra_fields]
             else:
                 # Some components are on pcb but not in schematic data.
                 # Show a warning about possibly outdated netlist/xml file.

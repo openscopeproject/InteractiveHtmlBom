@@ -10,6 +10,7 @@ from ..core import ibom
 from ..core.config import Config
 from ..core.fontparser import FontParser
 
+
 class PcbnewParser(EcadParser):
 
     def __init__(self, file_name, config, logger, board=None):
@@ -485,10 +486,10 @@ class PcbnewParser(EcadParser):
 
         # Get extra field data from netlist
         extra_field_data = None
-        need_extra_fields = (config.extra_fields or
-                             config.board_variant_whitelist or
-                             config.board_variant_blacklist or
-                             config.dnp_field)
+        need_extra_fields = (self.config.extra_fields or
+                             self.config.board_variant_whitelist or
+                             self.config.board_variant_blacklist or
+                             self.config.dnp_field)
 
         if not self.config.netlist_file and self.config.need_extra_fields:
             self.logger.warn('Ignoring extra fields related config parameters '
@@ -501,7 +502,7 @@ class PcbnewParser(EcadParser):
                 self.config.netlist_file, self.config.normalize_field_case)
 
         if extra_field_data is None and need_extra_fields:
-            raise ParsingException('Failed parsing %s' % config.netlist_file)
+            raise ParsingException('Failed parsing %s' % self.config.netlist_file)
 
         extra_field_data = extra_field_data[1] if extra_field_data else None
 
