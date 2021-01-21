@@ -44,7 +44,7 @@ class PcbnewParser(EcadParser):
         return [point[0] * 1e-6, point[1] * 1e-6]
 
     def parse_shape(self, d):
-        # type: (pcbnew.DRAWSEGMENT) -> dict | None
+        # type: (pcbnew.PCB_SHAPE) -> dict or None
         shape = {
             pcbnew.S_SEGMENT: "segment",
             pcbnew.S_CIRCLE: "circle",
@@ -249,7 +249,7 @@ class PcbnewParser(EcadParser):
         return drawings
 
     def parse_pad(self, pad):
-        # type: (pcbnew.D_PAD) -> dict or None
+        # type: (pcbnew.PAD) -> dict or None
         layers_set = list(pad.GetLayerSet().Seq())
         layers = []
         if pcbnew.F_Cu in layers_set:
@@ -318,7 +318,7 @@ class PcbnewParser(EcadParser):
         return pad_dict
 
     def parse_footprints(self):
-        # type: (list) -> list
+        # type: () -> list
         footprints = []
         for f in self.footprints:
             ref = f.GetReference()
@@ -362,11 +362,13 @@ class PcbnewParser(EcadParser):
             if pads:
                 # Try to guess first pin name.
                 pads = sorted(pads, key=lambda el: el[0])
-                pin1_pads = [p for p in pads if p[0] in ['1', 'A', 'A1', 'P1', 'PAD1']]
+                pin1_pads = [p for p in pads if p[0] in
+                             ['1', 'A', 'A1', 'P1', 'PAD1']]
                 if pin1_pads:
                     pin1_pad_name = pin1_pads[0][0]
                 else:
-                    # No pads have common first pin name, pick lexicographically smallest.
+                    # No pads have common first pin name,
+                    # pick lexicographically smallest.
                     pin1_pad_name = pads[0][0]
                 for pad_name, pad_dict in pads:
                     if pad_name == pin1_pad_name:
@@ -398,9 +400,9 @@ class PcbnewParser(EcadParser):
                     "width": track.GetWidth() * 1e-6,
                     "net": track.GetNetname(),
                 }
-                for l in [pcbnew.F_Cu, pcbnew.B_Cu]:
-                    if track.IsOnLayer(l):
-                        result[l].append(track_dict)
+                for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
+                    if track.IsOnLayer(layer):
+                        result[layer].append(track_dict)
             else:
                 if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     track_dict = {
@@ -419,15 +421,16 @@ class PcbnewParser(EcadParser):
 
     def parse_zones(self, zones):
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
-        for zone in zones:  # type: pcbnew.ZONE_CONTAINER
+        for zone in zones:  # type: pcbnew.ZONE
             if (not zone.IsFilled() or
                     hasattr(zone, 'GetIsKeepout') and zone.GetIsKeepout() or
                     hasattr(zone, 'GetIsRuleArea') and zone.GetIsRuleArea()):
                 continue
-            layers = [l for l in list(zone.GetLayerSet().Seq())
-                      if l in [pcbnew.F_Cu, pcbnew.B_Cu]]
+            layers = [layer for layer in list(zone.GetLayerSet().Seq())
+                      if layer in [pcbnew.F_Cu, pcbnew.B_Cu]]
             for layer in layers:
                 try:
+                    # kicad 5.1 and earlier
                     poly_set = zone.GetFilledPolysList()
                 except TypeError:
                     poly_set = zone.GetFilledPolysList(layer)
@@ -483,12 +486,21 @@ class PcbnewParser(EcadParser):
 
     def parse(self):
         title_block = self.board.GetTitleBlock()
+        title = title_block.GetTitle()
+        revision = title_block.GetRevision()
+        company = title_block.GetCompany()
+        if (hasattr(self.board, "GetProject") and
+                hasattr(pcbnew, "ExpandTextVars")):
+            project = self.board.GetProject()
+            title = pcbnew.ExpandTextVars(title, project)
+            revision = pcbnew.ExpandTextVars(revision, project)
+            company = pcbnew.ExpandTextVars(company, project)
+
         file_date = title_block.GetDate()
         if not file_date:
             file_mtime = os.path.getmtime(self.file_name)
             file_date = datetime.fromtimestamp(file_mtime).strftime(
                     '%Y-%m-%d %H:%M:%S')
-        title = title_block.GetTitle()
         pcb_file_name = os.path.basename(self.file_name)
         if not title:
             # remove .kicad_pcb extension
@@ -520,8 +532,8 @@ class PcbnewParser(EcadParser):
             "footprints": self.parse_footprints(),
             "metadata": {
                 "title": title,
-                "revision": title_block.GetRevision(),
-                "company": title_block.GetCompany(),
+                "revision": revision,
+                "company": company,
                 "date": file_date,
             },
             "bom": {},
@@ -560,8 +572,7 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
     def Run(self):
         from ..version import version
         from ..errors import ParsingException
-        self.version = version
-        config = Config(self.version)
+        config = Config(version)
         board = pcbnew.GetBoard()
         pcb_file_name = board.GetFileName()
 
