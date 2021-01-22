@@ -50,8 +50,8 @@ class Logger(object):
 log = None  # type: Logger or None
 
 
-def skip_component(m, config, extra_data):
-    # type: (Component, Config, dict) -> bool
+def skip_component(m, config):
+    # type: (Component, Config) -> bool
     # skip blacklisted components
     ref_prefix = re.findall('^[A-Z]*', m.ref)[0]
     if m.ref in config.component_blacklist:
@@ -67,29 +67,27 @@ def skip_component(m, config, extra_data):
         return True
 
     # skip components with dnp field not empty
-    if config.dnp_field and m.ref in extra_data \
-            and config.dnp_field in extra_data[m.ref] \
-            and extra_data[m.ref][config.dnp_field]:
+    if config.dnp_field \
+            and config.dnp_field in m.extra_fields \
+            and m.extra_fields[config.dnp_field]:
         return True
 
     # skip components with wrong variant field
     if config.board_variant_field and config.board_variant_whitelist:
-        if m.ref in extra_data:
-            ref_variant = extra_data[m.ref].get(config.board_variant_field, '')
-            if ref_variant not in config.board_variant_whitelist:
-                return True
+        ref_variant = m.extra_fields.get(config.board_variant_field, '')
+        if ref_variant not in config.board_variant_whitelist:
+            return True
 
     if config.board_variant_field and config.board_variant_blacklist:
-        if m.ref in extra_data:
-            ref_variant = extra_data[m.ref].get(config.board_variant_field, '')
-            if ref_variant and ref_variant in config.board_variant_blacklist:
-                return True
+        ref_variant = m.extra_fields.get(config.board_variant_field, '')
+        if ref_variant and ref_variant in config.board_variant_blacklist:
+            return True
 
     return False
 
 
-def generate_bom(pcb_footprints, config, extra_data):
-    # type: (list, Config, dict) -> dict
+def generate_bom(pcb_footprints, config):
+    # type: (list, Config) -> dict
     """
     Generate BOM from pcb layout.
     :param pcb_footprints: list of footprints on the pcb
@@ -117,7 +115,7 @@ def generate_bom(pcb_footprints, config, extra_data):
     skipped_components = []
     part_groups = {}
     for i, f in enumerate(pcb_footprints):
-        if skip_component(f, config, extra_data):
+        if skip_component(f, config):
             skipped_components.append(i)
             continue
 
@@ -126,16 +124,8 @@ def generate_bom(pcb_footprints, config, extra_data):
 
         extras = []
         if config.extra_fields:
-            if f.ref in extra_data:
-                extras = [extra_data[f.ref].get(ef, '')
-                          for ef in config.extra_fields]
-            else:
-                # Some components are on pcb but not in schematic data.
-                # Show a warning about possibly outdated netlist/xml file.
-                log.warn(
-                        'Component %s is missing from schematic data.' % f.ref)
-                warning_shown = True
-                extras = [''] * len(config.extra_fields)
+            extras = [f.extra_fields.get(ef, '')
+                      for ef in config.extra_fields]
 
         group_key = (norm_value, tuple(extras), f.footprint, f.attr)
         valrefs = part_groups.setdefault(group_key, [f.val, []])
@@ -277,7 +267,7 @@ def main(parser, config, logger):
     if not pcbdata and not components:
         raise ParsingException('Parsing failed.')
 
-    pcbdata["bom"] = generate_bom(components, config, extra_fields)
+    pcbdata["bom"] = generate_bom(components, config)
     pcbdata["ibom_version"] = config.version
 
     # build BOM

@@ -457,7 +457,7 @@ class PcbnewParser(EcadParser):
         return nets
 
     @staticmethod
-    def footprint_to_component(footprint):
+    def footprint_to_component(footprint, extra_fields):
         try:
             footprint_name = str(footprint.GetFPID().GetFootprintName())
         except AttributeError:
@@ -479,7 +479,8 @@ class PcbnewParser(EcadParser):
                          footprint.GetValue(),
                          footprint_name,
                          layer,
-                         attr)
+                         attr,
+                         extra_fields)
 
     def parse(self):
         from ..errors import ParsingException
@@ -490,11 +491,12 @@ class PcbnewParser(EcadParser):
                              self.config.board_variant_blacklist or
                              self.config.dnp_field)
 
-        if not self.config.netlist_file and self.config.need_extra_fields:
+        if not self.config.netlist_file and need_extra_fields:
             self.logger.warn('Ignoring extra fields related config parameters '
                              'since no netlist/xml file was specified.')
             need_extra_fields = False
 
+        extra_field_data = None
         if (self.config.netlist_file and
                 os.path.isfile(self.config.netlist_file)):
             extra_field_data = self.extra_data_func(
@@ -559,7 +561,19 @@ class PcbnewParser(EcadParser):
                 pcbdata["zones"] = {'F': [], 'B': []}
         if self.config.include_nets and hasattr(self.board, "GetNetInfo"):
             pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
-        components = [self.footprint_to_component(f) for f in self.footprints]
+
+        if self.config.extra_fields:
+            for f in pcbdata['footprints']:
+                if f['ref'] not in extra_field_data:
+                    # Some components are on pcb but not in schematic data.
+                    # Show a warning about possibly outdated netlist/xml file.
+                    self.logger.warn(
+                        'Component %s is missing from schematic data.' % f.ref)
+
+        components = [self.footprint_to_component(f,
+                      {} if extra_field_data is None
+                      else extra_field_data.get(f.GetReference()))
+                      for f in self.footprints]
 
         return pcbdata, components
 
