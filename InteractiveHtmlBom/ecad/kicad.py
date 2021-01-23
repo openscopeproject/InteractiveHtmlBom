@@ -574,6 +574,7 @@ class PcbnewParser(EcadParser):
         if self.config.include_nets and hasattr(self.board, "GetNetInfo"):
             pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
 
+        warning_shown = False
         if self.config.extra_fields:
             for f in pcbdata['footprints']:
                 if f['ref'] not in extra_field_data:
@@ -581,6 +582,9 @@ class PcbnewParser(EcadParser):
                     # Show a warning about possibly outdated netlist/xml file.
                     self.logger.warn(
                         'Component %s is missing from schematic data.' % f.ref)
+                    warning_shown = True
+        if warning_shown:
+            self.logger.warn('Netlist/xml file is likely out of date.')
 
         components = [self.footprint_to_component(f,
                       {} if extra_field_data is None

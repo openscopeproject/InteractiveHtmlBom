@@ -111,7 +111,6 @@ def generate_bom(pcb_footprints, config):
         return sorted(l, key=lambda r: (alphanum_key(r[0]), r[1]))
 
     # build grouped part list
-    warning_shown = False
     skipped_components = []
     part_groups = {}
     for i, f in enumerate(pcb_footprints):
@@ -131,8 +130,6 @@ def generate_bom(pcb_footprints, config):
         valrefs = part_groups.setdefault(group_key, [f.val, []])
         valrefs[1].append((f.ref, i))
 
-    if warning_shown:
-        log.warn('Netlist/xml file is likely out of date.')
     # build bom table, sort refs
     bom_table = []
     for (norm_value, extras, footprint, attr), valrefs in part_groups.items():
