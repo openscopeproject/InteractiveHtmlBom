@@ -36,6 +36,38 @@ class EcadParser(object):
         """
         return None
 
+    def add_drawing_bounding_box(self, drawing, bbox):
+        # type: (dict, BoundingBox) -> None
+
+        def add_segment():
+            bbox.add_segment(drawing['start'][0], drawing['start'][1],
+                             drawing['end'][0], drawing['end'][1],
+                             drawing['width'] / 2)
+
+        def add_circle():
+            bbox.add_circle(drawing['start'][0], drawing['start'][1],
+                            drawing['radius'] + drawing['width'] / 2)
+
+        def add_svgpath():
+            width = drawing.get('width', 0)
+            bbox.add_svgpath(drawing['svgpath'], width, self.logger)
+
+        def add_polygon():
+            if 'polygons' not in drawing:
+                add_svgpath()
+                return
+            polygon = drawing['polygons'][0]
+            for point in polygon:
+                bbox.add_point(point[0], point[1])
+
+        {
+            'segment': add_segment,
+            'circle': add_circle,
+            'arc': add_svgpath,
+            'polygon': add_polygon,
+            'text': lambda: None,  # text is not really needed for bounding box
+        }.get(drawing['type'])()
+
 
 class Component(object):
     """Simple data object to store component data needed for bom table."""

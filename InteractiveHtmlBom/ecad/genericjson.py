@@ -2,7 +2,7 @@ import io
 import json
 from jsonschema import validate, ValidationError
 
-from .common import EcadParser, Component
+from .common import EcadParser, Component, BoundingBox
 
 
 class GenericJsonParser(EcadParser):
@@ -61,6 +61,13 @@ class GenericJsonParser(EcadParser):
 
         pcbdata = pcb['pcbdata']
         components = [Component(**c) for c in pcb['components']]
+
+        # override board bounding box based on edges
+        board_outline_bbox = BoundingBox()
+        for drawing in pcbdata['edges']:
+            self.add_drawing_bounding_box(drawing, board_outline_bbox)
+        if board_outline_bbox.initialized():
+            pcbdata['edges_bbox'] = board_outline_bbox.to_dict()
 
         if self.config.extra_fields:
             for c in components:
