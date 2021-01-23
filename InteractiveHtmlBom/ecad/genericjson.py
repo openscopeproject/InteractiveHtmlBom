@@ -37,8 +37,8 @@ class GenericJsonParser(EcadParser):
         """Spot check the pcb object."""
 
         if len(pcb['pcbdata']['footprints']) != len(pcb['components']):
-            self.logger.error("length of components list doesn't match"
-                              " length of footprints list")
+            self.logger.error("Length of components list doesn't match"
+                              " length of footprints list.")
             return False
 
         return True

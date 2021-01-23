@@ -20,7 +20,7 @@ class EcadParser(object):
         """
         Abstract method that should be overridden in implementations.
         Performs all the parsing and returns a tuple of
-        (pcbdata, components, extra_field_data)
+        (pcbdata, components)
         pcbdata is described in DATAFORMAT.md
         components is list of Component objects
         :return:
