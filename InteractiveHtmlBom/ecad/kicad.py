@@ -583,7 +583,8 @@ class PcbnewParser(EcadParser):
                     # Some components are on pcb but not in schematic data.
                     # Show a warning about possibly outdated netlist/xml file.
                     self.logger.warn(
-                        'Component %s is missing from schematic data.' % f.ref)
+                        'Component %s is missing from schematic data.'
+                        % f.GetReference())
                     warning_shown = True
         else:
             e = [{}] * len(self.footprints)
