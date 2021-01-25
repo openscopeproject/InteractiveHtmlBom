@@ -6,7 +6,15 @@ def get_parser_by_extension(file_name, config, logger):
     if ext == '.kicad_pcb':
         return get_kicad_parser(file_name, config, logger)
     elif ext == '.json':
-        return get_easyeda_parser(file_name, config, logger)
+        """.json file may be from EasyEDA or a generic json format"""
+        import io
+        import json
+        with io.open(file_name, 'r') as f:
+            obj = json.load(f)
+        if 'pcbdata' in obj:
+            return get_generic_json_parser(file_name, config, logger)
+        else:
+            return get_easyeda_parser(file_name, config, logger)
     else:
         return None
 
@@ -19,3 +27,8 @@ def get_kicad_parser(file_name, config, logger, board=None):
 def get_easyeda_parser(file_name, config, logger):
     from .easyeda import EasyEdaParser
     return EasyEdaParser(file_name, config, logger)
+
+
+def get_generic_json_parser(file_name, config, logger):
+    from .genericjson import GenericJsonParser
+    return GenericJsonParser(file_name, config, logger)

@@ -460,7 +460,7 @@ class PcbnewParser(EcadParser):
         return nets
 
     @staticmethod
-    def footprint_to_component(footprint):
+    def footprint_to_component(footprint, extra_fields):
         try:
             footprint_name = str(footprint.GetFPID().GetFootprintName())
         except AttributeError:
@@ -482,9 +482,34 @@ class PcbnewParser(EcadParser):
                          footprint.GetValue(),
                          footprint_name,
                          layer,
-                         attr)
+                         attr,
+                         extra_fields)
 
     def parse(self):
+        from ..errors import ParsingException
+
+        # Get extra field data from netlist
+        need_extra_fields = (self.config.extra_fields or
+                             self.config.board_variant_whitelist or
+                             self.config.board_variant_blacklist or
+                             self.config.dnp_field)
+
+        if not self.config.netlist_file and need_extra_fields:
+            self.logger.warn('Ignoring extra fields related config parameters '
+                             'since no netlist/xml file was specified.')
+            need_extra_fields = False
+
+        extra_field_data = None
+        if (self.config.netlist_file and
+                os.path.isfile(self.config.netlist_file)):
+            extra_field_data = self.extra_data_func(
+                self.config.netlist_file, self.config.normalize_field_case)
+
+        if extra_field_data is None and need_extra_fields:
+            raise ParsingException('Failed parsing %s' % self.config.netlist_file)
+
+        extra_field_data = extra_field_data[1] if extra_field_data else None
+
         title_block = self.board.GetTitleBlock()
         title = title_block.GetTitle()
         revision = title_block.GetRevision()
@@ -548,7 +573,27 @@ class PcbnewParser(EcadParser):
                 pcbdata["zones"] = {'F': [], 'B': []}
         if self.config.include_nets and hasattr(self.board, "GetNetInfo"):
             pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
-        components = [self.footprint_to_component(f) for f in self.footprints]
+
+        warning_shown = False
+        if extra_field_data and need_extra_fields:
+            e = []
+            for f in self.footprints:
+                e.append(extra_field_data.get(f.GetReference(), {}))
+                if f.GetReference() not in extra_field_data:
+                    # Some components are on pcb but not in schematic data.
+                    # Show a warning about possibly outdated netlist/xml file.
+                    self.logger.warn(
+                        'Component %s is missing from schematic data.'
+                        % f.GetReference())
+                    warning_shown = True
+        else:
+            e = [{}] * len(self.footprints)
+
+        if warning_shown:
+            self.logger.warn('Netlist/xml file is likely out of date.')
+
+        components = [self.footprint_to_component(f, ee)
+                      for (f, ee) in zip(self.footprints, e)]
 
         return pcbdata, components
 

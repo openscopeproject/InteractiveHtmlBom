@@ -50,8 +50,8 @@ class Logger(object):
 log = None  # type: Logger or None
 
 
-def skip_component(m, config, extra_data):
-    # type: (Component, Config, dict) -> bool
+def skip_component(m, config):
+    # type: (Component, Config) -> bool
     # skip blacklisted components
     ref_prefix = re.findall('^[A-Z]*', m.ref)[0]
     if m.ref in config.component_blacklist:
@@ -67,29 +67,27 @@ def skip_component(m, config, extra_data):
         return True
 
     # skip components with dnp field not empty
-    if config.dnp_field and m.ref in extra_data \
-            and config.dnp_field in extra_data[m.ref] \
-            and extra_data[m.ref][config.dnp_field]:
+    if config.dnp_field \
+            and config.dnp_field in m.extra_fields \
+            and m.extra_fields[config.dnp_field]:
         return True
 
     # skip components with wrong variant field
     if config.board_variant_field and config.board_variant_whitelist:
-        if m.ref in extra_data:
-            ref_variant = extra_data[m.ref].get(config.board_variant_field, '')
-            if ref_variant not in config.board_variant_whitelist:
-                return True
+        ref_variant = m.extra_fields.get(config.board_variant_field, '')
+        if ref_variant not in config.board_variant_whitelist:
+            return True
 
     if config.board_variant_field and config.board_variant_blacklist:
-        if m.ref in extra_data:
-            ref_variant = extra_data[m.ref].get(config.board_variant_field, '')
-            if ref_variant and ref_variant in config.board_variant_blacklist:
-                return True
+        ref_variant = m.extra_fields.get(config.board_variant_field, '')
+        if ref_variant and ref_variant in config.board_variant_blacklist:
+            return True
 
     return False
 
 
-def generate_bom(pcb_footprints, config, extra_data):
-    # type: (list, Config, dict) -> dict
+def generate_bom(pcb_footprints, config):
+    # type: (list, Config) -> dict
     """
     Generate BOM from pcb layout.
     :param pcb_footprints: list of footprints on the pcb
@@ -113,11 +111,10 @@ def generate_bom(pcb_footprints, config, extra_data):
         return sorted(l, key=lambda r: (alphanum_key(r[0]), r[1]))
 
     # build grouped part list
-    warning_shown = False
     skipped_components = []
     part_groups = {}
     for i, f in enumerate(pcb_footprints):
-        if skip_component(f, config, extra_data):
+        if skip_component(f, config):
             skipped_components.append(i)
             continue
 
@@ -126,23 +123,13 @@ def generate_bom(pcb_footprints, config, extra_data):
 
         extras = []
         if config.extra_fields:
-            if f.ref in extra_data:
-                extras = [extra_data[f.ref].get(ef, '')
-                          for ef in config.extra_fields]
-            else:
-                # Some components are on pcb but not in schematic data.
-                # Show a warning about possibly outdated netlist/xml file.
-                log.warn(
-                        'Component %s is missing from schematic data.' % f.ref)
-                warning_shown = True
-                extras = [''] * len(config.extra_fields)
+            extras = [f.extra_fields.get(ef, '')
+                      for ef in config.extra_fields]
 
         group_key = (norm_value, tuple(extras), f.footprint, f.attr)
         valrefs = part_groups.setdefault(group_key, [f.val, []])
         valrefs[1].append((f.ref, i))
 
-    if warning_shown:
-        log.warn('Netlist/xml file is likely out of date.')
     # build bom table, sort refs
     bom_table = []
     for (norm_value, extras, footprint, attr), valrefs in part_groups.items():
@@ -230,7 +217,6 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
         with io.open(path, 'r', encoding='utf-8') as f:
             return f.read()
 
-
     if os.path.isabs(config.bom_dest_dir):
         bom_file_dir = config.bom_dest_dir
     else:
@@ -274,36 +260,11 @@ def main(parser, config, logger):
     pcb_file_name = os.path.basename(parser.file_name)
     pcb_file_dir = os.path.dirname(parser.file_name)
 
-    # Get extra field data
-    extra_fields = None
-    if config.netlist_file and os.path.isfile(config.netlist_file):
-        extra_fields = parser.extra_data_func(
-                config.netlist_file, config.normalize_field_case)
-
-    need_extra_fields = (config.extra_fields or
-                         config.board_variant_whitelist or
-                         config.board_variant_blacklist or
-                         config.dnp_field)
-
-    if not config.netlist_file and need_extra_fields:
-        logger.warn('Ignoring extra fields related config parameters '
-                    'since no netlist/xml file was specified.')
-        config.extra_fields = []
-        config.board_variant_whitelist = []
-        config.board_variant_blacklist = []
-        config.dnp_field = ''
-        need_extra_fields = False
-
-    if extra_fields is None and need_extra_fields:
-        raise ParsingException('Failed parsing %s' % config.netlist_file)
-
-    extra_fields = extra_fields[1] if extra_fields else None
-
     pcbdata, components = parser.parse()
     if not pcbdata and not components:
         raise ParsingException('Parsing failed.')
 
-    pcbdata["bom"] = generate_bom(components, config, extra_fields)
+    pcbdata["bom"] = generate_bom(components, config)
     pcbdata["ibom_version"] = config.version
 
     # build BOM
