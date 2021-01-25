@@ -467,8 +467,8 @@ class PcbnewParser(EcadParser):
             footprint_name = str(footprint.GetFPID().GetLibItemName())
 
         attr = 'Normal'
-        if hasattr(pcbnew, 'MOD_EXCLUDE_FROM_BOM'):
-            if footprint.GetAttributes() & pcbnew.MOD_EXCLUDE_FROM_BOM:
+        if hasattr(pcbnew, 'FP_EXCLUDE_FROM_BOM'):
+            if footprint.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_BOM:
                 attr = 'Virtual'
         elif hasattr(pcbnew, 'MOD_VIRTUAL'):
             if footprint.GetAttributes() == pcbnew.MOD_VIRTUAL:
