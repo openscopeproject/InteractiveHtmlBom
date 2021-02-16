@@ -159,9 +159,7 @@ def componentValue(valString):
     if not len(result) == 2:  # result length is incorrect
         return valString
 
-    (val, unit) = result
-
-    return val
+    return result #(val,unit)
 
 
 # compare two values
