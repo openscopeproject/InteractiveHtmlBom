@@ -119,20 +119,20 @@ def generate_bom(pcb_footprints, config):
             continue
 
         # group part refs by value and footprint
-        norm_value = units.componentValue(f.val)
+        norm_value, unit = units.componentValue(f.val)
 
         extras = []
         if config.extra_fields:
             extras = [f.extra_fields.get(ef, '')
                       for ef in config.extra_fields]
 
-        group_key = (norm_value, tuple(extras), f.footprint, f.attr)
+        group_key = (norm_value, unit, tuple(extras), f.footprint, f.attr)
         valrefs = part_groups.setdefault(group_key, [f.val, []])
         valrefs[1].append((f.ref, i))
 
     # build bom table, sort refs
     bom_table = []
-    for (norm_value, extras, footprint, attr), valrefs in part_groups.items():
+    for (_, _, extras, footprint, _), valrefs in part_groups.items():
         bom_row = (
             len(valrefs[1]), valrefs[0], footprint,
             natural_sort(valrefs[1]), extras)

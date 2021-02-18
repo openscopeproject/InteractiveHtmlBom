@@ -154,14 +154,12 @@ def componentValue(valString):
     result = compMatch(valString)
 
     if not result:
-        return valString  # return the same string back
+        return valString, None  # return the same string back with `None` unit
 
     if not len(result) == 2:  # result length is incorrect
-        return valString
+        return valString, None  # return the same string back with `None` unit
 
-    (val, unit) = result
-
-    return val
+    return result  # (val,unit)
 
 
 # compare two values
