@@ -384,8 +384,16 @@ function drawTracks(canvas, layer, color, highlight) {
     if (highlight && highlightedNet != track.net) continue;
     ctx.lineWidth = track.width;
     ctx.beginPath();
-    ctx.moveTo(...track.start);
-    ctx.lineTo(...track.end);
+    if('radius' in track) {
+      ctx.arc(
+          ...track.center,
+          track.radius,
+          deg2rad(track.startangle),
+          deg2rad(track.endangle));
+    } else {
+      ctx.moveTo(...track.start);
+      ctx.lineTo(...track.end);
+    }
     ctx.stroke();
   }
 }
