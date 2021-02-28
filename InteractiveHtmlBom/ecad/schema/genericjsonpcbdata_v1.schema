@@ -506,17 +506,39 @@
         },
         "Track": {
             "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "start": { "$ref": "#/definitions/Coordinates" }, 
-                "end": { "$ref": "#/definitions/Coordinates" }, 
-                "width": { "type": "number" },
-                "net": { "type": "string" }
-            },
-            "required": [
-                "start",
-                "end",
-                "width"
+            "oneOf":[
+                {
+                    "additionalProperties": false,
+                    "properties": {
+                        "start": { "$ref": "#/definitions/Coordinates" }, 
+                        "end": { "$ref": "#/definitions/Coordinates" },
+                        "width": { "type": "number" },
+                        "net": { "type": "string" }
+                    },
+                    "required": [
+                        "start",
+                        "end",
+                        "width"
+                    ]
+                },
+                {
+                    "additionalProperties": false,
+                    "properties": {
+                        "center": { "$ref": "#/definitions/Coordinates" },
+                        "startangle": { "type": "number" },
+                        "endangle": { "type": "number" },
+                        "radius": { "type": "number" },
+                        "width": { "type": "number" },
+                        "net": { "type": "string" }
+                    },
+                    "required": [
+                        "center",
+                        "startangle",
+                        "endangle",
+                        "radius",
+                        "width"
+                    ]
+                }
             ]
         },
         "Zones": {
