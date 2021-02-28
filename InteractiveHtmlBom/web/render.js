@@ -649,17 +649,18 @@ function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d)
   var angle2 = modulo(endangle, 360.0);
   var dx = x - xc;
   var dy = y - yc;
-  var r = Math.sqrt(dx * dx + dy * dy);
-  var dr = Math.abs(radius - r);
+  var r_sq = dx * dx + dy * dy;
+  var rmin = Math.max(0,radius-d);
+  var rmax = (radius+d);
 
-  if ( dr > d )
+  if (r_sq < rmin * rmin || r_sq > rmax * rmax)
     return false;
 
   var angle = modulo(Math.atan2(dy, dx) * 180 / Math.PI, 360.0);
   if (angle1 > angle2)
-    return (angle > (angle2 - radius * d) || angle < (angle1 + radius * d));
+    return (angle >= angle2 || angle <= angle1);
   else
-    return (angle >= (angle1 - radius * d) && angle <= (angle2 + radius * d));
+    return (angle >= angle1 && angle <= angle2 );
 }
 
 function pointWithinPad(x, y, pad) {
