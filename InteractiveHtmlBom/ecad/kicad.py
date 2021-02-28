@@ -320,7 +320,7 @@ class PcbnewParser(EcadParser):
     def parse_footprints(self):
         # type: () -> list
         footprints = []
-        for f in self.footprints:
+        for f in self.footprints:  # type: pcbnew.FOOTPRINT
             ref = f.GetReference()
 
             # bounding box
@@ -330,11 +330,14 @@ class PcbnewParser(EcadParser):
                 f_copy = pcbnew.FOOTPRINT(f)
             f_copy.SetOrientation(0)
             f_copy.SetPosition(pcbnew.wxPoint(0, 0))
-            mrect = f_copy.GetFootprintRect()
+            if hasattr(f_copy, 'GetFootprintRect'):
+                footprint_rect = f_copy.GetFootprintRect()
+            else:
+                footprint_rect = f_copy.GetBoundingBox(False, False)
             bbox = {
                 "pos": self.normalize(f.GetPosition()),
-                "relpos": self.normalize(mrect.GetPosition()),
-                "size": self.normalize(mrect.GetSize()),
+                "relpos": self.normalize(footprint_rect.GetPosition()),
+                "size": self.normalize(footprint_rect.GetSize()),
                 "angle": f.GetOrientation() * 0.1,
             }
 

@@ -10,8 +10,8 @@ class GenericJsonParser(EcadParser):
 
     def get_generic_json_pcb(self):
         from os import path
-        with io.open(self.file_name, 'r') as f:
-            pcb = json.load(f)
+        with io.open(self.file_name, 'r', encoding='utf-8') as f:
+            pcb = json.load(f, encoding='utf-8')
 
         if 'spec_version' not in pcb:
             raise ValidationError("'spec_version' is a required property")
@@ -25,8 +25,8 @@ class GenericJsonParser(EcadParser):
                                      'genericjsonpcbdata_v{}.schema'
                                      .format(pcb['spec_version']))
 
-        with io.open(schema_file_name, 'r') as f:
-            schema = json.load(f)
+        with io.open(schema_file_name, 'r', encoding='utf-8') as f:
+            schema = json.load(f, encoding='utf-8')
 
         validate(instance=pcb, schema=schema)
 
