@@ -384,7 +384,7 @@ function drawTracks(canvas, layer, color, highlight) {
     if (highlight && highlightedNet != track.net) continue;
     ctx.lineWidth = track.width;
     ctx.beginPath();
-    if('radius' in track) {
+    if ('radius' in track) {
       ctx.arc(
           ...track.center,
           track.radius,
@@ -640,6 +640,28 @@ function pointWithinDistanceToSegment(x, y, x1, y1, x2, y2, d) {
   return dx * dx + dy * dy <= d * d;
 }
 
+function modulo(n, mod) {
+  return ((n % mod) + mod ) % mod;
+}
+
+function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d) {
+  var angle1 = modulo(startangle, 360.0);
+  var angle2 = modulo(endangle, 360.0);
+  var dx = x - xc;
+  var dy = y - yc;
+  var r = Math.sqrt(dx * dx + dy * dy);
+  var dr = Math.abs(radius - r);
+
+  if ( dr > d )
+    return false;
+
+  var angle = modulo(Math.atan2(dy, dx) * 180 / Math.PI, 360.0);
+  if (angle1 > angle2)
+    return (angle > (angle2 - radius * d) || angle < (angle1 + radius * d));
+  else
+    return (angle >= (angle1 - radius * d) && angle <= (angle2 + radius * d));
+}
+
 function pointWithinPad(x, y, pad) {
   var v = [x - pad.pos[0], y - pad.pos[1]];
   v = rotateVector(v, -pad.angle);
@@ -654,8 +676,14 @@ function netHitScan(layer, x, y) {
   // Check track segments
   if (settings.renderTracks && pcbdata.tracks) {
     for(var track of pcbdata.tracks[layer]) {
-      if (pointWithinDistanceToSegment(x, y, ...track.start, ...track.end, track.width / 2)) {
-        return track.net;
+      if ('radius' in track) {
+        if (pointWithinDistanceToArc(x, y, ...track.center, track.radius, track.startangle, track.endangle, track.width / 2)) {
+          return track.net;
+        }
+      } else {
+        if (pointWithinDistanceToSegment(x, y, ...track.start, ...track.end, track.width / 2)) {
+          return track.net;
+        }
       }
     }
   }
