@@ -3,6 +3,12 @@
 This document describes pcbdata json structure that plugin
 extracts from PCB file and injects into generated bom page.
 
+Notes on conventions:
+* Coordinate system has origin in top left corner i.e. Y grows downwards
+* All angles are in degrees measured clockwise from positive X axis vector
+* Units are arbitrary but some browsers will not handle too large numbers
+  well so sticking to mm/mils is preferred.
+
 ```js
 pcbdata = {
    // Describes bounding box of all edge cut drawings.
@@ -42,8 +48,16 @@ pcbdata = {
   "tracks": {
     "F": [
       {
+        // In case of line segment or via (via is 0 length segment)
         "start": [x, y],
         "end": [x, y],
+        // In case of arc
+        "center": [x, y],
+        "startangle":
+        "radius": radius,
+        "startangle": angle1,
+        "endangle": angle2,
+        // Common fields
         "width": w,
         // Optional net name
         "net": netname

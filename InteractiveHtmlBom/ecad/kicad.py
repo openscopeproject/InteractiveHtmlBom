@@ -77,11 +77,10 @@ class PcbnewParser(EcadParser):
             a2 = (d.GetArcAngleStart() + d.GetAngle()) * 0.1
             if d.GetAngle() < 0:
                 (a1, a2) = (a2, a1)
-            r = d.GetRadius() * 1e-6
             return {
                 "type": shape,
                 "start": start,
-                "radius": r,
+                "radius": d.GetRadius() * 1e-6,
                 "startangle": a1,
                 "endangle": a2,
                 "width": d.GetWidth() * 1e-6
@@ -408,11 +407,24 @@ class PcbnewParser(EcadParser):
                         result[layer].append(track_dict)
             else:
                 if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
-                    track_dict = {
-                        "start": self.normalize(track.GetStart()),
-                        "end": self.normalize(track.GetEnd()),
-                        "width": track.GetWidth() * 1e-6,
-                    }
+                    if track.GetClass() == "ARC":
+                        a1 = track.GetArcAngleStart() * 0.1
+                        a2 = (track.GetArcAngleStart() + track.GetAngle()) * 0.1
+                        if track.GetAngle() < 0:
+                            (a1, a2) = (a2, a1)
+                        track_dict = {
+                            "center": self.normalize(track.GetCenter()),
+                            "startangle": a1,
+                            "endangle": a2,
+                            "radius": track.GetRadius() * 1e-6,
+                            "width": track.GetWidth() * 1e-6,
+                        }
+                    else:
+                        track_dict = {
+                            "start": self.normalize(track.GetStart()),
+                            "end": self.normalize(track.GetEnd()),
+                            "width": track.GetWidth() * 1e-6,
+                        }
                     if self.config.include_nets:
                         track_dict["net"] = track.GetNetname()
                     result[track.GetLayer()].append(track_dict)
