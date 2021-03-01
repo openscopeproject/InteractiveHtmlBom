@@ -654,7 +654,7 @@ function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d)
   if (r_sq < rmin * rmin || r_sq > rmax * rmax)
     return false;
 
-  var angle1 = modulo(startangle, 360.0);
+  var angle1 = modulo(startangle * Math.PI / 180, 2 * Math.PI);
   var x1 = xc + radius * Math.cos(angle1);
   var y1 = yc - radius * Math.sin(angle1);
   var dx1 = x1 - x;
@@ -662,7 +662,7 @@ function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d)
   if (dx1 * dx1 + dy1 * dy1 <= d * d )
     return true;
 
-  var angle2 = modulo(endangle, 360.0);
+  var angle2 = modulo(endangle * Math.PI / 180, 2 * Math.PI);
   var x2 = xc + radius * Math.cos(angle2);
   var y2 = yc - radius * Math.sin(angle2);
   var dx2 = x2 - x;
@@ -670,7 +670,7 @@ function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d)
   if (dx2 * dx2 + dy2 * dy2 <= d * d )
     return true;
 
-  var angle = modulo(Math.atan2(dy, dx) * 180 / Math.PI, 360.0);
+  var angle = modulo(Math.atan2(dy, dx), 2 * Math.PI);
   if (angle1 > angle2)
     return (angle >= angle2 || angle <= angle1);
   else
