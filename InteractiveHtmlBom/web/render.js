@@ -648,8 +648,8 @@ function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d)
   var dx = x - xc;
   var dy = y - yc;
   var r_sq = dx * dx + dy * dy;
-  var rmin = Math.max(0,radius-d);
-  var rmax = (radius+d);
+  var rmin = Math.max(0, radius-d);
+  var rmax = radius + d;
 
   if (r_sq < rmin * rmin || r_sq > rmax * rmax)
     return false;
@@ -657,17 +657,17 @@ function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d)
   var angle1 = modulo(startangle, 360.0);
   var x1 = xc + radius * Math.cos(angle1);
   var y1 = yc - radius * Math.sin(angle1);
-  var dx1 = x1 - xc;
-  var dy1 = y1 - yc;
-  if (dx1 * dx1 + dy1 + dy1 <= d * d )
+  var dx1 = x1 - x;
+  var dy1 = y1 - y;
+  if (dx1 * dx1 + dy1 * dy1 <= d * d )
     return true;
 
   var angle2 = modulo(endangle, 360.0);
   var x2 = xc + radius * Math.cos(angle2);
   var y2 = yc - radius * Math.sin(angle2);
-  var dx2 = x2 - xc;
-  var dy2 = y2 - xc;
-  if (dx2 * dx2 + dy2 + dy2 <= d * d )
+  var dx2 = x2 - x;
+  var dy2 = y2 - y;
+  if (dx2 * dx2 + dy2 * dy2 <= d * d )
     return true;
 
   var angle = modulo(Math.atan2(dy, dx) * 180 / Math.PI, 360.0);
