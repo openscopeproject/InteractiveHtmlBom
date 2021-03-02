@@ -10,7 +10,7 @@ def get_parser_by_extension(file_name, config, logger):
         import io
         import json
         with io.open(file_name, 'r', encoding='utf-8') as f:
-            obj = json.load(f, encoding='utf-8')
+            obj = json.load(f)
         if 'pcbdata' in obj:
             return get_generic_json_parser(file_name, config, logger)
         else:

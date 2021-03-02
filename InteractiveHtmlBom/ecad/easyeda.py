@@ -25,7 +25,7 @@ class EasyEdaParser(EcadParser):
     def get_easyeda_pcb(self):
         import json
         with io.open(self.file_name, 'r', encoding='utf-8') as f:
-            return json.load(f, encoding='utf-8')
+            return json.load(f)
 
     @staticmethod
     def tilda_split(s):
