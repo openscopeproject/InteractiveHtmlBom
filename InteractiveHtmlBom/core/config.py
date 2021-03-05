@@ -54,6 +54,7 @@ class Config:
     checkboxes = ','.join(default_checkboxes)
     bom_view = bom_view_choices[1]
     layer_view = layer_view_choices[1]
+    compression = True
     open_browser = True
 
     # General section
@@ -107,6 +108,7 @@ class Config:
         self.checkboxes = f.Read('checkboxes', self.checkboxes)
         self.bom_view = f.Read('bom_view', self.bom_view)
         self.layer_view = f.Read('layer_view', self.layer_view)
+        self.compression = f.ReadBool('compression', self.compression)
         self.open_browser = f.ReadBool('open_browser', self.open_browser)
 
         f.SetPath('/general')
@@ -155,6 +157,7 @@ class Config:
         f.Write('checkboxes', self.checkboxes)
         f.Write('bom_view', self.bom_view)
         f.Write('layer_view', self.layer_view)
+        f.WriteBool('compression', self.compression)
         f.WriteBool('open_browser', self.open_browser)
 
         f.SetPath('/general')
@@ -198,6 +201,7 @@ class Config:
         self.bom_view = self.bom_view_choices[dlg.html.bomDefaultView.Selection]
         self.layer_view = self.layer_view_choices[
             dlg.html.layerDefaultView.Selection]
+        self.compression = dlg.html.compressionCheckbox.IsChecked()
         self.open_browser = dlg.html.openBrowserCheckbox.IsChecked()
 
         # General
@@ -242,6 +246,7 @@ class Config:
                 self.bom_view)
         dlg.html.layerDefaultView.Selection = self.layer_view_choices.index(
                 self.layer_view)
+        dlg.html.compressionCheckbox.Value = self.compression
         dlg.html.openBrowserCheckbox.Value = self.open_browser
 
         # General
@@ -321,6 +326,9 @@ class Config:
         parser.add_argument('--layer-view', default=self.layer_view,
                             choices=self.layer_view_choices,
                             help='Default layer view.')
+        parser.add_argument('--no-compression',
+                            help='Disable compression of pcb data.',
+                            action='store_true')
         parser.add_argument('--no-browser', help='Do not launch browser.',
                             action='store_true')
 
@@ -388,6 +396,7 @@ class Config:
         self.checkboxes = args.checkboxes
         self.bom_view = args.bom_view
         self.layer_view = args.layer_view
+        self.compression = not args.no_compression
         self.open_browser = not args.no_browser
 
         # General

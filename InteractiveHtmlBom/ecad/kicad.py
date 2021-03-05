@@ -73,8 +73,8 @@ class PcbnewParser(EcadParser):
                 "width": d.GetWidth() * 1e-6
             }
         if shape == "arc":
-            a1 = d.GetArcAngleStart() * 0.1
-            a2 = (d.GetArcAngleStart() + d.GetAngle()) * 0.1
+            a1 = round(d.GetArcAngleStart() * 0.1, 2)
+            a2 = round((d.GetArcAngleStart() + d.GetAngle()) * 0.1, 2)
             if d.GetAngle() < 0:
                 (a1, a2) = (a2, a1)
             return {
@@ -408,8 +408,8 @@ class PcbnewParser(EcadParser):
             else:
                 if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     if track.GetClass() == "ARC":
-                        a1 = track.GetArcAngleStart() * 0.1
-                        a2 = (track.GetArcAngleStart() + track.GetAngle()) * 0.1
+                        a1 = round(track.GetArcAngleStart() * 0.1, 2)
+                        a2 = round((track.GetArcAngleStart() + track.GetAngle()) * 0.1, 2)
                         if track.GetAngle() < 0:
                             (a1, a2) = (a2, a1)
                         track_dict = {

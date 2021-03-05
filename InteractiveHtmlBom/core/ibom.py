@@ -200,13 +200,28 @@ def process_substitutions(bom_name_format, pcb_file_name, metadata):
     return name + '.html'
 
 
-def get_compressed_pcbdata(pcbdata):
+def round_floats(o, precision):
+    if isinstance(o, float):
+        return round(o, precision)
+    if isinstance(o, dict):
+        return {k: round_floats(v, precision) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [round_floats(x, precision) for x in o]
+    return o
+
+
+def get_pcbdata_javascript(pcbdata, compression):
     from .lzstring import LZString
 
-    pcbdata_js = LZString().compress_to_base64(json.dumps(pcbdata))
-    pcbdata_js = json.dumps(pcbdata_js)
-    js = "var pcbdata = JSON.parse(LZString.decompressFromBase64({}))"
-    return js.format(pcbdata_js)
+    js = "var pcbdata = {}"
+    pcbdata_str = json.dumps(round_floats(pcbdata, 6))
+
+    if compression:
+        log.info("Compressing pcb data")
+        pcbdata_str = json.dumps(LZString().compress_to_base64(pcbdata_str))
+        js = "var pcbdata = JSON.parse(LZString.decompressFromBase64({}))"
+
+    return js.format(pcbdata_str)
 
 
 def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
@@ -227,28 +242,33 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     bom_file_dir = os.path.dirname(bom_file_name)
     if not os.path.isdir(bom_file_dir):
         os.makedirs(bom_file_dir)
-    log.info("Compressing pcb data")
-    compressed_pcbdata = get_compressed_pcbdata(pcbdata)
+    pcbdata_js = get_pcbdata_javascript(pcbdata, config.compression)
     log.info("Dumping pcb data")
     config_js = "var config = " + config.get_html_config()
     html = get_file_content("ibom.html")
     html = html.replace('///CSS///', get_file_content('ibom.css'))
     html = html.replace('///USERCSS///', get_file_content('user.css'))
     html = html.replace('///SPLITJS///', get_file_content('split.js'))
-    html = html.replace('///LZ-STRING///', get_file_content('lz-string.js'))
+    html = html.replace('///LZ-STRING///',
+                        get_file_content('lz-string.js')
+                        if config.compression else '')
     html = html.replace('///POINTER_EVENTS_POLYFILL///',
                         get_file_content('pep.js'))
     html = html.replace('///CONFIG///', config_js)
-    html = html.replace('///PCBDATA///', compressed_pcbdata)
     html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
     html = html.replace('///USERJS///', get_file_content('user.js'))
-    html = html.replace('///USERHEADER///', get_file_content('userheader.html'))
-    html = html.replace('///USERFOOTER///', get_file_content('userfooter.html'))
+    html = html.replace('///USERHEADER///',
+                        get_file_content('userheader.html'))
+    html = html.replace('///USERFOOTER///',
+                        get_file_content('userfooter.html'))
+    # Replace pcbdata last for better performance.
+    html = html.replace('///PCBDATA///', pcbdata_js)
 
     with io.open(bom_file_name, 'wt', encoding='utf-8') as bom:
         bom.write(html)
+
     log.info("Created file %s", bom_file_name)
     return bom_file_name
 

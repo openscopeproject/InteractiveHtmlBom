@@ -512,10 +512,13 @@ def parse_path(pathdef, logger, current_pos=0j):
 def create_path(lines):
     """Returns a path d-string."""
 
+    def limit_digits(val):
+        return format(val, '.6f').rstrip('0').replace(',', '.').rstrip('.')
+
     parts = []
     for line in lines:
-        parts.append('M{},{}'.format(line[0][0], line[0][1]))
+        parts.append('M{},{}'.format(*map(limit_digits, line[0])))
         for point in line[1:]:
-            parts.append('L{},{}'.format(point[0], point[1]))
+            parts.append('L{},{}'.format(*map(limit_digits, point)))
 
     return ''.join(parts)

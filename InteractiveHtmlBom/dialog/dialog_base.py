@@ -165,9 +165,18 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         self.layerDefaultView.SetSelection( 1 )
         b_sizer.Add( self.layerDefaultView, 0, wx.ALL|wx.EXPAND, 5 )
 
-        self.openBrowserCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Open browser", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer10 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Miscellaneous" ), wx.VERTICAL )
+
+        self.compressionCheckbox = wx.CheckBox( sbSizer10.GetStaticBox(), wx.ID_ANY, u"Enable compression", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.compressionCheckbox.SetValue(True)
+        sbSizer10.Add( self.compressionCheckbox, 0, wx.ALL, 5 )
+
+        self.openBrowserCheckbox = wx.CheckBox( sbSizer10.GetStaticBox(), wx.ID_ANY, u"Open browser", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.openBrowserCheckbox.SetValue(True)
-        b_sizer.Add( self.openBrowserCheckbox, 0, wx.ALL, 5 )
+        sbSizer10.Add( self.openBrowserCheckbox, 0, wx.ALL, 5 )
+
+
+        b_sizer.Add( sbSizer10, 1, wx.EXPAND, 5 )
 
 
         self.SetSizer( b_sizer )
