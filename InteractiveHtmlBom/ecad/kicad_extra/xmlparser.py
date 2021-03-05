@@ -23,12 +23,16 @@ class XmlParser(ParserBase):
             if datasheet:
                 datasheet = self.get_text(datasheet[0].childNodes)
                 if datasheet != '~':
-                    field_set.add('datasheet')
-                    ref_fields['datasheet'] = datasheet
+                    field_set.add('Datasheet')
+                    ref_fields['Datasheet'] = datasheet
+            libsource = c.getElementsByTagName('libsource')
+            if libsource and libsource[0].hasAttribute('description'):
+                field_set.add('Description')
+                attr = libsource[0].attributes['description']
+                ref_fields['Description'] = attr.value
             for f in c.getElementsByTagName('field'):
                 name = f.attributes['name'].value
-                if name not in self.DEFAULT_FIELDS:
-                    field_set.add(name)
-                    ref_fields[name] = self.get_text(f.childNodes)
+                field_set.add(name)
+                ref_fields[name] = self.get_text(f.childNodes)
 
         return list(field_set), comp_dict

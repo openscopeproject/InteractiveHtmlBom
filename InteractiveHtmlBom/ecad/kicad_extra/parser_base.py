@@ -1,5 +1,4 @@
 class ParserBase:
-    DEFAULT_FIELDS = []
 
     def __init__(self, file_name):
         """
@@ -29,7 +28,7 @@ class ParserBase:
     def get_extra_field_data(self):
         # type: () -> tuple
         """
-        Parses the file and returns a extra field data.
+        Parses the file and returns extra field data.
         :return: tuple of the format
             (
                 [field_name1, field_name2,... ],

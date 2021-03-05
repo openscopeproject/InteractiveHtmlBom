@@ -20,6 +20,7 @@ class NetlistParser(ParserBase):
             ref = None
             fields = None
             datasheet = None
+            libsource = None
             for f in c[1:]:
                 if f[0] == 'ref':
                     ref = f[1]
@@ -27,12 +28,19 @@ class NetlistParser(ParserBase):
                     fields = f[1:]
                 if f[0] == 'datasheet':
                     datasheet = f[1]
+                if f[0] == 'libsource':
+                    libsource = f[1:]
             if ref is None:
                 return None
             ref_fields = comp_dict.setdefault(ref, {})
             if datasheet and datasheet != '~':
-                field_set.add('datasheet')
-                ref_fields['datasheet'] = datasheet
+                field_set.add('Datasheet')
+                ref_fields['Datasheet'] = datasheet
+            if libsource is not None:
+                for lib_field in libsource:
+                    if lib_field[0] == 'description':
+                        field_set.add('Description')
+                        ref_fields['Description'] = lib_field[1]
             if fields is None:
                 continue
             for f in fields:
