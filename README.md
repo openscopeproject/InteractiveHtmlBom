@@ -1,4 +1,6 @@
 # Interactive HTML BOM plugin for KiCad
+## Supports EasyEDA, Eagle and Fusion360
+
 ![icon](https://i.imgur.com/js4kDOn.png)
 
 This plugin generates convenient BOM listing with ability to visually correlate
