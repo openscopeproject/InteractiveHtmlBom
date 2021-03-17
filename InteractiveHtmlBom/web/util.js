@@ -407,6 +407,8 @@ function overwriteSettings(newSettings) {
   document.getElementById("darkmodeCheckbox").checked = settings.darkMode;
   setHighlightPin1(settings.highlightpin1);
   document.getElementById("highlightpin1Checkbox").checked = settings.highlightpin1;
+  showFootprints(settings.show_footprints);
+  document.getElementById("showFootprintsCheckbox").checked = settings.show_footprints;
   writeStorage("boardRotation", settings.boardRotation);
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
@@ -441,6 +443,7 @@ var settings = {
   darkMode: false,
   highlightpin1: false,
   redrawOnDrag: true,
+  show_footprints: true,
   boardRotation: 0,
   renderPads: true,
   renderReferences: true,
@@ -509,6 +512,7 @@ function initDefaults() {
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
+  initBooleanSetting("show_footprints", config.show_footprints, "showFootprintsCheckbox", setShowFootprints);
   settings.boardRotation = readStorage("boardRotation");
   if (settings.boardRotation === null) {
     settings.boardRotation = config.board_rotation * 5;

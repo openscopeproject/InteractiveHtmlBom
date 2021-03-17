@@ -72,6 +72,15 @@ function setDarkMode(value) {
   redrawIfInitDone();
 }
 
+function setShowFootprints(value) {
+  writeStorage("show_footprints", value);
+  settings.show_footprints = value;
+  if (initDone) {
+    populateBomTable();
+  }
+  redrawIfInitDone();
+}
+
 function setFullscreen(value) {
   if (value) {
     document.documentElement.requestFullscreen();
@@ -405,10 +414,12 @@ function populateBomHeader() {
     tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
       return valueCompare(a[5], b[5], a[1], b[1]);
     }));
-    tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
-      if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
-      else return 0;
-    }));
+    if(settings.show_footprints) {
+        tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
+          if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
+          else return 0;
+        }));
+    }
     if (settings.bommode == "grouped") {
       tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
         return a[3].length - b[3].length;
@@ -512,9 +523,11 @@ function populateBomBody() {
       td.innerHTML = highlightFilter(bomentry[1]);
       tr.appendChild(td);
       // Footprint
-      td = document.createElement("TD");
-      td.innerHTML = highlightFilter(bomentry[2]);
-      tr.appendChild(td);
+      if(settings.show_footprints) {
+          td = document.createElement("TD");
+          td.innerHTML = highlightFilter(bomentry[2]);
+          tr.appendChild(td);
+      }
       if (settings.bommode == "grouped") {
         // Quantity
         td = document.createElement("TD");

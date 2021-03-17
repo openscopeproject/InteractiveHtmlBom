@@ -107,6 +107,10 @@
             Continuous redraw on drag
           </label>
           <label class="menu-label">
+            <input id="showFootprintsCheckbox" type="checkbox" checked onchange="setShowFootprints(this.checked)">
+            Show footprints in BOM
+          </label>
+          <label class="menu-label">
             <span>Board rotation</span>
             <span style="float: right"><span id="rotationDegree">0</span>&#176;</span>
             <input id="boardRotation" type="range" min="-36" max="36" value="0" class="slider" oninput="setBoardRotation(this.value)">
