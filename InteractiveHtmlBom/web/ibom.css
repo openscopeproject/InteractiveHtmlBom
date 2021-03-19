@@ -392,7 +392,7 @@ canvas:active {
 }
 
 .filter {
-  width: calc(60% - 64px);
+  width: calc(60% - 110px);
 }
 
 .reflookup {

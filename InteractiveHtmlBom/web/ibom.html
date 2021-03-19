@@ -107,10 +107,6 @@
             Continuous redraw on drag
           </label>
           <label class="menu-label">
-            <input id="showFootprintsCheckbox" type="checkbox" checked onchange="setShowFootprints(this.checked)">
-            Show footprints in BOM
-          </label>
-          <label class="menu-label">
             <span>Board rotation</span>
             <span style="float: right"><span id="rotationDegree">0</span>&#176;</span>
             <input id="boardRotation" type="range" min="-36" max="36" value="0" class="slider" oninput="setBoardRotation(this.value)">
@@ -271,6 +267,31 @@
         <div class="button-container hideonprint" style="float: left; margin: 0;">
           <button id="copy" title="Copy bom table to clipboard"
                onclick="copyToClipboard()"></button>
+        </div>
+        <div class="menu" style="top: 8px; margin: 0px">
+          <button class="menubtn"></button>
+          <div class="menu-content" style="font-size: 15px">
+            <label class="menu-label menu-label-top">
+              <input id="showCheckboxfieldsCheckbox" type="checkbox" onchange="setShowCheckboxfields(this.checked)">
+              Checkbox fields
+            </label>
+            <label class="menu-label">
+              <input id="showReferencesCheckbox" type="checkbox" onchange="setShowReferences(this.checked)">
+              References
+            </label>
+            <label class="menu-label">
+              <input id="showValuesCheckbox" type="checkbox" onchange="setShowValues(this.checked)">
+              Value
+            </label>
+            <label class="menu-label">
+              <input id="showFootprintsCheckbox" type="checkbox" onchange="setShowFootprints(this.checked)">
+              Footprint
+            </label>
+            <label class="menu-label">
+              <input id="showQuantittiesCheckbox" type="checkbox" onchange="setShowQuantities(this.checked)">
+              Quantity
+            </label>
+          </div>
         </div>
       </div>
       <div id="dbg"></div>

@@ -409,6 +409,14 @@ function overwriteSettings(newSettings) {
   document.getElementById("highlightpin1Checkbox").checked = settings.highlightpin1;
   showFootprints(settings.show_footprints);
   document.getElementById("showFootprintsCheckbox").checked = settings.show_footprints;
+  setShowQuantities(settings.show_quantities);
+  document.getElementById("showQuantittiesCheckbox").checked = settings.show_quantities;
+  setShowCheckboxfields(settings.show_checkboxfields);
+  document.getElementById("showCheckboxfieldsCheckbox").checked = settings.show_checkboxfields;
+  setShowCheckboxfields(settings.show_references);
+  document.getElementById("showReferencesCheckbox").checked = settings.show_references;
+  setShowValues(settings.show_values);
+  document.getElementById("showValuesCheckbox").checked = settings.show_values;
   writeStorage("boardRotation", settings.boardRotation);
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
@@ -512,7 +520,13 @@ function initDefaults() {
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
-  initBooleanSetting("show_footprints", config.show_footprints, "showFootprintsCheckbox", setShowFootprints);
+
+  initBooleanSetting("show_footprints", true, "showFootprintsCheckbox", setShowFootprints);
+  initBooleanSetting("show_quantities", true, "showQuantittiesCheckbox", setShowQuantities);
+  initBooleanSetting("show_checkboxfields", true, "showCheckboxfieldsCheckbox", setShowCheckboxfields);
+  initBooleanSetting("show_references", true, "showReferencesCheckbox", setShowReferences);
+  initBooleanSetting("show_values", true, "showValuesCheckbox", setShowValues);
+
   settings.boardRotation = readStorage("boardRotation");
   if (settings.boardRotation === null) {
     settings.boardRotation = config.board_rotation * 5;
