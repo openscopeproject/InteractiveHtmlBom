@@ -848,12 +848,27 @@ function changeBomMode(mode) {
   switch (mode) {
     case 'grouped':
       document.getElementById("bom-grouped-btn").classList.add("depressed");
+      document.getElementById("showCheckboxfieldsCheckbox").disabled = false;
+      document.getElementById("showReferencesCheckbox").disabled = false;
+      document.getElementById("showValuesCheckbox").disabled = false;
+      document.getElementById("showFootprintsCheckbox").disabled = false;
+      document.getElementById("showQuantittiesCheckbox").disabled = false;
       break;
     case 'ungrouped':
       document.getElementById("bom-ungrouped-btn").classList.add("depressed");
+      document.getElementById("showCheckboxfieldsCheckbox").disabled = false;
+      document.getElementById("showReferencesCheckbox").disabled = false;
+      document.getElementById("showValuesCheckbox").disabled = false;
+      document.getElementById("showFootprintsCheckbox").disabled = false;
+      document.getElementById("showQuantittiesCheckbox").disabled = true;
       break;
     case 'netlist':
       document.getElementById("bom-netlist-btn").classList.add("depressed");
+      document.getElementById("showCheckboxfieldsCheckbox").disabled = true;
+      document.getElementById("showReferencesCheckbox").disabled = true;
+      document.getElementById("showValuesCheckbox").disabled = true;
+      document.getElementById("showFootprintsCheckbox").disabled = true;
+      document.getElementById("showQuantittiesCheckbox").disabled = true;
   }
   writeStorage("bommode", mode);
   if (mode != settings.bommode) {
