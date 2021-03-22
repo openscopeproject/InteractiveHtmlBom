@@ -521,11 +521,16 @@ function initDefaults() {
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
 
-  initBooleanSetting("show_footprints", true, "showFootprintsCheckbox", setShowFootprints);
-  initBooleanSetting("show_quantities", true, "showQuantittiesCheckbox", setShowQuantities);
-  initBooleanSetting("show_checkboxfields", true, "showCheckboxfieldsCheckbox", setShowCheckboxfields);
-  initBooleanSetting("show_references", true, "showReferencesCheckbox", setShowReferences);
-  initBooleanSetting("show_values", true, "showValuesCheckbox", setShowValues);
+  var hcols = JSON.parse(readStorage("hiddenColumns"));
+  if(hcols === null) {
+    hcols = [];
+  } 
+  settings.hiddenColumns = hcols;
+  document.getElementById("showFootprintsCheckbox").checked = !hcols.includes("footprint");
+  document.getElementById("showQuantittiesCheckbox").checked = !hcols.includes("quantities");
+  document.getElementById("showCheckboxfieldsCheckbox").checked = !hcols.includes("checkboxes");
+  document.getElementById("showReferencesCheckbox").checked = !hcols.includes("references");
+  document.getElementById("showValuesCheckbox").checked = !hcols.includes("value");
 
   settings.boardRotation = readStorage("boardRotation");
   if (settings.boardRotation === null) {

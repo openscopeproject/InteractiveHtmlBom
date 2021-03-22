@@ -272,23 +272,23 @@
           <button class="menubtn"></button>
           <div class="menu-content" style="font-size: 15px">
             <label class="menu-label menu-label-top">
-              <input id="showCheckboxfieldsCheckbox" type="checkbox" onchange="setShowCheckboxfields(this.checked)">
+              <input id="showCheckboxfieldsCheckbox" class="visibility_checkbox" type="checkbox" onchange='setShowBOMColumn("checkboxes", this.checked)'>
               Checkbox fields
             </label>
             <label class="menu-label">
-              <input id="showReferencesCheckbox" type="checkbox" onchange="setShowReferences(this.checked)">
+              <input id="showReferencesCheckbox" class="visibility_checkbox" type="checkbox" onchange='setShowBOMColumn("references", this.checked)'>
               References
             </label>
             <label class="menu-label">
-              <input id="showValuesCheckbox" type="checkbox" onchange="setShowValues(this.checked)">
+              <input id="showValuesCheckbox" class="visibility_checkbox" type="checkbox" onchange='setShowBOMColumn("value", this.checked)'>
               Value
             </label>
             <label class="menu-label">
-              <input id="showFootprintsCheckbox" type="checkbox" onchange="setShowFootprints(this.checked)">
+              <input id="showFootprintsCheckbox" class="visibility_checkbox" type="checkbox" onchange='setShowBOMColumn("footprint", this.checked)'>
               Footprint
             </label>
             <label class="menu-label">
-              <input id="showQuantittiesCheckbox" type="checkbox" onchange="setShowQuantities(this.checked)">
+              <input id="showQuantittiesCheckbox" class="visibility_checkbox" type="checkbox" onchange='setShowBOMColumn("quantities", this.checked)'>
               Quantity
             </label>
           </div>

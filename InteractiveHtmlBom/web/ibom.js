@@ -72,50 +72,27 @@ function setDarkMode(value) {
   redrawIfInitDone();
 }
 
-function setShowFootprints(value) {
-  writeStorage("show_footprints", value);
-  settings.show_footprints = value;
+function setShowBOMColumn(field, value) {
+  var n = settings.hiddenColumns.indexOf(field);
+  if(value) {
+    if(n != -1) {
+      settings.hiddenColumns.splice(n, 1);
+    }
+  } else {
+    if(n == -1) {
+      settings.hiddenColumns.push(field);
+    }
+  }
+
+  writeStorage("hiddenColumns", JSON.stringify(settings.hiddenColumns));
+  
   if (initDone) {
     populateBomTable();
   }
+
   redrawIfInitDone();
 }
 
-function setShowQuantities(value) {
-  writeStorage("show_quantities", value);
-  settings.show_quantities = value;
-  if (initDone) {
-    populateBomTable();
-  }
-  redrawIfInitDone();
-}
-
-function setShowCheckboxfields(value) {
-  writeStorage("show_checkboxfields", value);
-  settings.show_checkboxfields = value;
-  if (initDone) {
-    populateBomTable();
-  }
-  redrawIfInitDone();
-}
-
-function setShowReferences(value) {
-  writeStorage("show_references", value);
-  settings.show_references = value;
-  if (initDone) {
-    populateBomTable();
-  }
-  redrawIfInitDone();
-}
-
-function setShowValues(value) {
-  writeStorage("show_values", value);
-  settings.show_values = value;
-  if (initDone) {
-    populateBomTable();
-  }
-  redrawIfInitDone();
-}
 
 function setFullscreen(value) {
   if (value) {
@@ -417,7 +394,7 @@ function populateBomHeader() {
     });
     tr.appendChild(th);
   } else {
-    if(settings.show_checkboxfields) {
+    if(!settings.hiddenColumns.includes("checkboxes")) {
       for (var checkbox of settings.checkboxes) {
         th = createColumnHeader(
           checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
@@ -426,7 +403,7 @@ function populateBomHeader() {
         tr.appendChild(th);
       }
     }
-    if(settings.show_references) {
+    if(!settings.hiddenColumns.includes("references")) {
       tr.appendChild(createColumnHeader("References", "References", (a, b) => {
         var i = 0;
         while (i < a[3].length && i < b[3].length) {
@@ -451,18 +428,18 @@ function populateBomHeader() {
           config.extra_fields[i], "extra", extraFieldCompareClosure(i)));
       }
     }
-    if(settings.show_values) {
+    if(!settings.hiddenColumns.includes("value")) {
       tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
         return valueCompare(a[5], b[5], a[1], b[1]);
       }));
     }
-    if(settings.show_footprints) {
+    if(!settings.hiddenColumns.includes("footprint")) {
         tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
           if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
           else return 0;
         }));
     }
-    if (settings.show_quantities && settings.bommode == "grouped") {
+    if ((!settings.hiddenColumns.includes("quantities")) && settings.bommode == "grouped") {
       tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
         return a[3].length - b[3].length;
       }));
@@ -536,7 +513,7 @@ function populateBomBody() {
         references = bomentry[3];
       }
       // Checkboxes
-      if(settings.show_checkboxfields) {
+      if(!settings.hiddenColumns.includes("checkboxes")) {
         for (var checkbox of settings.checkboxes) {
           if (checkbox) {
             td = document.createElement("TD");
@@ -553,7 +530,7 @@ function populateBomBody() {
         }
       }
       // References
-      if(settings.show_references) {
+      if(!settings.hiddenColumns.includes("references")) {
         td = document.createElement("TD");
         td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
         tr.appendChild(td);
@@ -565,18 +542,18 @@ function populateBomBody() {
         tr.appendChild(td);
       }
       // Value
-      if(settings.show_values) {
+      if(!settings.hiddenColumns.includes("value")) {
         td = document.createElement("TD");
         td.innerHTML = highlightFilter(bomentry[1]);
         tr.appendChild(td);
       }
       // Footprint
-      if(settings.show_footprints) {
+      if(!settings.hiddenColumns.includes("footprint")) {
           td = document.createElement("TD");
           td.innerHTML = highlightFilter(bomentry[2]);
           tr.appendChild(td);
       }
-      if (settings.show_quantities && settings.bommode == "grouped") {
+      if ((!settings.hiddenColumns.includes("quantities")) && settings.bommode == "grouped") {
         // Quantity
         td = document.createElement("TD");
         td.textContent = bomentry[3].length;
@@ -845,30 +822,27 @@ function changeBomMode(mode) {
   document.getElementById("bom-grouped-btn").classList.remove("depressed");
   document.getElementById("bom-ungrouped-btn").classList.remove("depressed");
   document.getElementById("bom-netlist-btn").classList.remove("depressed");
+  var chkbxs = document.getElementsByClassName("visibility_checkbox");
+
   switch (mode) {
     case 'grouped':
       document.getElementById("bom-grouped-btn").classList.add("depressed");
-      document.getElementById("showCheckboxfieldsCheckbox").disabled = false;
-      document.getElementById("showReferencesCheckbox").disabled = false;
-      document.getElementById("showValuesCheckbox").disabled = false;
-      document.getElementById("showFootprintsCheckbox").disabled = false;
-      document.getElementById("showQuantittiesCheckbox").disabled = false;
+      for(var i = 0; i<chkbxs.length; i++) {
+        chkbxs[i].disabled = false;
+      }
       break;
     case 'ungrouped':
       document.getElementById("bom-ungrouped-btn").classList.add("depressed");
-      document.getElementById("showCheckboxfieldsCheckbox").disabled = false;
-      document.getElementById("showReferencesCheckbox").disabled = false;
-      document.getElementById("showValuesCheckbox").disabled = false;
-      document.getElementById("showFootprintsCheckbox").disabled = false;
+      for(var i = 0; i<chkbxs.length; i++) {
+        chkbxs[i].disabled = false;
+      }
       document.getElementById("showQuantittiesCheckbox").disabled = true;
       break;
     case 'netlist':
       document.getElementById("bom-netlist-btn").classList.add("depressed");
-      document.getElementById("showCheckboxfieldsCheckbox").disabled = true;
-      document.getElementById("showReferencesCheckbox").disabled = true;
-      document.getElementById("showValuesCheckbox").disabled = true;
-      document.getElementById("showFootprintsCheckbox").disabled = true;
-      document.getElementById("showQuantittiesCheckbox").disabled = true;
+      for(var i = 0; i<chkbxs.length; i++) {
+        chkbxs[i].disabled = true;
+      }
   }
   writeStorage("bommode", mode);
   if (mode != settings.bommode) {
