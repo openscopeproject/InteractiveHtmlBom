@@ -414,7 +414,7 @@ function populateBomHeader() {
       }));
     }
     // Extra fields
-    if (config.extra_fields.length > 0) {
+    if ((!settings.hiddenColumns.includes("extrafields")) && config.extra_fields.length > 0) {
       var extraFieldCompareClosure = function(fieldIndex) {
         return (a, b) => {
           var fa = a[4][fieldIndex];
@@ -536,10 +536,12 @@ function populateBomBody() {
         tr.appendChild(td);
       }
       // Extra fields
-      for (var i in config.extra_fields) {
-        td = document.createElement("TD");
-        td.innerHTML = highlightFilter(bomentry[4][i]);
-        tr.appendChild(td);
+      if(!settings.hiddenColumns.includes("extrafields")) {
+        for (var i in config.extra_fields) {
+          td = document.createElement("TD");
+          td.innerHTML = highlightFilter(bomentry[4][i]);
+          tr.appendChild(td);
+        }
       }
       // Value
       if(!settings.hiddenColumns.includes("value")) {
@@ -844,6 +846,13 @@ function changeBomMode(mode) {
         chkbxs[i].disabled = true;
       }
   }
+
+  if(config.extra_fields.length > 0) {
+    document.getElementById("showExtraFieldsCheckbox").disabled = false;
+  } else {
+    document.getElementById("showExtraFieldsCheckbox").disabled = true;
+  }
+
   writeStorage("bommode", mode);
   if (mode != settings.bommode) {
     settings.bommode = mode;
