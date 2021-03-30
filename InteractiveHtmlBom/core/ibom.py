@@ -257,6 +257,7 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     html = html.replace('///CONFIG///', config_js)
     html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
+    html = html.replace('///TABLEDRAG///', get_file_content('table-drag.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
     html = html.replace('///USERJS///', get_file_content('user.js'))
     html = html.replace('///USERHEADER///',

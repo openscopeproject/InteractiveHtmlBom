@@ -533,6 +533,12 @@ function initDefaults() {
   document.getElementById("showExtraFieldsCheckbox").checked = !hcols.includes("extrafields");
   document.getElementById("showValuesCheckbox").checked = !hcols.includes("value");
 
+  var cord = JSON.parse(readStorage("columnOrder"));
+  if(cord === null) {
+    cord = ["checkboxes", "references", "extrafields", "value", "footprint", "quantities"];
+  } 
+  settings.columnOrder = cord;
+
   settings.boardRotation = readStorage("boardRotation");
   if (settings.boardRotation === null) {
     settings.boardRotation = config.board_rotation * 5;

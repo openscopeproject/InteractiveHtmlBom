@@ -726,3 +726,13 @@ a {
 #frontcanvas, #backcanvas {
     touch-action: none;
 }
+
+.placeholder {
+  border: 1px dashed #9f9fda !important;
+  background-color: #edf2f7 !important;
+}
+
+.dragging {
+  background: #fff;
+  z-index: 999;
+}

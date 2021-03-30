@@ -369,7 +369,7 @@ function createColumnHeader(name, cls, comparator) {
   return th;
 }
 
-function populateBomHeader() {
+function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   while (bomhead.firstChild) {
     bomhead.removeChild(bomhead.firstChild);
   }
@@ -394,61 +394,78 @@ function populateBomHeader() {
     });
     tr.appendChild(th);
   } else {
-    if(!settings.hiddenColumns.includes("checkboxes")) {
-      for (var checkbox of settings.checkboxes) {
-        th = createColumnHeader(
-          checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
-        th.onclick = fancyDblClickHandler(
-          th, th.onclick.bind(th), checkboxSetUnsetAllHandler(checkbox));
-        tr.appendChild(th);
-      }
-    }
-    if(!settings.hiddenColumns.includes("references")) {
-      tr.appendChild(createColumnHeader("References", "References", (a, b) => {
-        var i = 0;
-        while (i < a[3].length && i < b[3].length) {
-          if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
-          i++;
+    // Filter hidden columns
+    var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
+    columns.forEach(function(column) {
+      if(column === placeHolderColumn) {
+        var n = 1;
+        if(column === "checkboxes")
+          n = settings.checkboxes.length;
+        else if (column === "extrafields")
+          n = config.extra_fields.length;
+
+        for(i = 0; i < n; i++) {
+          td = placeHolderElements.shift();
+          tr.appendChild(td);
         }
-        return a[3].length - b[3].length;
-      }));
-    }
-    // Extra fields
-    if ((!settings.hiddenColumns.includes("extrafields")) && config.extra_fields.length > 0) {
-      var extraFieldCompareClosure = function(fieldIndex) {
-        return (a, b) => {
-          var fa = a[4][fieldIndex];
-          var fb = b[4][fieldIndex];
-          if (fa != fb) return fa > fb ? 1 : -1;
-          else return 0;
+        return;
+      }
+      if(column === "checkboxes") {
+        for (var checkbox of settings.checkboxes) {
+          th = createColumnHeader(
+            checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
+          th.onclick = fancyDblClickHandler(
+            th, th.onclick.bind(th), checkboxSetUnsetAllHandler(checkbox));
+          tr.appendChild(th);
         }
       }
-      for (var i in config.extra_fields) {
-        tr.appendChild(createColumnHeader(
-          config.extra_fields[i], "extra", extraFieldCompareClosure(i)));
-      }
-    }
-    if(!settings.hiddenColumns.includes("value")) {
-      tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
-        return valueCompare(a[5], b[5], a[1], b[1]);
-      }));
-    }
-    if(!settings.hiddenColumns.includes("footprint")) {
-        tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
-          if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
-          else return 0;
+      if(column === "references") {
+        tr.appendChild(createColumnHeader("References", "References", (a, b) => {
+          var i = 0;
+          while (i < a[3].length && i < b[3].length) {
+            if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
+            i++;
+          }
+          return a[3].length - b[3].length;
         }));
-    }
-    if ((!settings.hiddenColumns.includes("quantities")) && settings.bommode == "grouped") {
-      tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
-        return a[3].length - b[3].length;
-      }));
-    }
+      }
+      // Extra fields
+      if (column === "extrafields" && config.extra_fields.length > 0) {
+        var extraFieldCompareClosure = function(fieldIndex) {
+          return (a, b) => {
+            var fa = a[4][fieldIndex];
+            var fb = b[4][fieldIndex];
+            if (fa != fb) return fa > fb ? 1 : -1;
+            else return 0;
+          }
+        }
+        for (var i in config.extra_fields) {
+          tr.appendChild(createColumnHeader(
+            config.extra_fields[i], "extra", extraFieldCompareClosure(i)));
+        }
+      }
+      if(column === "value") {
+        tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
+          return valueCompare(a[5], b[5], a[1], b[1]);
+        }));
+      }
+      if(column === "footprint") {
+          tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
+            if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
+            else return 0;
+          }));
+      }
+      if (column === "quantities" && settings.bommode == "grouped") {
+        tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
+          return a[3].length - b[3].length;
+        }));
+      }
+    });
   }
   bomhead.appendChild(tr);
 }
 
-function populateBomBody() {
+function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
   while (bom.firstChild) {
     bom.removeChild(bom.firstChild);
   }
@@ -512,55 +529,72 @@ function populateBomBody() {
       } else {
         references = bomentry[3];
       }
-      // Checkboxes
-      if(!settings.hiddenColumns.includes("checkboxes")) {
-        for (var checkbox of settings.checkboxes) {
-          if (checkbox) {
-            td = document.createElement("TD");
-            var input = document.createElement("input");
-            input.type = "checkbox";
-            input.onchange = createCheckboxChangeHandler(checkbox, references, tr);
-            setBomCheckboxState(checkbox, input, references);
-            if (input.checked && settings.darkenWhenChecked == checkbox) {
-              tr.classList.add("checked");
+      // Filter hidden columns
+      var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
+      columns.forEach(function(column) {
+        if(column === placeholderColumn) {
+          var n = 1;
+          if(column === "checkboxes")
+            n = settings.checkboxes.length;
+          else if (column === "extrafields")
+            n = config.extra_fields.length;
+  
+          for(i = 0; i < n; i++) {
+            td = placeHolderElements.shift();
+            tr.appendChild(td);
+          }
+          return;
+        }
+        // Checkboxes
+        if(column === "checkboxes") {
+          for (var checkbox of settings.checkboxes) {
+            if (checkbox) {
+              td = document.createElement("TD");
+              var input = document.createElement("input");
+              input.type = "checkbox";
+              input.onchange = createCheckboxChangeHandler(checkbox, references, tr);
+              setBomCheckboxState(checkbox, input, references);
+              if (input.checked && settings.darkenWhenChecked == checkbox) {
+                tr.classList.add("checked");
+              }
+              td.appendChild(input);
+              tr.appendChild(td);
             }
-            td.appendChild(input);
+          }
+        }
+        // References
+        if(column === "references") {
+          td = document.createElement("TD");
+          td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
+          tr.appendChild(td);
+        }
+        // Extra fields
+        if(column === "extrafields") {
+          for (var i in config.extra_fields) {
+            td = document.createElement("TD");
+            td.innerHTML = highlightFilter(bomentry[4][i]);
             tr.appendChild(td);
           }
         }
-      }
-      // References
-      if(!settings.hiddenColumns.includes("references")) {
-        td = document.createElement("TD");
-        td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
-        tr.appendChild(td);
-      }
-      // Extra fields
-      if(!settings.hiddenColumns.includes("extrafields")) {
-        for (var i in config.extra_fields) {
+        // Value
+        if(column === "value") {
           td = document.createElement("TD");
-          td.innerHTML = highlightFilter(bomentry[4][i]);
+          td.innerHTML = highlightFilter(bomentry[1]);
           tr.appendChild(td);
         }
-      }
-      // Value
-      if(!settings.hiddenColumns.includes("value")) {
-        td = document.createElement("TD");
-        td.innerHTML = highlightFilter(bomentry[1]);
-        tr.appendChild(td);
-      }
-      // Footprint
-      if(!settings.hiddenColumns.includes("footprint")) {
+        // Footprint
+        if(column === "footprint") {
+            td = document.createElement("TD");
+            td.innerHTML = highlightFilter(bomentry[2]);
+            tr.appendChild(td);
+        }
+        if (column === "quantities" && settings.bommode == "grouped") {
+          // Quantity
           td = document.createElement("TD");
-          td.innerHTML = highlightFilter(bomentry[2]);
+          td.textContent = bomentry[3].length;
           tr.appendChild(td);
-      }
-      if ((!settings.hiddenColumns.includes("quantities")) && settings.bommode == "grouped") {
-        // Quantity
-        td = document.createElement("TD");
-        td.textContent = bomentry[3].length;
-        tr.appendChild(td);
-      }
+        }
+      });
     }
     bom.appendChild(tr);
     var handler = createRowHighlightHandler(tr.id, references, netname);
@@ -633,6 +667,7 @@ function highlightNextRow() {
 function populateBomTable() {
   populateBomHeader();
   populateBomBody();
+  setBomHandlers();
 }
 
 function footprintsClicked(footprintIndexes) {
