@@ -108,7 +108,7 @@ function setBomHandlers() {
         if(dragIndex > 0) {
             // Get left headers boundingbox
             box = getBoundingClientRectFromMultiple(headerGroups[dragIndex - 1]);
-            if(e.screenX < box.left + window.scrollX + (box.width / 2)) {
+            if(e.clientX < box.left + window.scrollX + (box.width / 2)) {
                 swapElement = columns[dragIndex];
                 columns[dragIndex] = columns[dragIndex - 1];
                 columns[dragIndex - 1] = swapElement;
@@ -119,7 +119,7 @@ function setBomHandlers() {
         if((!swapDone) && dragIndex < headerGroups.length - 1) {
             // Get right headers boundingbox
             box = getBoundingClientRectFromMultiple(headerGroups[dragIndex + 1]);
-            if(e.screenX > box.left + window.scrollX + (box.width / 2)) {
+            if(e.clientX > box.left + window.scrollX + (box.width / 2)) {
                 swapElement = columns[dragIndex];
                 columns[dragIndex] = columns[dragIndex + 1];
                 columns[dragIndex + 1] = swapElement;
