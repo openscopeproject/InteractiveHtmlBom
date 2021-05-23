@@ -241,7 +241,7 @@ canvas:active {
 }
 
 .bom .numCol {
-  width: 25px;
+  width: 46px;
 }
 
 .bom .Description {
@@ -443,6 +443,24 @@ mark.highlight {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2' d='M3 33v-7l6.8-7h16.5l6.7 7v7H3zM3.2 26H33M21 9l5-5.9 5 6h-2.5V15h-5V9H21zm-4.9 0l-5 6-5-6h2.5V3h5v6h2.5z'/%3E%3Cpath fill='none' stroke='%23000' d='M6.1 29.5H10'/%3E%3C/svg%3E");
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.visbtn {
+  background-color: transparent;
+  border: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath fill='none' stroke='%23333' d='M2.5 4.5h5v15h-5zM9.5 4.5h5v15h-5zM16.5 4.5h5v15h-5z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 30px 30px;
+  padding: 22px;
+}
+
+#vismenu-content {
+  left: 0px;
+  font-size: 15px;
+  text-align: left;
+  font-family: Verdana, sans-serif;
+  font-weight: normal;
 }
 
 .dark .statsbtn, .dark .savebtn, .dark .menubtn, .dark .iobtn {

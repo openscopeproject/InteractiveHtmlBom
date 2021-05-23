@@ -526,12 +526,6 @@ function initDefaults() {
     hcols = [];
   } 
   settings.hiddenColumns = hcols;
-  document.getElementById("showFootprintsCheckbox").checked = !hcols.includes("footprint");
-  document.getElementById("showQuantittiesCheckbox").checked = !hcols.includes("quantities");
-  document.getElementById("showCheckboxfieldsCheckbox").checked = !hcols.includes("checkboxes");
-  document.getElementById("showReferencesCheckbox").checked = !hcols.includes("references");
-  document.getElementById("showExtraFieldsCheckbox").checked = !hcols.includes("extrafields");
-  document.getElementById("showValuesCheckbox").checked = !hcols.includes("value");
 
   var cord = JSON.parse(readStorage("columnOrder"));
   if(cord === null) {

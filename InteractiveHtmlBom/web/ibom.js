@@ -376,7 +376,48 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   var tr = document.createElement("TR");
   var th = document.createElement("TH");
   th.classList.add("numCol");
+
+  var vismenu = document.createElement("div");
+  vismenu.id = "vismenu";
+  vismenu.classList.add("menu");
+  
+  var visbutton = document.createElement("button");
+  visbutton.classList.add("visbtn");
+
+  var viscontent = document.createElement("div");
+  viscontent.classList.add("menu-content");
+  viscontent.id = "vismenu-content";
+
+  settings.columnOrder.forEach(function(column) {
+
+    // Skip empty columns
+    if(column === "extrafields" && config.extra_fields.length == 0)
+      return;
+    else if(column === "checkboxes" && settings.checkboxes.length == 0)
+      return;
+
+    var label = document.createElement("label");
+    label.classList.add("menu-label");
+
+    var input = document.createElement("input");
+    input.classList.add("visibility_checkbox");
+    input.type = "checkbox";
+    input.onchange = function(e) { setShowBOMColumn(column, e.target.checked) };
+    input.checked = !(settings.hiddenColumns.includes(column));
+    
+    label.appendChild(input);
+    label.append(column[0].toUpperCase() + column.slice(1));
+
+    viscontent.appendChild(label);
+
+  });
+  viscontent.childNodes[0].classList.add("menu-label-top");
+
+  vismenu.appendChild(visbutton);
+  vismenu.appendChild(viscontent);
+  th.appendChild(vismenu)
   tr.appendChild(th);
+  
   var checkboxCompareClosure = function(checkbox) {
     return (a, b) => {
       var stateA = getCheckboxState(checkbox, a[3]);
@@ -873,19 +914,12 @@ function changeBomMode(mode) {
       for(var i = 0; i<chkbxs.length; i++) {
         chkbxs[i].disabled = false;
       }
-      document.getElementById("showQuantittiesCheckbox").disabled = true;
       break;
     case 'netlist':
       document.getElementById("bom-netlist-btn").classList.add("depressed");
       for(var i = 0; i<chkbxs.length; i++) {
         chkbxs[i].disabled = true;
       }
-  }
-
-  if(config.extra_fields.length > 0) {
-    document.getElementById("showExtraFieldsCheckbox").disabled = false;
-  } else {
-    document.getElementById("showExtraFieldsCheckbox").disabled = true;
   }
 
   writeStorage("bommode", mode);
