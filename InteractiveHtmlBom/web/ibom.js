@@ -73,6 +73,15 @@ function setDarkMode(value) {
 }
 
 function setShowBOMColumn(field, value) {
+  if(field === "references") {
+    var rl = document.getElementById("reflookup");
+    rl.disabled = !value;
+    if(!value) {
+      rl.value = "";
+      updateRefLookup("");
+    }
+  }
+
   var n = settings.hiddenColumns.indexOf(field);
   if(value) {
     if(n != -1) {
