@@ -1091,6 +1091,7 @@ document.onkeydown = function(e) {
     }
     if (e.key >= '1' && e.key <= '9') {
       toggleBomCheckbox(currentHighlightedRowId, parseInt(e.key));
+      e.preventDefault();
     }
   }
 }
