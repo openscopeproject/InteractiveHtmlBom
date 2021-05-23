@@ -425,7 +425,8 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   viscontent.childNodes[0].classList.add("menu-label-top");
 
   vismenu.appendChild(visbutton);
-  vismenu.appendChild(viscontent);
+  if (settings.bommode != "netlist")
+    vismenu.appendChild(viscontent);
   th.appendChild(vismenu)
   tr.appendChild(th);
   
