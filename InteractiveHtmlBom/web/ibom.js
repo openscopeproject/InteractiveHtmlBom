@@ -404,6 +404,8 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
       return;
     else if(column === "checkboxes" && settings.checkboxes.length == 0)
       return;
+    else if(column === "quantities" && settings.bommode == "ungrouped")
+      return;
 
     var label = document.createElement("label");
     label.classList.add("menu-label");
