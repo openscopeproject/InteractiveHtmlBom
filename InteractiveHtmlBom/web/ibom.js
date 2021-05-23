@@ -252,24 +252,32 @@ function entryMatches(entry) {
     return entry.toLowerCase().indexOf(filter) >= 0;
   }
   // check refs
-  for (var ref of entry[3]) {
-    if (ref[0].toLowerCase().indexOf(filter) >= 0) {
-      return true;
+  if(!settings.hiddenColumns.includes("references")) {
+    for (var ref of entry[3]) {
+      if (ref[0].toLowerCase().indexOf(filter) >= 0) {
+        return true;
+      }
     }
   }
   // check extra fields
-  for (var i in config.extra_fields) {
-    if (entry[4][i].toLowerCase().indexOf(filter) >= 0) {
-      return true;
+  if(!settings.hiddenColumns.includes("extrafields")) {
+    for (var i in config.extra_fields) {
+      if (entry[4][i].toLowerCase().indexOf(filter) >= 0) {
+        return true;
+      }
     }
   }
   // check value
-  if (entry[1].toLowerCase().indexOf(filter) >= 0) {
-    return true;
+  if(!settings.hiddenColumns.includes("value")) {
+    if (entry[1].toLowerCase().indexOf(filter) >= 0) {
+      return true;
+    }
   }
   // check footprint
-  if (entry[2].toLowerCase().indexOf(filter) >= 0) {
-    return true;
+  if(!settings.hiddenColumns.includes("footprint")) {
+    if (entry[2].toLowerCase().indexOf(filter) >= 0) {
+      return true;
+    }
   }
   return false;
 }
