@@ -94,7 +94,7 @@ function setBomHandlers() {
             }
         }
 
-        // Set up an array of columns to consider
+        // Copy settings.columnOrder
         var columns = Array.from(settings.columnOrder)
 
         // Set up array with indices of hidden columns
@@ -109,27 +109,31 @@ function setBomHandlers() {
             swapIndex = dragIndex - 1;
             while(hiddenIndices.includes(swapIndex) && swapIndex > 0)
                 swapIndex--;
-            box = getBoundingClientRectFromMultiple(headerGroups[swapIndex]);
-            if(e.clientX < box.left + window.scrollX + (box.width / 2)) {
-                swapElement = columns[dragIndex];
-                columns.splice(dragIndex, 1);
-                columns.splice(swapIndex, 0, swapElement);
-                forcePopulation = true;
-                swapDone = true;
+            if(!hiddenIndices.includes(swapIndex)) {
+                box = getBoundingClientRectFromMultiple(headerGroups[swapIndex]);
+                if(e.clientX < box.left + window.scrollX + (box.width / 2)) {
+                    swapElement = columns[dragIndex];
+                    columns.splice(dragIndex, 1);
+                    columns.splice(swapIndex, 0, swapElement);
+                    forcePopulation = true;
+                    swapDone = true;
+                }
             }
         }
         if((!swapDone) && dragIndex < headerGroups.length - 1) {
             // Get right headers boundingbox
             swapIndex = dragIndex + 1;
-            while(hiddenIndices.includes(swapIndex) && swapIndex < settings.columnOrder.length)
+            while(hiddenIndices.includes(swapIndex))
                 swapIndex++;
-            box = getBoundingClientRectFromMultiple(headerGroups[swapIndex]);
-            if(e.clientX > box.left + window.scrollX + (box.width / 2)) {
-                swapElement = columns[dragIndex];
-                columns.splice(dragIndex, 1);
-                columns.splice(swapIndex, 0, swapElement);
-                forcePopulation = true;
-                swapDone = true;
+            if(swapIndex < headerGroups.length) {
+                box = getBoundingClientRectFromMultiple(headerGroups[swapIndex]);
+                if(e.clientX > box.left + window.scrollX + (box.width / 2)) {
+                    swapElement = columns[dragIndex];
+                    columns.splice(dragIndex, 1);
+                    columns.splice(swapIndex, 0, swapElement);
+                    forcePopulation = true;
+                    swapDone = true;
+                }
             }
         }
 
