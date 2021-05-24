@@ -527,10 +527,16 @@ function initDefaults() {
   } 
   settings.hiddenColumns = hcols;
 
+  const std_cols = Array("checkboxes", "references", "value", "footprint", "quantities");
   var cord = JSON.parse(readStorage("columnOrder"));
   if(cord === null) {
-    cord = ["checkboxes", "references", "extrafields", "value", "footprint", "quantities"];
-  } 
+    cord = Array.from(std_cols);
+    cord = cord.slice(0,2).concat(config.extra_fields).concat(cord.slice(2));
+  } else {
+    cord = cord.filter(e => std_cols.includes(e) || config.extra_fields.includes(e));
+    var missing_extra = config.extra_fields.filter(e => !cord.includes(e));
+    cord = cord.concat(missing_extra)
+  }
   settings.columnOrder = cord;
 
   settings.boardRotation = readStorage("boardRotation");

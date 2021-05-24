@@ -342,6 +342,7 @@ function createColumnHeader(name, cls, comparator) {
   var th = document.createElement("TH");
   th.innerHTML = name;
   th.classList.add(cls);
+  th.setAttribute("col_name", cls);
   th.style.cursor = "pointer";
   var span = document.createElement("SPAN");
   span.classList.add("sortmark");
@@ -407,6 +408,9 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
 
   settings.columnOrder.forEach(function(column) {
 
+    if(typeof column !== "string")
+      return;
+
     // Skip empty columns
     if(column === "extrafields" && config.extra_fields.length == 0)
       return;
@@ -425,7 +429,8 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
     input.checked = !(settings.hiddenColumns.includes(column));
     
     label.appendChild(input);
-    label.append(column[0].toUpperCase() + column.slice(1));
+    if(column.length > 0)
+      label.append(column[0].toUpperCase() + column.slice(1));
 
     viscontent.appendChild(label);
 
@@ -481,7 +486,7 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
         }
       }
       if(column === "references") {
-        tr.appendChild(createColumnHeader("References", "References", (a, b) => {
+        tr.appendChild(createColumnHeader("References", "references", (a, b) => {
           var i = 0;
           while (i < a[3].length && i < b[3].length) {
             if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
@@ -490,37 +495,37 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
           return a[3].length - b[3].length;
         }));
       }
-      // Extra fields
-      if (column === "extrafields" && config.extra_fields.length > 0) {
-        var extraFieldCompareClosure = function(fieldIndex) {
-          return (a, b) => {
-            var fa = a[4][fieldIndex];
-            var fb = b[4][fieldIndex];
-            if (fa != fb) return fa > fb ? 1 : -1;
-            else return 0;
-          }
-        }
-        for (var i in config.extra_fields) {
-          tr.appendChild(createColumnHeader(
-            config.extra_fields[i], "extra", extraFieldCompareClosure(i)));
-        }
-      }
       if(column === "value") {
-        tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
+        tr.appendChild(createColumnHeader("Value", "value", (a, b) => {
           return valueCompare(a[5], b[5], a[1], b[1]);
         }));
       }
       if(column === "footprint") {
-          tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
+          tr.appendChild(createColumnHeader("Footprint", "footprint", (a, b) => {
             if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
             else return 0;
           }));
       }
       if (column === "quantities" && settings.bommode == "grouped") {
-        tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
+        tr.appendChild(createColumnHeader("Quantity", "quantities", (a, b) => {
           return a[3].length - b[3].length;
         }));
       }
+      // Extra fields
+      var extraFieldCompareClosure = function(fieldIndex) {
+        return (a, b) => {
+          var fa = a[4][fieldIndex];
+          var fb = b[4][fieldIndex];
+          if (fa != fb) return fa > fb ? 1 : -1;
+          else return 0;
+        }
+      }
+      var i = config.extra_fields.indexOf(column);
+      if(i < 0)
+        return;
+      tr.appendChild(createColumnHeader(
+        column, column, extraFieldCompareClosure(i)));
+      
     });
   }
   bomhead.appendChild(tr);
@@ -629,14 +634,6 @@ function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
           td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
           tr.appendChild(td);
         }
-        // Extra fields
-        if(column === "extrafields") {
-          for (var i in config.extra_fields) {
-            td = document.createElement("TD");
-            td.innerHTML = highlightFilter(bomentry[4][i]);
-            tr.appendChild(td);
-          }
-        }
         // Value
         if(column === "value") {
           td = document.createElement("TD");
@@ -655,6 +652,13 @@ function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
           td.textContent = bomentry[3].length;
           tr.appendChild(td);
         }
+        // Extra fields
+        var i = config.extra_fields.indexOf(column)
+        if(i < 0)
+          return;
+        td = document.createElement("TD");
+        td.innerHTML = highlightFilter(bomentry[4][i]);
+        tr.appendChild(td);
       });
     }
     bom.appendChild(tr);

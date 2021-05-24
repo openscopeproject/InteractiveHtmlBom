@@ -74,15 +74,6 @@ function setBomHandlers() {
                     lastCompoundClass = "bom-checkbox";
                     headerGroups.push([elem])
                 }
-            } else if(elem.classList.contains("extra")) {
-                if(lastCompoundClass === "extra") {
-                    cbGroup = headerGroups.pop();
-                    cbGroup.push(elem);
-                    headerGroups.push(cbGroup);
-                } else {
-                    lastCompoundClass = "extra";
-                    headerGroups.push([elem])
-                }
             } else {
                 headerGroups.push([elem])
             }
@@ -159,8 +150,6 @@ function setBomHandlers() {
         var compoundHeaders;
         if(e.target.classList.contains("bom-checkbox")) {
             compoundHeaders = Array.from(bh.querySelectorAll("th.bom-checkbox"));
-        } else if (e.target.classList.contains("extra")) {
-            compoundHeaders = Array.from(bh.querySelectorAll("th.extra"));
         } else {
             compoundHeaders = [e.target];
         }
@@ -285,18 +274,9 @@ function getBomTableHeaderIndex(elem) {
 }
 
 function getColumnOrderName(elem) {
-    if(elem.classList.contains("bom-checkbox")) {
+    var cname = elem.getAttribute("col_name");
+    if(cname === "bom-checkbox")
         return "checkboxes";
-    } else if(elem.classList.contains("extra")) {
-        return "extrafields";
-    } else if(elem.classList.contains("References")) {
-        return "references";
-    } else if(elem.classList.contains("Value")) {
-        return "value";
-    } else if(elem.classList.contains("Footprint")) {
-        return "footprint";
-    } else if(elem.classList.contains("Quantity")) {
-        return "quantities";
-    }
-    return null;
+    else
+        return cname;
 }
