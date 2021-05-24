@@ -520,20 +520,20 @@ function initDefaults() {
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
-
+  
+  const stdCols = Array("checkboxes", "references", "value", "footprint", "quantities");
   var hcols = JSON.parse(readStorage("hiddenColumns"));
   if(hcols === null) {
     hcols = [];
   } 
-  settings.hiddenColumns = hcols;
+  settings.hiddenColumns = hcols.filter(e => stdCols.includes(e) || config.extra_fields.includes(e));
 
-  const std_cols = Array("checkboxes", "references", "value", "footprint", "quantities");
   var cord = JSON.parse(readStorage("columnOrder"));
   if(cord === null) {
-    cord = Array.from(std_cols);
+    cord = Array.from(stdCols);
     cord = cord.slice(0,2).concat(config.extra_fields).concat(cord.slice(2));
   } else {
-    cord = cord.filter(e => std_cols.includes(e) || config.extra_fields.includes(e));
+    cord = cord.filter(e => stdCols.includes(e) || config.extra_fields.includes(e));
     var missing_extra = config.extra_fields.filter(e => !cord.includes(e));
     cord = cord.concat(missing_extra)
   }
