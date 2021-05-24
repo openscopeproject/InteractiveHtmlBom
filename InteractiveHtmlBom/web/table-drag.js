@@ -57,14 +57,29 @@ function setBomHandlers() {
             populateBomBody(dragName, phe);
         }
 
+        // Set up array of hidden columns
+        var hiddenColumns = Array.from(settings.hiddenColumns);
+        // In the ungrouped mode, quantities don't exist
+        if(settings.bommode === "ungrouped")
+            hiddenColumns.push("quantities");
+        // If no checkbox fields can be found, we consider them hidden
+        if(settings.checkboxes.length == 0)
+            hiddenColumns.push("checkboxes");
+
         // Get table headers and group them into checkboxes, extrafields and normal headers
         const bh = document.getElementById("bomhead");
         headers = Array.from(bh.querySelectorAll("th"))
         headers.shift() // numCol is not part of the columnOrder
         headerGroups = []
         lastCompoundClass = null;
-        for(i = 0; i < headers.length; i++) {
-            elem = headers[i];
+        for(i = 0; i < settings.columnOrder.length; i++) {
+            cElem = settings.columnOrder[i];
+            if(hiddenColumns.includes(cElem)) {
+                // Hidden columns appear as a dummy element
+                headerGroups.push([]);
+                continue;
+            }
+            elem = headers.filter(e => getColumnOrderName(e) === cElem)[0];
             if(elem.classList.contains("bom-checkbox")) {
                 if(lastCompoundClass === "bom-checkbox") {
                     cbGroup = headerGroups.pop();
@@ -79,52 +94,49 @@ function setBomHandlers() {
             }
         }
 
-        // Set up array of hidden columns
-        var hiddenColumns = Array.from(settings.hiddenColumns);
-        // In the ungrouped mode, quantities don't exist
-        if(settings.bommode === "ungrouped")
-            hiddenColumns.push("quantities");
-        // If no compound fields can be found, we consider them hidden
-        if(config.extra_fields.length == 0)
-            hiddenColumns.push("extrafields");
-        if(settings.checkboxes.length == 0)
-            hiddenColumns.push("checkboxes");
-
         // Set up an array of columns to consider
-        var columns = settings.columnOrder.filter(e => !hiddenColumns.includes(e));
-        dragIndex = columns.indexOf(dragName);
-        swapDone = false;
+        var columns = Array.from(settings.columnOrder)
+
+        // Set up array with indices of hidden columns
+        var hiddenIndices = hiddenColumns.map(e => settings.columnOrder.indexOf(e));
+        var dragIndex = columns.indexOf(dragName);
+        var swapIndex = dragIndex;
+        var swapDone = false;
 
         // Check if the current dragged element is swapable with the left or right element
         if(dragIndex > 0) {
             // Get left headers boundingbox
-            box = getBoundingClientRectFromMultiple(headerGroups[dragIndex - 1]);
+            swapIndex = dragIndex - 1;
+            while(hiddenIndices.includes(swapIndex) && swapIndex > 0)
+                swapIndex--;
+            box = getBoundingClientRectFromMultiple(headerGroups[swapIndex]);
             if(e.clientX < box.left + window.scrollX + (box.width / 2)) {
                 swapElement = columns[dragIndex];
-                columns[dragIndex] = columns[dragIndex - 1];
-                columns[dragIndex - 1] = swapElement;
+                columns.splice(dragIndex, 1);
+                columns.splice(swapIndex, 0, swapElement);
                 forcePopulation = true;
                 swapDone = true;
             }
         }
         if((!swapDone) && dragIndex < headerGroups.length - 1) {
             // Get right headers boundingbox
-            box = getBoundingClientRectFromMultiple(headerGroups[dragIndex + 1]);
+            swapIndex = dragIndex + 1;
+            while(hiddenIndices.includes(swapIndex) && swapIndex < settings.columnOrder.length)
+                swapIndex++;
+            box = getBoundingClientRectFromMultiple(headerGroups[swapIndex]);
             if(e.clientX > box.left + window.scrollX + (box.width / 2)) {
                 swapElement = columns[dragIndex];
-                columns[dragIndex] = columns[dragIndex + 1];
-                columns[dragIndex + 1] = swapElement;
+                columns.splice(dragIndex, 1);
+                columns.splice(swapIndex, 0, swapElement);
                 forcePopulation = true;
                 swapDone = true;
             }
         }
 
-        // Add hidden columns to the end of the column order
-        settings.columnOrder = columns.concat(hiddenColumns);
-
-        // Write back change in order to storage
+        // Write back change to storage
         if(swapDone)
-            writeStorage("columnOrder", JSON.stringify(settings.columnOrder));
+            settings.columnOrder = columns
+            writeStorage("columnOrder", JSON.stringify(columns));
 
     }
 
