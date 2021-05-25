@@ -138,9 +138,10 @@ function setBomHandlers() {
         }
 
         // Write back change to storage
-        if(swapDone)
+        if(swapDone) {
             settings.columnOrder = columns
             writeStorage("columnOrder", JSON.stringify(columns));
+        }
 
     }
 
