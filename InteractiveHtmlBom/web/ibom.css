@@ -454,10 +454,7 @@ mark.highlight {
 
 #vismenu-content {
   left: 0px;
-  font-size: 15px;
-  text-align: left;
   font-family: Verdana, sans-serif;
-  font-weight: normal;
 }
 
 .dark .statsbtn, .dark .savebtn, .dark .menubtn, .dark .iobtn, .dark .visbtn {
@@ -532,6 +529,9 @@ mark.highlight {
 }
 
 .menu-content {
+  font-size: 12pt !important;
+  text-align: left !important;
+  font-weight: normal !important;
   display: none;
   position: absolute;
   background-color: white;
@@ -748,6 +748,13 @@ a {
 }
 
 .dragging {
-  background: #fff;
   z-index: 999;
+}
+
+.dark .dragging > table > tbody > tr {
+  background-color: #252c30;
+}
+
+.dark .placeholder {
+  filter: invert(1);
 }
