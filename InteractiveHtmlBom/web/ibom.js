@@ -408,7 +408,6 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   viscontent.id = "vismenu-content";
 
   settings.columnOrder.forEach(function(column) {
-
     if(typeof column !== "string")
       return;
 
@@ -434,8 +433,8 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
       label.append(column[0].toUpperCase() + column.slice(1));
 
     viscontent.appendChild(label);
-
   });
+
   viscontent.childNodes[0].classList.add("menu-label-top");
 
   vismenu.appendChild(visbutton);

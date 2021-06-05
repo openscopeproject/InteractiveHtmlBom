@@ -408,15 +408,6 @@ function overwriteSettings(newSettings) {
   setHighlightPin1(settings.highlightpin1);
   document.getElementById("highlightpin1Checkbox").checked = settings.highlightpin1;
   showFootprints(settings.show_footprints);
-  document.getElementById("showFootprintsCheckbox").checked = settings.show_footprints;
-  setShowQuantities(settings.show_quantities);
-  document.getElementById("showQuantittiesCheckbox").checked = settings.show_quantities;
-  setShowCheckboxfields(settings.show_checkboxfields);
-  document.getElementById("showCheckboxfieldsCheckbox").checked = settings.show_checkboxfields;
-  setShowCheckboxfields(settings.show_references);
-  document.getElementById("showReferencesCheckbox").checked = settings.show_references;
-  setShowValues(settings.show_values);
-  document.getElementById("showValuesCheckbox").checked = settings.show_values;
   writeStorage("boardRotation", settings.boardRotation);
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
@@ -451,7 +442,6 @@ var settings = {
   darkMode: false,
   highlightpin1: false,
   redrawOnDrag: true,
-  show_footprints: true,
   boardRotation: 0,
   renderPads: true,
   renderReferences: true,
