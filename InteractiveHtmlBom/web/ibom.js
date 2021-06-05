@@ -407,7 +407,7 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   viscontent.classList.add("menu-content");
   viscontent.id = "vismenu-content";
 
-  settings.columnOrder.forEach(function(column) {
+  settings.columnOrder.forEach(column => {
     if(typeof column !== "string")
       return;
 
