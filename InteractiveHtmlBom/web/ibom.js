@@ -399,7 +399,7 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   vismenu.id = "vismenu";
   vismenu.classList.add("menu");
   
-  var visbutton = document.createElement("button");
+  var visbutton = document.createElement("div");
   visbutton.classList.add("visbtn");
 
   var viscontent = document.createElement("div");

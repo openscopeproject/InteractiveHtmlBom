@@ -241,7 +241,7 @@ canvas:active {
 }
 
 .bom .numCol {
-  width: 46px;
+  width: 30px;
 }
 
 .bom .Description {
@@ -392,7 +392,7 @@ canvas:active {
 }
 
 .filter {
-  width: calc(60% - 110px);
+  width: calc(60% - 64px);
 }
 
 .reflookup {
@@ -446,13 +446,10 @@ mark.highlight {
 }
 
 .visbtn {
-  background-color: transparent;
-  border: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath fill='none' stroke='%23333' d='M2.5 4.5h5v15h-5zM9.5 4.5h5v15h-5zM16.5 4.5h5v15h-5z'/%3E%3C/svg%3E");
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 30px 30px;
-  padding: 22px;
+  padding: 15px;
 }
 
 #vismenu-content {
@@ -463,7 +460,7 @@ mark.highlight {
   font-weight: normal;
 }
 
-.dark .statsbtn, .dark .savebtn, .dark .menubtn, .dark .iobtn {
+.dark .statsbtn, .dark .savebtn, .dark .menubtn, .dark .iobtn, .dark .visbtn {
   filter: invert(1);
 }
 
