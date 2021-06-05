@@ -401,6 +401,7 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   
   var visbutton = document.createElement("div");
   visbutton.classList.add("visbtn");
+  visbutton.classList.add("hideonprint");
 
   var viscontent = document.createElement("div");
   viscontent.classList.add("menu-content");
