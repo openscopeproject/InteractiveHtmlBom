@@ -241,7 +241,7 @@ canvas:active {
 }
 
 .bom .numCol {
-  width: 25px;
+  width: 30px;
 }
 
 .bom .Description {
@@ -445,7 +445,19 @@ mark.highlight {
   background-repeat: no-repeat;
 }
 
-.dark .statsbtn, .dark .savebtn, .dark .menubtn, .dark .iobtn {
+.visbtn {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath fill='none' stroke='%23333' d='M2.5 4.5h5v15h-5zM9.5 4.5h5v15h-5zM16.5 4.5h5v15h-5z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 15px;
+}
+
+#vismenu-content {
+  left: 0px;
+  font-family: Verdana, sans-serif;
+}
+
+.dark .statsbtn, .dark .savebtn, .dark .menubtn, .dark .iobtn, .dark .visbtn {
   filter: invert(1);
 }
 
@@ -517,6 +529,9 @@ mark.highlight {
 }
 
 .menu-content {
+  font-size: 12pt !important;
+  text-align: left !important;
+  font-weight: normal !important;
   display: none;
   position: absolute;
   background-color: white;
@@ -725,4 +740,21 @@ a {
 
 #frontcanvas, #backcanvas {
     touch-action: none;
+}
+
+.placeholder {
+  border: 1px dashed #9f9fda !important;
+  background-color: #edf2f7 !important;
+}
+
+.dragging {
+  z-index: 999;
+}
+
+.dark .dragging > table > tbody > tr {
+  background-color: #252c30;
+}
+
+.dark .placeholder {
+  filter: invert(1);
 }

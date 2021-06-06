@@ -72,6 +72,37 @@ function setDarkMode(value) {
   redrawIfInitDone();
 }
 
+function setShowBOMColumn(field, value) {
+  if(field === "references") {
+    var rl = document.getElementById("reflookup");
+    rl.disabled = !value;
+    if(!value) {
+      rl.value = "";
+      updateRefLookup("");
+    }
+  }
+
+  var n = settings.hiddenColumns.indexOf(field);
+  if(value) {
+    if(n != -1) {
+      settings.hiddenColumns.splice(n, 1);
+    }
+  } else {
+    if(n == -1) {
+      settings.hiddenColumns.push(field);
+    }
+  }
+
+  writeStorage("hiddenColumns", JSON.stringify(settings.hiddenColumns));
+  
+  if (initDone) {
+    populateBomTable();
+  }
+
+  redrawIfInitDone();
+}
+
+
 function setFullscreen(value) {
   if (value) {
     document.documentElement.requestFullscreen();
@@ -221,24 +252,32 @@ function entryMatches(entry) {
     return entry.toLowerCase().indexOf(filter) >= 0;
   }
   // check refs
-  for (var ref of entry[3]) {
-    if (ref[0].toLowerCase().indexOf(filter) >= 0) {
-      return true;
+  if(!settings.hiddenColumns.includes("references")) {
+    for (var ref of entry[3]) {
+      if (ref[0].toLowerCase().indexOf(filter) >= 0) {
+        return true;
+      }
     }
   }
   // check extra fields
-  for (var i in config.extra_fields) {
-    if (entry[4][i].toLowerCase().indexOf(filter) >= 0) {
-      return true;
+  if(!settings.hiddenColumns.includes("extrafields")) {
+    for (var i in config.extra_fields) {
+      if (entry[4][i].toLowerCase().indexOf(filter) >= 0) {
+        return true;
+      }
     }
   }
   // check value
-  if (entry[1].toLowerCase().indexOf(filter) >= 0) {
-    return true;
+  if(!settings.hiddenColumns.includes("value")) {
+    if (entry[1].toLowerCase().indexOf(filter) >= 0) {
+      return true;
+    }
   }
   // check footprint
-  if (entry[2].toLowerCase().indexOf(filter) >= 0) {
-    return true;
+  if(!settings.hiddenColumns.includes("footprint")) {
+    if (entry[2].toLowerCase().indexOf(filter) >= 0) {
+      return true;
+    }
   }
   return false;
 }
@@ -303,6 +342,7 @@ function createColumnHeader(name, cls, comparator) {
   var th = document.createElement("TH");
   th.innerHTML = name;
   th.classList.add(cls);
+  th.setAttribute("col_name", cls);
   th.style.cursor = "pointer";
   var span = document.createElement("SPAN");
   span.classList.add("sortmark");
@@ -347,14 +387,62 @@ function createColumnHeader(name, cls, comparator) {
   return th;
 }
 
-function populateBomHeader() {
+function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   while (bomhead.firstChild) {
     bomhead.removeChild(bomhead.firstChild);
   }
   var tr = document.createElement("TR");
   var th = document.createElement("TH");
   th.classList.add("numCol");
+
+  var vismenu = document.createElement("div");
+  vismenu.id = "vismenu";
+  vismenu.classList.add("menu");
+  
+  var visbutton = document.createElement("div");
+  visbutton.classList.add("visbtn");
+  visbutton.classList.add("hideonprint");
+
+  var viscontent = document.createElement("div");
+  viscontent.classList.add("menu-content");
+  viscontent.id = "vismenu-content";
+
+  settings.columnOrder.forEach(column => {
+    if(typeof column !== "string")
+      return;
+
+    // Skip empty columns
+    if(column === "extrafields" && config.extra_fields.length == 0)
+      return;
+    else if(column === "checkboxes" && settings.checkboxes.length == 0)
+      return;
+    else if(column === "quantities" && settings.bommode == "ungrouped")
+      return;
+
+    var label = document.createElement("label");
+    label.classList.add("menu-label");
+
+    var input = document.createElement("input");
+    input.classList.add("visibility_checkbox");
+    input.type = "checkbox";
+    input.onchange = function(e) { setShowBOMColumn(column, e.target.checked) };
+    input.checked = !(settings.hiddenColumns.includes(column));
+    
+    label.appendChild(input);
+    if(column.length > 0)
+      label.append(column[0].toUpperCase() + column.slice(1));
+
+    viscontent.appendChild(label);
+  });
+
+  viscontent.childNodes[0].classList.add("menu-label-top");
+
+  vismenu.appendChild(visbutton);
+  if (settings.bommode != "netlist")
+    vismenu.appendChild(viscontent);
+  th.appendChild(vismenu)
   tr.appendChild(th);
+  
   var checkboxCompareClosure = function(checkbox) {
     return (a, b) => {
       var stateA = getCheckboxState(checkbox, a[3]);
@@ -372,23 +460,58 @@ function populateBomHeader() {
     });
     tr.appendChild(th);
   } else {
-    for (var checkbox of settings.checkboxes) {
-      th = createColumnHeader(
-        checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
-      th.onclick = fancyDblClickHandler(
-        th, th.onclick.bind(th), checkboxSetUnsetAllHandler(checkbox));
-      tr.appendChild(th);
-    }
-    tr.appendChild(createColumnHeader("References", "References", (a, b) => {
-      var i = 0;
-      while (i < a[3].length && i < b[3].length) {
-        if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
-        i++;
+    // Filter hidden columns
+    var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
+    columns.forEach(function(column) {
+      if(column === placeHolderColumn) {
+        var n = 1;
+        if(column === "checkboxes")
+          n = settings.checkboxes.length;
+        else if (column === "extrafields")
+          n = config.extra_fields.length;
+
+        for(i = 0; i < n; i++) {
+          td = placeHolderElements.shift();
+          tr.appendChild(td);
+        }
+        return;
       }
-      return a[3].length - b[3].length;
-    }));
-    // Extra fields
-    if (config.extra_fields.length > 0) {
+      if(column === "checkboxes") {
+        for (var checkbox of settings.checkboxes) {
+          th = createColumnHeader(
+            checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
+          th.onclick = fancyDblClickHandler(
+            th, th.onclick.bind(th), checkboxSetUnsetAllHandler(checkbox));
+          tr.appendChild(th);
+        }
+      }
+      if(column === "references") {
+        tr.appendChild(createColumnHeader("References", "references", (a, b) => {
+          var i = 0;
+          while (i < a[3].length && i < b[3].length) {
+            if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
+            i++;
+          }
+          return a[3].length - b[3].length;
+        }));
+      }
+      if(column === "value") {
+        tr.appendChild(createColumnHeader("Value", "value", (a, b) => {
+          return valueCompare(a[5], b[5], a[1], b[1]);
+        }));
+      }
+      if(column === "footprint") {
+          tr.appendChild(createColumnHeader("Footprint", "footprint", (a, b) => {
+            if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
+            else return 0;
+          }));
+      }
+      if (column === "quantities" && settings.bommode == "grouped") {
+        tr.appendChild(createColumnHeader("Quantity", "quantities", (a, b) => {
+          return a[3].length - b[3].length;
+        }));
+      }
+      // Extra fields
       var extraFieldCompareClosure = function(fieldIndex) {
         return (a, b) => {
           var fa = a[4][fieldIndex];
@@ -397,28 +520,18 @@ function populateBomHeader() {
           else return 0;
         }
       }
-      for (var i in config.extra_fields) {
-        tr.appendChild(createColumnHeader(
-          config.extra_fields[i], "extra", extraFieldCompareClosure(i)));
-      }
-    }
-    tr.appendChild(createColumnHeader("Value", "Value", (a, b) => {
-      return valueCompare(a[5], b[5], a[1], b[1]);
-    }));
-    tr.appendChild(createColumnHeader("Footprint", "Footprint", (a, b) => {
-      if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
-      else return 0;
-    }));
-    if (settings.bommode == "grouped") {
-      tr.appendChild(createColumnHeader("Quantity", "Quantity", (a, b) => {
-        return a[3].length - b[3].length;
-      }));
-    }
+      var i = config.extra_fields.indexOf(column);
+      if(i < 0)
+        return;
+      tr.appendChild(createColumnHeader(
+        column, column, extraFieldCompareClosure(i)));
+      
+    });
   }
   bomhead.appendChild(tr);
 }
 
-function populateBomBody() {
+function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
   while (bom.firstChild) {
     bom.removeChild(bom.firstChild);
   }
@@ -482,45 +595,71 @@ function populateBomBody() {
       } else {
         references = bomentry[3];
       }
-      // Checkboxes
-      for (var checkbox of settings.checkboxes) {
-        if (checkbox) {
-          td = document.createElement("TD");
-          var input = document.createElement("input");
-          input.type = "checkbox";
-          input.onchange = createCheckboxChangeHandler(checkbox, references, tr);
-          setBomCheckboxState(checkbox, input, references);
-          if (input.checked && settings.darkenWhenChecked == checkbox) {
-            tr.classList.add("checked");
+      // Filter hidden columns
+      var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
+      columns.forEach(function(column) {
+        if(column === placeholderColumn) {
+          var n = 1;
+          if(column === "checkboxes")
+            n = settings.checkboxes.length;
+          else if (column === "extrafields")
+            n = config.extra_fields.length;
+  
+          for(i = 0; i < n; i++) {
+            td = placeHolderElements.shift();
+            tr.appendChild(td);
           }
-          td.appendChild(input);
+          return;
+        }
+        // Checkboxes
+        if(column === "checkboxes") {
+          for (var checkbox of settings.checkboxes) {
+            if (checkbox) {
+              td = document.createElement("TD");
+              var input = document.createElement("input");
+              input.type = "checkbox";
+              input.onchange = createCheckboxChangeHandler(checkbox, references, tr);
+              setBomCheckboxState(checkbox, input, references);
+              if (input.checked && settings.darkenWhenChecked == checkbox) {
+                tr.classList.add("checked");
+              }
+              td.appendChild(input);
+              tr.appendChild(td);
+            }
+          }
+        }
+        // References
+        if(column === "references") {
+          td = document.createElement("TD");
+          td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
           tr.appendChild(td);
         }
-      }
-      // References
-      td = document.createElement("TD");
-      td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
-      tr.appendChild(td);
-      // Extra fields
-      for (var i in config.extra_fields) {
+        // Value
+        if(column === "value") {
+          td = document.createElement("TD");
+          td.innerHTML = highlightFilter(bomentry[1]);
+          tr.appendChild(td);
+        }
+        // Footprint
+        if(column === "footprint") {
+            td = document.createElement("TD");
+            td.innerHTML = highlightFilter(bomentry[2]);
+            tr.appendChild(td);
+        }
+        if (column === "quantities" && settings.bommode == "grouped") {
+          // Quantity
+          td = document.createElement("TD");
+          td.textContent = bomentry[3].length;
+          tr.appendChild(td);
+        }
+        // Extra fields
+        var i = config.extra_fields.indexOf(column)
+        if(i < 0)
+          return;
         td = document.createElement("TD");
         td.innerHTML = highlightFilter(bomentry[4][i]);
         tr.appendChild(td);
-      }
-      // Value
-      td = document.createElement("TD");
-      td.innerHTML = highlightFilter(bomentry[1]);
-      tr.appendChild(td);
-      // Footprint
-      td = document.createElement("TD");
-      td.innerHTML = highlightFilter(bomentry[2]);
-      tr.appendChild(td);
-      if (settings.bommode == "grouped") {
-        // Quantity
-        td = document.createElement("TD");
-        td.textContent = bomentry[3].length;
-        tr.appendChild(td);
-      }
+      });
     }
     bom.appendChild(tr);
     var handler = createRowHighlightHandler(tr.id, references, netname);
@@ -593,6 +732,7 @@ function highlightNextRow() {
 function populateBomTable() {
   populateBomHeader();
   populateBomBody();
+  setBomHandlers();
 }
 
 function footprintsClicked(footprintIndexes) {
@@ -784,16 +924,28 @@ function changeBomMode(mode) {
   document.getElementById("bom-grouped-btn").classList.remove("depressed");
   document.getElementById("bom-ungrouped-btn").classList.remove("depressed");
   document.getElementById("bom-netlist-btn").classList.remove("depressed");
+  var chkbxs = document.getElementsByClassName("visibility_checkbox");
+
   switch (mode) {
     case 'grouped':
       document.getElementById("bom-grouped-btn").classList.add("depressed");
+      for(var i = 0; i<chkbxs.length; i++) {
+        chkbxs[i].disabled = false;
+      }
       break;
     case 'ungrouped':
       document.getElementById("bom-ungrouped-btn").classList.add("depressed");
+      for(var i = 0; i<chkbxs.length; i++) {
+        chkbxs[i].disabled = false;
+      }
       break;
     case 'netlist':
       document.getElementById("bom-netlist-btn").classList.add("depressed");
+      for(var i = 0; i<chkbxs.length; i++) {
+        chkbxs[i].disabled = true;
+      }
   }
+
   writeStorage("bommode", mode);
   if (mode != settings.bommode) {
     settings.bommode = mode;

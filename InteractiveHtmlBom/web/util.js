@@ -407,6 +407,7 @@ function overwriteSettings(newSettings) {
   document.getElementById("darkmodeCheckbox").checked = settings.darkMode;
   setHighlightPin1(settings.highlightpin1);
   document.getElementById("highlightpin1Checkbox").checked = settings.highlightpin1;
+  showFootprints(settings.show_footprints);
   writeStorage("boardRotation", settings.boardRotation);
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
@@ -509,6 +510,25 @@ function initDefaults() {
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
+  
+  const stdCols = Array("checkboxes", "references", "value", "footprint", "quantities");
+  var hcols = JSON.parse(readStorage("hiddenColumns"));
+  if(hcols === null) {
+    hcols = [];
+  } 
+  settings.hiddenColumns = hcols.filter(e => stdCols.includes(e) || config.extra_fields.includes(e));
+
+  var cord = JSON.parse(readStorage("columnOrder"));
+  if(cord === null) {
+    cord = Array.from(stdCols);
+    cord = cord.slice(0,2).concat(config.extra_fields).concat(cord.slice(2));
+  } else {
+    cord = cord.filter(e => stdCols.includes(e) || config.extra_fields.includes(e));
+    var missing_extra = config.extra_fields.filter(e => !cord.includes(e));
+    cord = cord.concat(missing_extra)
+  }
+  settings.columnOrder = cord;
+
   settings.boardRotation = readStorage("boardRotation");
   if (settings.boardRotation === null) {
     settings.boardRotation = config.board_rotation * 5;
