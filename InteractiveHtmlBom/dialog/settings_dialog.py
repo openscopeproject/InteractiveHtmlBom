@@ -233,8 +233,9 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
 
     def OnSize(self, event):
         # Trick the listCheckBox best size calculations
-        items, checked = self.extraFieldsList.GetStrings(), self.extraFieldsList.GetCheckedStrings()
+        items = self.extraFieldsList.GetStrings()
+        checked_items = self.extraFieldsList.GetCheckedStrings()
         self.extraFieldsList.SetItems([])
         self.Layout()
         self.extraFieldsList.SetItems(items)
-        self.extraFieldsList.SetCheckedStrings(checked)
+        self.extraFieldsList.SetCheckedStrings(checked_items)
