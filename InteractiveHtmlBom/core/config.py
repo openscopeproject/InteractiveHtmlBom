@@ -421,4 +421,7 @@ class Config:
     def get_html_config(self):
         import json
         d = {f: getattr(self, f) for f in self.html_config_fields}
+        # Temporary until currently hardcoded columns are made configurable
+        d["fields"] = ["References"] + self.extra_fields + \
+            ["Value", "Footprint", "Quantity"]
         return json.dumps(d)

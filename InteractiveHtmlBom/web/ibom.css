@@ -247,19 +247,11 @@ canvas:active {
   width: 30px;
 }
 
-.bom .Description {
-  width: 10%;
-}
-
-.bom .Part {
-  width: 10%;
-}
-
-.bom .Value {
+.bom .value {
   width: 15%;
 }
 
-.bom .Quantity {
+.bom .quantity {
   width: 65px;
 }
 
