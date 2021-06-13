@@ -414,11 +414,9 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
       return;
 
     // Skip empty columns
-    if (column === "extrafields" && config.extra_fields.length == 0)
+    if (column === "checkboxes" && settings.checkboxes.length == 0)
       return;
-    else if (column === "checkboxes" && settings.checkboxes.length == 0)
-      return;
-    else if (column === "quantities" && settings.bommode == "ungrouped")
+    else if (column === "Quantity" && settings.bommode == "ungrouped")
       return;
 
     var label = document.createElement("label");
@@ -442,9 +440,10 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
   viscontent.childNodes[0].classList.add("menu-label-top");
 
   vismenu.appendChild(visbutton);
-  if (settings.bommode != "netlist")
+  if (settings.bommode != "netlist") {
     vismenu.appendChild(viscontent);
-  th.appendChild(vismenu)
+    th.appendChild(vismenu);
+  }
   tr.appendChild(th);
 
   var checkboxCompareClosure = function(checkbox) {

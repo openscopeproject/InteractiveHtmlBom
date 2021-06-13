@@ -59,9 +59,9 @@ function setBomHandlers() {
 
     // Set up array of hidden columns
     var hiddenColumns = Array.from(settings.hiddenColumns);
-    // In the ungrouped mode, quantities don't exist
+    // In the ungrouped mode, quantity don't exist
     if (settings.bommode === "ungrouped")
-      hiddenColumns.push("quantities");
+      hiddenColumns.push("Quantity");
     // If no checkbox fields can be found, we consider them hidden
     if (settings.checkboxes.length == 0)
       hiddenColumns.push("checkboxes");
