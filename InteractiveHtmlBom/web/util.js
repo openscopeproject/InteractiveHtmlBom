@@ -161,22 +161,22 @@ var units = {
 
 function initUtils() {
   var allPrefixes = units.prefixes.giga
-                    .concat(units.prefixes.mega)
-                    .concat(units.prefixes.kilo)
-                    .concat(units.prefixes.milli)
-                    .concat(units.prefixes.micro)
-                    .concat(units.prefixes.nano)
-                    .concat(units.prefixes.pico);
+    .concat(units.prefixes.mega)
+    .concat(units.prefixes.kilo)
+    .concat(units.prefixes.milli)
+    .concat(units.prefixes.micro)
+    .concat(units.prefixes.nano)
+    .concat(units.prefixes.pico);
   var allUnits = units.unitsShort.concat(units.unitsLong);
   units.valueRegex = new RegExp("^([0-9\.]+)" +
-                         "\\s*(" + allPrefixes.join("|") + ")?" +
-                         "(" + allUnits.join("|") + ")?" +
-                         "(\\b.*)?$", "");
+    "\\s*(" + allPrefixes.join("|") + ")?" +
+    "(" + allUnits.join("|") + ")?" +
+    "(\\b.*)?$", "");
   units.valueAltRegex = new RegExp("^([0-9]*)" +
-                         "(" + units.unitsShort.join("|") + ")?" +
-                         "([GgMmKkUuNnPp])?" +
-                         "([0-9]*)" +
-                         "(\\b.*)?$", "");
+    "(" + units.unitsShort.join("|") + ")?" +
+    "([GgMmKkUuNnPp])?" +
+    "([0-9]*)" +
+    "(\\b.*)?$", "");
   for (var bom_type of ["both", "F", "B"]) {
     for (var row of pcbdata.bom[bom_type]) {
       row.push(parseValue(row[1], row[3][0][0]));
@@ -323,7 +323,9 @@ function saveSettings() {
     pcbmetadata: pcbdata.metadata,
     settings: settings,
   }
-  var blob = new Blob([JSON.stringify(data, null, 4)], {type: "application/json"});
+  var blob = new Blob([JSON.stringify(data, null, 4)], {
+    type: "application/json"
+  });
   saveFile(`${pcbdata.metadata.title}.settings.json`, blob);
 }
 
@@ -339,7 +341,7 @@ function loadSettings() {
       var newSettings;
       try {
         newSettings = JSON.parse(content);
-      } catch(e) {
+      } catch (e) {
         alert("Selected file is not InteractiveHtmlBom settings file.");
         return;
       }
@@ -359,10 +361,10 @@ function loadSettings() {
         var currentMetadata = JSON.stringify(pcbdata.metadata, null, 4);
         var fileMetadata = JSON.stringify(newSettings.pcbmetadata, null, 4);
         if (!confirm(
-          `Settins file metadata does not match current metadata.\n\n` +
-          `Page metadata:\n${currentMetadata}\n\n` +
-          `Settings file metadata:\n${fileMetadata}\n\n` +
-          `Press OK if you would like to import settings anyway.`)) {
+            `Settins file metadata does not match current metadata.\n\n` +
+            `Page metadata:\n${currentMetadata}\n\n` +
+            `Settings file metadata:\n${fileMetadata}\n\n` +
+            `Press OK if you would like to import settings anyway.`)) {
           return;
         }
       }
@@ -425,12 +427,17 @@ function saveFile(filename, blob) {
 }
 
 function dataURLtoBlob(dataurl) {
-  var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-  while(n--){
-      u8arr[n] = bstr.charCodeAt(n);
+  var arr = dataurl.split(','),
+    mime = arr[0].match(/:(.*?);/)[1],
+    bstr = atob(arr[1]),
+    n = bstr.length,
+    u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
   }
-  return new Blob([u8arr], {type:mime});
+  return new Blob([u8arr], {
+    type: mime
+  });
 }
 
 var settings = {
@@ -510,18 +517,18 @@ function initDefaults() {
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
-  
+
   const stdCols = Array("checkboxes", "references", "value", "footprint", "quantities");
   var hcols = JSON.parse(readStorage("hiddenColumns"));
-  if(hcols === null) {
+  if (hcols === null) {
     hcols = [];
-  } 
+  }
   settings.hiddenColumns = hcols.filter(e => stdCols.includes(e) || config.extra_fields.includes(e));
 
   var cord = JSON.parse(readStorage("columnOrder"));
-  if(cord === null) {
+  if (cord === null) {
     cord = Array.from(stdCols);
-    cord = cord.slice(0,2).concat(config.extra_fields).concat(cord.slice(2));
+    cord = cord.slice(0, 2).concat(config.extra_fields).concat(cord.slice(2));
   } else {
     cord = cord.filter(e => stdCols.includes(e) || config.extra_fields.includes(e));
     var missing_extra = config.extra_fields.filter(e => !cord.includes(e));
@@ -563,9 +570,9 @@ const EventHandler = {
       args: eventArgs,
     }
     var callback;
-    for(callback of this.callbacks[eventType])
+    for (callback of this.callbacks[eventType])
       callback(event);
-    for(callback of this.callbacks[IBOM_EVENT_TYPES.ALL])
+    for (callback of this.callbacks[IBOM_EVENT_TYPES.ALL])
       callback(event);
   }
 }

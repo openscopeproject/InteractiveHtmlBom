@@ -380,16 +380,16 @@ function drawTracks(canvas, layer, color, highlight) {
   ctx = canvas.getContext("2d");
   ctx.strokeStyle = color;
   ctx.lineCap = "round";
-  for(var track of pcbdata.tracks[layer]) {
+  for (var track of pcbdata.tracks[layer]) {
     if (highlight && highlightedNet != track.net) continue;
     ctx.lineWidth = track.width;
     ctx.beginPath();
     if ('radius' in track) {
       ctx.arc(
-          ...track.center,
-          track.radius,
-          deg2rad(track.startangle),
-          deg2rad(track.endangle));
+        ...track.center,
+        track.radius,
+        deg2rad(track.startangle),
+        deg2rad(track.endangle));
     } else {
       ctx.moveTo(...track.start);
       ctx.lineTo(...track.end);
@@ -403,7 +403,7 @@ function drawZones(canvas, layer, color, highlight) {
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
   ctx.lineJoin = "round";
-  for(var zone of pcbdata.zones[layer]) {
+  for (var zone of pcbdata.zones[layer]) {
     if (!zone.path2d) {
       zone.path2d = getPolygonsPath(zone);
     }
@@ -641,14 +641,14 @@ function pointWithinDistanceToSegment(x, y, x1, y1, x2, y2, d) {
 }
 
 function modulo(n, mod) {
-  return ((n % mod) + mod ) % mod;
+  return ((n % mod) + mod) % mod;
 }
 
 function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d) {
   var dx = x - xc;
   var dy = y - yc;
   var r_sq = dx * dx + dy * dy;
-  var rmin = Math.max(0, radius-d);
+  var rmin = Math.max(0, radius - d);
   var rmax = radius + d;
 
   if (r_sq < rmin * rmin || r_sq > rmax * rmax)
@@ -686,7 +686,7 @@ function pointWithinPad(x, y, pad) {
 function netHitScan(layer, x, y) {
   // Check track segments
   if (settings.renderTracks && pcbdata.tracks) {
-    for(var track of pcbdata.tracks[layer]) {
+    for (var track of pcbdata.tracks[layer]) {
       if ('radius' in track) {
         if (pointWithinDistanceToArc(x, y, ...track.center, track.radius, track.startangle, track.endangle, track.width / 2)) {
           return track.net;
@@ -701,7 +701,7 @@ function netHitScan(layer, x, y) {
   // Check pads
   if (settings.renderPads) {
     for (var footprint of pcbdata.footprints) {
-      for(var pad of footprint.pads) {
+      for (var pad of footprint.pads) {
         if (pad.layers.includes(layer) && pointWithinPad(x, y, pad)) {
           return pad.net;
         }
@@ -715,7 +715,7 @@ function pointWithinFootprintBbox(x, y, bbox) {
   var v = [x - bbox.pos[0], y - bbox.pos[1]];
   v = rotateVector(v, bbox.angle);
   return bbox.relpos[0] <= v[0] && v[0] <= bbox.relpos[0] + bbox.size[0] &&
-         bbox.relpos[1] <= v[1] && v[1] <= bbox.relpos[1] + bbox.size[1];
+    bbox.relpos[1] <= v[1] && v[1] <= bbox.relpos[1] + bbox.size[1];
 }
 
 function bboxHitScan(layer, x, y) {
@@ -875,9 +875,9 @@ function handlePointerMove(e, layerdict) {
     var otherPtr = Object.values(layerdict.pointerStates).filter((ptr) => ptr != thisPtr)[0];
 
     var oldDist = Math.sqrt(Math.pow(thisPtr.lastX - otherPtr.lastX, 2) + Math.pow(thisPtr.lastY - otherPtr.lastY, 2));
-    var newDist = Math.sqrt(Math.pow(e.offsetX - otherPtr.lastX, 2)     + Math.pow(e.offsetY - otherPtr.lastY, 2));
+    var newDist = Math.sqrt(Math.pow(e.offsetX - otherPtr.lastX, 2) + Math.pow(e.offsetY - otherPtr.lastY, 2));
 
-    var scaleFactor = newDist/oldDist;
+    var scaleFactor = newDist / oldDist;
 
     if (scaleFactor != NaN) {
       layerdict.transform.zoom *= scaleFactor;

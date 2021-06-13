@@ -73,28 +73,28 @@ function setDarkMode(value) {
 }
 
 function setShowBOMColumn(field, value) {
-  if(field === "references") {
+  if (field === "references") {
     var rl = document.getElementById("reflookup");
     rl.disabled = !value;
-    if(!value) {
+    if (!value) {
       rl.value = "";
       updateRefLookup("");
     }
   }
 
   var n = settings.hiddenColumns.indexOf(field);
-  if(value) {
-    if(n != -1) {
+  if (value) {
+    if (n != -1) {
       settings.hiddenColumns.splice(n, 1);
     }
   } else {
-    if(n == -1) {
+    if (n == -1) {
       settings.hiddenColumns.push(field);
     }
   }
 
   writeStorage("hiddenColumns", JSON.stringify(settings.hiddenColumns));
-  
+
   if (initDone) {
     populateBomTable();
   }
@@ -237,8 +237,7 @@ function createRowHighlightHandler(rowid, refs, net) {
     highlightedNet = net;
     drawHighlights();
     EventHandler.emitEvent(
-      IBOM_EVENT_TYPES.HIGHLIGHT_EVENT,
-      {
+      IBOM_EVENT_TYPES.HIGHLIGHT_EVENT, {
         rowid: rowid,
         refs: refs,
         net: net
@@ -252,7 +251,7 @@ function entryMatches(entry) {
     return entry.toLowerCase().indexOf(filter) >= 0;
   }
   // check refs
-  if(!settings.hiddenColumns.includes("references")) {
+  if (!settings.hiddenColumns.includes("references")) {
     for (var ref of entry[3]) {
       if (ref[0].toLowerCase().indexOf(filter) >= 0) {
         return true;
@@ -260,7 +259,7 @@ function entryMatches(entry) {
     }
   }
   // check extra fields
-  if(!settings.hiddenColumns.includes("extrafields")) {
+  if (!settings.hiddenColumns.includes("extrafields")) {
     for (var i in config.extra_fields) {
       if (entry[4][i].toLowerCase().indexOf(filter) >= 0) {
         return true;
@@ -268,13 +267,13 @@ function entryMatches(entry) {
     }
   }
   // check value
-  if(!settings.hiddenColumns.includes("value")) {
+  if (!settings.hiddenColumns.includes("value")) {
     if (entry[1].toLowerCase().indexOf(filter) >= 0) {
       return true;
     }
   }
   // check footprint
-  if(!settings.hiddenColumns.includes("footprint")) {
+  if (!settings.hiddenColumns.includes("footprint")) {
     if (entry[2].toLowerCase().indexOf(filter) >= 0) {
       return true;
     }
@@ -387,7 +386,7 @@ function createColumnHeader(name, cls, comparator) {
   return th;
 }
 
-function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
+function populateBomHeader(placeHolderColumn = null, placeHolderElements = null) {
   while (bomhead.firstChild) {
     bomhead.removeChild(bomhead.firstChild);
   }
@@ -398,7 +397,7 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   var vismenu = document.createElement("div");
   vismenu.id = "vismenu";
   vismenu.classList.add("menu");
-  
+
   var visbutton = document.createElement("div");
   visbutton.classList.add("visbtn");
   visbutton.classList.add("hideonprint");
@@ -408,15 +407,15 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
   viscontent.id = "vismenu-content";
 
   settings.columnOrder.forEach(column => {
-    if(typeof column !== "string")
+    if (typeof column !== "string")
       return;
 
     // Skip empty columns
-    if(column === "extrafields" && config.extra_fields.length == 0)
+    if (column === "extrafields" && config.extra_fields.length == 0)
       return;
-    else if(column === "checkboxes" && settings.checkboxes.length == 0)
+    else if (column === "checkboxes" && settings.checkboxes.length == 0)
       return;
-    else if(column === "quantities" && settings.bommode == "ungrouped")
+    else if (column === "quantities" && settings.bommode == "ungrouped")
       return;
 
     var label = document.createElement("label");
@@ -425,11 +424,13 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
     var input = document.createElement("input");
     input.classList.add("visibility_checkbox");
     input.type = "checkbox";
-    input.onchange = function(e) { setShowBOMColumn(column, e.target.checked) };
+    input.onchange = function(e) {
+      setShowBOMColumn(column, e.target.checked)
+    };
     input.checked = !(settings.hiddenColumns.includes(column));
-    
+
     label.appendChild(input);
-    if(column.length > 0)
+    if (column.length > 0)
       label.append(column[0].toUpperCase() + column.slice(1));
 
     viscontent.appendChild(label);
@@ -442,7 +443,7 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
     vismenu.appendChild(viscontent);
   th.appendChild(vismenu)
   tr.appendChild(th);
-  
+
   var checkboxCompareClosure = function(checkbox) {
     return (a, b) => {
       var stateA = getCheckboxState(checkbox, a[3]);
@@ -463,20 +464,20 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
     // Filter hidden columns
     var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
     columns.forEach(function(column) {
-      if(column === placeHolderColumn) {
+      if (column === placeHolderColumn) {
         var n = 1;
-        if(column === "checkboxes")
+        if (column === "checkboxes")
           n = settings.checkboxes.length;
         else if (column === "extrafields")
           n = config.extra_fields.length;
 
-        for(i = 0; i < n; i++) {
+        for (i = 0; i < n; i++) {
           td = placeHolderElements.shift();
           tr.appendChild(td);
         }
         return;
       }
-      if(column === "checkboxes") {
+      if (column === "checkboxes") {
         for (var checkbox of settings.checkboxes) {
           th = createColumnHeader(
             checkbox, "bom-checkbox", checkboxCompareClosure(checkbox));
@@ -485,7 +486,7 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
           tr.appendChild(th);
         }
       }
-      if(column === "references") {
+      if (column === "references") {
         tr.appendChild(createColumnHeader("References", "references", (a, b) => {
           var i = 0;
           while (i < a[3].length && i < b[3].length) {
@@ -495,16 +496,16 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
           return a[3].length - b[3].length;
         }));
       }
-      if(column === "value") {
+      if (column === "value") {
         tr.appendChild(createColumnHeader("Value", "value", (a, b) => {
           return valueCompare(a[5], b[5], a[1], b[1]);
         }));
       }
-      if(column === "footprint") {
-          tr.appendChild(createColumnHeader("Footprint", "footprint", (a, b) => {
-            if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
-            else return 0;
-          }));
+      if (column === "footprint") {
+        tr.appendChild(createColumnHeader("Footprint", "footprint", (a, b) => {
+          if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
+          else return 0;
+        }));
       }
       if (column === "quantities" && settings.bommode == "grouped") {
         tr.appendChild(createColumnHeader("Quantity", "quantities", (a, b) => {
@@ -521,17 +522,16 @@ function populateBomHeader(placeHolderColumn=null, placeHolderElements=null) {
         }
       }
       var i = config.extra_fields.indexOf(column);
-      if(i < 0)
+      if (i < 0)
         return;
       tr.appendChild(createColumnHeader(
         column, column, extraFieldCompareClosure(i)));
-      
     });
   }
   bomhead.appendChild(tr);
 }
 
-function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
+function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
   while (bom.firstChild) {
     bom.removeChild(bom.firstChild);
   }
@@ -559,7 +559,9 @@ function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
       expandedTable = []
       for (var bomentry of bomtable) {
         for (var ref of bomentry[3]) {
-          expandedTable.push([1, bomentry[1], bomentry[2], [ref], bomentry[4], bomentry[5]]);
+          expandedTable.push([1, bomentry[1], bomentry[2],
+            [ref], bomentry[4], bomentry[5]
+          ]);
         }
       }
       bomtable = expandedTable;
@@ -597,22 +599,22 @@ function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
       }
       // Filter hidden columns
       var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
-      columns.forEach(function(column) {
-        if(column === placeholderColumn) {
+      columns.forEach((column) => {
+        if (column === placeholderColumn) {
           var n = 1;
-          if(column === "checkboxes")
+          if (column === "checkboxes")
             n = settings.checkboxes.length;
           else if (column === "extrafields")
             n = config.extra_fields.length;
-  
-          for(i = 0; i < n; i++) {
+
+          for (i = 0; i < n; i++) {
             td = placeHolderElements.shift();
             tr.appendChild(td);
           }
           return;
         }
         // Checkboxes
-        if(column === "checkboxes") {
+        if (column === "checkboxes") {
           for (var checkbox of settings.checkboxes) {
             if (checkbox) {
               td = document.createElement("TD");
@@ -629,22 +631,22 @@ function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
           }
         }
         // References
-        if(column === "references") {
+        if (column === "references") {
           td = document.createElement("TD");
           td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
           tr.appendChild(td);
         }
         // Value
-        if(column === "value") {
+        if (column === "value") {
           td = document.createElement("TD");
           td.innerHTML = highlightFilter(bomentry[1]);
           tr.appendChild(td);
         }
         // Footprint
-        if(column === "footprint") {
-            td = document.createElement("TD");
-            td.innerHTML = highlightFilter(bomentry[2]);
-            tr.appendChild(td);
+        if (column === "footprint") {
+          td = document.createElement("TD");
+          td.innerHTML = highlightFilter(bomentry[2]);
+          tr.appendChild(td);
         }
         if (column === "quantities" && settings.bommode == "grouped") {
           // Quantity
@@ -654,7 +656,7 @@ function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
         }
         // Extra fields
         var i = config.extra_fields.indexOf(column)
-        if(i < 0)
+        if (i < 0)
           return;
         td = document.createElement("TD");
         td.innerHTML = highlightFilter(bomentry[4][i]);
@@ -682,8 +684,7 @@ function populateBomBody(placeholderColumn=null, placeHolderElements=null) {
     }
   }
   EventHandler.emitEvent(
-    IBOM_EVENT_TYPES.BOM_BODY_CHANGE_EVENT,
-    {
+    IBOM_EVENT_TYPES.BOM_BODY_CHANGE_EVENT, {
       filter: filter,
       reflookup: reflookup,
       checkboxes: settings.checkboxes,
@@ -807,7 +808,11 @@ function populateMetadata() {
     document.title = pcbdata.metadata.title + " BOM";
   }
   // Calculate board stats
-  var fp_f = 0, fp_b = 0, pads_f = 0, pads_b = 0, pads_th = 0;
+  var fp_f = 0,
+    fp_b = 0,
+    pads_f = 0,
+    pads_b = 0,
+    pads_th = 0;
   for (var i = 0; i < pcbdata.footprints.length; i++) {
     if (pcbdata.bom.skipped.includes(i)) continue;
     var mod = pcbdata.footprints[i];
@@ -929,19 +934,19 @@ function changeBomMode(mode) {
   switch (mode) {
     case 'grouped':
       document.getElementById("bom-grouped-btn").classList.add("depressed");
-      for(var i = 0; i<chkbxs.length; i++) {
+      for (var i = 0; i < chkbxs.length; i++) {
         chkbxs[i].disabled = false;
       }
       break;
     case 'ungrouped':
       document.getElementById("bom-ungrouped-btn").classList.add("depressed");
-      for(var i = 0; i<chkbxs.length; i++) {
+      for (var i = 0; i < chkbxs.length; i++) {
         chkbxs[i].disabled = false;
       }
       break;
     case 'netlist':
       document.getElementById("bom-netlist-btn").classList.add("depressed");
-      for(var i = 0; i<chkbxs.length; i++) {
+      for (var i = 0; i < chkbxs.length; i++) {
         chkbxs[i].disabled = true;
       }
   }

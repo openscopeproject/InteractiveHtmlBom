@@ -17,7 +17,8 @@
   --zone-color-highlight: #d0404080;
 }
 
-html, body {
+html,
+body {
   margin: 0px;
   height: 100%;
   font-family: Verdana, sans-serif;
@@ -102,7 +103,7 @@ button#copy {
 }
 
 button#copy:active {
-    box-shadow: inset 0px 0px 5px #6c6c6c;
+  box-shadow: inset 0px 0px 5px #6c6c6c;
 }
 
 textarea.clipboard-temp {
@@ -191,7 +192,8 @@ canvas:active {
   margin-top: 1px;
 }
 
-.bom th, .bom td {
+.bom th,
+.bom td {
   border: 1px solid black;
   padding: 5px;
   word-wrap: break-word;
@@ -199,7 +201,8 @@ canvas:active {
   position: relative;
 }
 
-.dark .bom th, .dark .bom td {
+.dark .bom th,
+.dark .bom td {
   border: 1px solid #777;
 }
 
@@ -318,7 +321,8 @@ canvas:active {
   visibility: hidden;
 }
 
-.bom .bom-checkbox:hover:before, .bom .bom-checkbox:hover:after {
+.bom .bom-checkbox:hover:before,
+.bom .bom-checkbox:hover:after {
   visibility: visible;
   transition: visibility 0.2s linear 1s;
 }
@@ -332,7 +336,8 @@ canvas:active {
   background-color: inherit;
 }
 
-.split.split-horizontal, .gutter.gutter-horizontal {
+.split.split-horizontal,
+.gutter.gutter-horizontal {
   height: 100%;
   float: left;
 }
@@ -457,7 +462,11 @@ mark.highlight {
   font-family: Verdana, sans-serif;
 }
 
-.dark .statsbtn, .dark .savebtn, .dark .menubtn, .dark .iobtn, .dark .visbtn {
+.dark .statsbtn,
+.dark .savebtn,
+.dark .menubtn,
+.dark .iobtn,
+.dark .visbtn {
   filter: invert(1);
 }
 
@@ -550,7 +559,9 @@ mark.highlight {
   display: block;
 }
 
-.menu:hover .menubtn, .menu:hover .iobtn, .menu:hover .statsbtn {
+.menu:hover .menubtn,
+.menu:hover .iobtn,
+.menu:hover .statsbtn {
   background-color: #eee;
 }
 
@@ -582,7 +593,8 @@ mark.highlight {
   width: calc(100% - 10px);
 }
 
-.menu-textbox.invalid, .dark .menu-textbox.invalid {
+.menu-textbox.invalid,
+.dark .menu-textbox.invalid {
   color: red;
 }
 
@@ -738,8 +750,9 @@ a {
   color: #00b9fd;
 }
 
-#frontcanvas, #backcanvas {
-    touch-action: none;
+#frontcanvas,
+#backcanvas {
+  touch-action: none;
 }
 
 .placeholder {
@@ -751,7 +764,7 @@ a {
   z-index: 999;
 }
 
-.dark .dragging > table > tbody > tr {
+.dark .dragging>table>tbody>tr {
   background-color: #252c30;
 }
 
