@@ -5,7 +5,16 @@ set FilePath=%~dp0
 ::delete --show-dialog after frist start up and setting
 set option=--show-dialog
 
-call %FilePath%\i18n\language_en.bat
+::detect current language of user.
+FOR /F "tokens=3" %%a IN ('reg query "HKCU\Control Panel\Desktop" /v PreferredUILanguages ^| find "PreferredUILanguages"') DO set language=%%a
+set language=%language:~,2%
+if %language%==zh (
+	call %FilePath%\i18n\language_zh.bat
+) else (
+	call %FilePath%\i18n\language_en.bat
+)
+
+cls
 
 echo -------------------------------------------------------------------------------------------------------------------
 echo -------------------------------------------------------------------------------------------------------------------
