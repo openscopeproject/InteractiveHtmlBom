@@ -424,7 +424,8 @@ function clearCanvas(canvas, color = null) {
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   } else {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!window.matchMedia("print").matches)
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
   ctx.restore();
 }
