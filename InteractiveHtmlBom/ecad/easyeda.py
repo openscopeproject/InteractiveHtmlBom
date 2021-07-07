@@ -65,13 +65,6 @@ class EasyEdaParser(EcadParser):
             v = float(v)
         return v
 
-    def _get_outline_layer(self, pcb):
-        for l in pcb.layers:
-            layer = self.tilda_split(l)
-            if layer[1] == 'BoardOutline':
-                return layer[0]
-        return None
-
     def parse_track(self, shape):
         shape = self.tilda_split(shape)
         assert len(shape) >= 5, 'Invalid track ' + str(shape)
@@ -96,21 +89,36 @@ class EasyEdaParser(EcadParser):
 
     def parse_rect(self, shape):
         shape = self.tilda_split(shape)
-        assert len(shape) >= 5, 'Invalid rect ' + str(shape)
+        assert len(shape) >= 9, 'Invalid rect ' + str(shape)
         x = self.normalize(shape[0])
         y = self.normalize(shape[1])
         width = self.normalize(shape[2])
         height = self.normalize(shape[3])
         layer = int(shape[4])
+        fill = shape[8]
 
-        return layer, [{
-            "type": "polygon",
-            "pos": [x, y],
-            "angle": 0,
-            "polygons": [
-                [[0, 0], [0, width], [-height, width], [-height, 0]]
-            ]
-        }]
+        if fill == "none":
+            thickness = self.normalize(shape[7])
+            points = [[x, y], [x + width, y],
+                      [x + width, y + height], [x, y + height]]
+            segments_json = []
+            for i in range(4):
+                segments_json.append({
+                    "type": "segment",
+                    "start": points[i],
+                    "end": points[(i + 1) % 4],
+                    "width": thickness,
+                })
+            return layer, segments_json
+        else:
+            return layer, [{
+                "type": "polygon",
+                "pos": [x, y],
+                "angle": 0,
+                "polygons": [
+                    [[0, 0], [width, 0], [width, height], [0, height]]
+                ]
+            }]
 
     def parse_circle(self, shape):
         shape = self.tilda_split(shape)
@@ -328,7 +336,8 @@ class EasyEdaParser(EcadParser):
             self.add_drawing_bounding_box(drawing, bbox)
         bbox.pad(0.5)  # pad by 5 mil
         if not bbox.initialized():
-            # if bounding box is not calculated yet set it to 100x100 mil square
+            # if bounding box is not calculated yet
+            # set it to 100x100 mil square
             bbox.add_rectangle(x, y, 10, 10, 0)
 
         footprint_json = {
@@ -383,7 +392,7 @@ class EasyEdaParser(EcadParser):
             title = os.path.splitext(pcb_file_name)[0]
             file_mtime = os.path.getmtime(self.file_name)
             file_date = datetime.fromtimestamp(file_mtime).strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                '%Y-%m-%d %H:%M:%S')
             return {
                 "title": title,
                 "revision": "",

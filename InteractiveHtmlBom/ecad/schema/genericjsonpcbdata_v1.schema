@@ -79,13 +79,13 @@
                 "metadata": {
                     "$ref": "#/definitions/Metadata"
                 },
-                "tracks": { 
+                "tracks": {
                     "$ref": "#/definitions/Tracks"
                 },
                 "zones": {
                     "$ref": "#/definitions/Zones"
                 },
-                "nets": { 
+                "nets": {
                     "type": "array",
                     "items": { "type": "string" }
                 }
@@ -249,7 +249,7 @@
                 "type"
             ],
             "allOf": [
-                { 
+                {
                     "if": {
                         "properties": { "shape": { "const": "custom" } }
                     },
@@ -261,7 +261,7 @@
                     }
                 },
                 {
-                    "if": { 
+                    "if": {
                         "properties": { "shape": { "const": "roundrect" } }
                     },
                     "then": {
@@ -321,14 +321,13 @@
         "DrawingArray": {
             "type": "array",
             "items": {
-                "$ref": "#/definitions/Drawing" 
+                "$ref": "#/definitions/Drawing"
             }
         },
         "Drawing": {
             "type": "object",
             "oneOf": [
                 { "$ref": "#/definitions/DrawingSegment" },
-                { "$ref": "#/definitions/DrawingRect" },
                 { "$ref": "#/definitions/DrawingCircle" },
                 { "$ref": "#/definitions/DrawingArc" },
                 { "$ref": "#/definitions/DrawingCurve" },
@@ -348,18 +347,6 @@
             "required": ["type", "start", "end", "width"],
             "title": "DrawingSegment"
         },
-        "DrawingRect": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "type": { "const": "rect" },
-                "start": { "$ref": "#/definitions/Coordinates" },
-                "end": { "$ref": "#/definitions/Coordinates" },
-                "width": { "type": "number" }
-            },
-            "required": ["type", "start", "end", "width"],
-            "title": "DrawingRect"
-        },
         "DrawingCircle": {
             "type": "object",
             "additionalProperties": false,
@@ -370,7 +357,7 @@
                 "width": { "type": "number" }
             },
             "required": ["type", "start", "radius", "width"],
-            "title": "DrawingCircle"            
+            "title": "DrawingCircle"
         },
         "DrawingArc": {
             "type": "object",
@@ -381,7 +368,7 @@
                 "svgpath": { "type": "string" },
                 "start": { "$ref": "#/definitions/Coordinates" },
                 "radius": { "type": "number" },
-                "startangle": { "type": "number" }, 
+                "startangle": { "type": "number" },
                 "endangle": { "type": "number" }
             },
             "required": [
@@ -392,7 +379,7 @@
                 { "required": ["svgpath"] },
                 { "required": ["start", "radius", "startangle", "endangle"] }
             ],
-            "title": "DrawingArc"            
+            "title": "DrawingArc"
         },
         "DrawingCurve": {
             "type": "object",
@@ -406,7 +393,7 @@
                 "width": { "type": "number" }
             },
             "required": ["type", "start", "end", "cpa", "cpb", "width"],
-            "title": "DrawingCurve"            
+            "title": "DrawingCurve"
         },
         "DrawingPolygon": {
             "type": "object",
@@ -415,10 +402,10 @@
                 "type": { "const": "polygon" },
                 "svgpath": { "type": "string" },
                 "pos": { "$ref": "#/definitions/Coordinates" },
-                "angle": { "type": "number" }, 
-                "polygons": { 
+                "angle": { "type": "number" },
+                "polygons": {
                     "type": "array",
-                    "items": { 
+                    "items": {
                         "type": "array",
                         "items": { "$ref": "#/definitions/Coordinates" }
                     }
@@ -429,7 +416,7 @@
                 { "required": ["svgpath"] },
                 { "required": ["pos", "angle", "polygons"] }
             ],
-            "title": "DrawingPolygon"            
+            "title": "DrawingPolygon"
         },
         "DrawingText": {
             "type": "object",
@@ -444,7 +431,7 @@
                 "svgpath",
                 "thickness"
             ],
-            "title": "DrawingText"            
+            "title": "DrawingText"
         },
         "Coordinates": {
             "type": "array",
@@ -492,11 +479,11 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "F": { 
+                "F": {
                     "type": "array",
                     "items": { "$ref": "#/definitions/Track" }
                 },
-                "B": { 
+                "B": {
                     "type": "array",
                     "items": { "$ref": "#/definitions/Track" }
                 }
@@ -510,7 +497,7 @@
                 {
                     "additionalProperties": false,
                     "properties": {
-                        "start": { "$ref": "#/definitions/Coordinates" }, 
+                        "start": { "$ref": "#/definitions/Coordinates" },
                         "end": { "$ref": "#/definitions/Coordinates" },
                         "width": { "type": "number" },
                         "net": { "type": "string" }
@@ -545,11 +532,11 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "F": { 
+                "F": {
                     "type": "array",
                     "items": { "$ref": "#/definitions/Zone" }
                 },
-                "B": { 
+                "B": {
                     "type": "array",
                     "items": { "$ref": "#/definitions/Zone" }
                 }
@@ -575,16 +562,16 @@
         },
         "Polygons": {
             "type": "array",
-            "items": { 
+            "items": {
                 "type": "array",
-                "items": { 
-                    "$ref": "#/definitions/Coordinates" 
+                "items": {
+                    "$ref": "#/definitions/Coordinates"
                 }
             }
         },
         "ReferenceSet": {
             "type": "array",
-            "items": {                
+            "items": {
                 "type": "array",
                 "items": [
                     { "type": "string" },
@@ -596,7 +583,7 @@
         "ExtraData": {
             "type": "object",
             "additionalProperties": true,
-            "properties": {                
+            "properties": {
             },
             "title": "ExtraData"
         }
