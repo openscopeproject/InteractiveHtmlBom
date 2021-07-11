@@ -113,6 +113,7 @@ function drawedge(ctx, scalefactor, edge, color) {
   ctx.strokeStyle = color;
   ctx.lineWidth = Math.max(1 / scalefactor, edge.width);
   ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   if ("svgpath" in edge) {
     ctx.stroke(new Path2D(edge.svgpath));
   } else {
@@ -227,7 +228,7 @@ function drawPolygonShape(ctx, shape, color) {
 }
 
 function drawDrawing(ctx, scalefactor, drawing, color) {
-  if (["segment", "arc", "circle", "curve"].includes(drawing.type)) {
+  if (["segment", "arc", "circle", "curve", "rect"].includes(drawing.type)) {
     drawedge(ctx, scalefactor, drawing, color);
   } else if (drawing.type == "polygon") {
     drawPolygonShape(ctx, drawing, color);

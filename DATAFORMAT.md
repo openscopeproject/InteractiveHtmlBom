@@ -143,6 +143,17 @@ attribute.
 }
 ```
 
+### rect
+
+```js
+{
+  "type": "rect",
+  "start": [x, y], // coordinates of opposing corners
+  "end": [x, y],
+  "width": width,
+}
+```
+
 ### circle
 
 ```js

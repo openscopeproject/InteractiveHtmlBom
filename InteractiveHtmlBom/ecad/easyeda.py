@@ -4,12 +4,10 @@ import sys
 from .common import EcadParser, Component, BoundingBox
 
 
-PY3 = sys.version_info[0] == 3
-
-if PY3:
+if sys.version_info >= (3, 0):
     string_types = str
 else:
-    string_types = basestring
+    string_types = basestring  # noqa F821: ignore undefined
 
 
 class EasyEdaParser(EcadParser):
@@ -99,17 +97,12 @@ class EasyEdaParser(EcadParser):
 
         if fill == "none":
             thickness = self.normalize(shape[7])
-            points = [[x, y], [x + width, y],
-                      [x + width, y + height], [x, y + height]]
-            segments_json = []
-            for i in range(4):
-                segments_json.append({
-                    "type": "segment",
-                    "start": points[i],
-                    "end": points[(i + 1) % 4],
-                    "width": thickness,
-                })
-            return layer, segments_json
+            return layer, [{
+                "type": "rect",
+                "start": [x, y],
+                "end": [x + width, y + height],
+                "width": thickness,
+            }]
         else:
             return layer, [{
                 "type": "polygon",
@@ -318,7 +311,8 @@ class EasyEdaParser(EcadParser):
                         continue
                 if layer in [self.TOP_COPPER_LAYER, self.BOT_COPPER_LAYER]:
                     copper_drawings.append({
-                        "layer": 'F' if layer == self.TOP_COPPER_LAYER else 'B',
+                        "layer": (
+                            'F' if layer == self.TOP_COPPER_LAYER else 'B'),
                         "drawing": s,
                     })
                 elif layer in [self.TOP_SILK_LAYER,
@@ -403,8 +397,9 @@ class EasyEdaParser(EcadParser):
     def parse(self):
         pcb = self.get_easyeda_pcb()
         if not self._verify(pcb):
-            self.logger.error('File ' + self.file_name +
-                              ' does not appear to be valid EasyEDA json file.')
+            self.logger.error(
+                'File ' + self.file_name +
+                ' does not appear to be valid EasyEDA json file.')
             return None, None
 
         drawings, footprints, components = self.parse_shapes(pcb['shape'])

@@ -328,6 +328,7 @@
             "type": "object",
             "oneOf": [
                 { "$ref": "#/definitions/DrawingSegment" },
+                { "$ref": "#/definitions/DrawingRect" },
                 { "$ref": "#/definitions/DrawingCircle" },
                 { "$ref": "#/definitions/DrawingArc" },
                 { "$ref": "#/definitions/DrawingCurve" },
@@ -346,6 +347,18 @@
             },
             "required": ["type", "start", "end", "width"],
             "title": "DrawingSegment"
+        },
+        "DrawingRect": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": { "const": "rect" },
+                "start": { "$ref": "#/definitions/Coordinates" },
+                "end": { "$ref": "#/definitions/Coordinates" },
+                "width": { "type": "number" }
+            },
+            "required": ["type", "start", "end", "width"],
+            "title": "DrawingRect"
         },
         "DrawingCircle": {
             "type": "object",

@@ -89,7 +89,8 @@ class PcbnewParser(EcadParser):
             if hasattr(d, "GetPolyShape"):
                 polygons = self.parse_poly_set(d.GetPolyShape())
             else:
-                self.logger.info("Polygons not supported for KiCad 4, skipping")
+                self.logger.info(
+                    "Polygons not supported for KiCad 4, skipping")
                 return None
             angle = 0
             if hasattr(d, 'GetParentModule'):
@@ -409,7 +410,8 @@ class PcbnewParser(EcadParser):
                 if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     if track.GetClass() == "ARC":
                         a1 = round(track.GetArcAngleStart() * 0.1, 2)
-                        a2 = round((track.GetArcAngleStart() + track.GetAngle()) * 0.1, 2)
+                        a2 = round((track.GetArcAngleStart() +
+                                    track.GetAngle()) * 0.1, 2)
                         if track.GetAngle() < 0:
                             (a1, a2) = (a2, a1)
                         track_dict = {
@@ -521,7 +523,8 @@ class PcbnewParser(EcadParser):
                 self.config.netlist_file, self.config.normalize_field_case)
 
         if extra_field_data is None and need_extra_fields:
-            raise ParsingException('Failed parsing %s' % self.config.netlist_file)
+            raise ParsingException(
+                'Failed parsing %s' % self.config.netlist_file)
 
         extra_field_data = extra_field_data[1] if extra_field_data else None
 
@@ -623,7 +626,7 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
         self.show_toolbar_button = True
         icon_dir = os.path.dirname(os.path.dirname(__file__))
         self.icon_file_name = os.path.join(icon_dir, 'icon.png')
-        self.description = "Generate interactive HTML page that contains BOM " \
+        self.description = "Generate interactive HTML page with BOM " \
                            "table and pcb drawing."
 
     def defaults(self):
