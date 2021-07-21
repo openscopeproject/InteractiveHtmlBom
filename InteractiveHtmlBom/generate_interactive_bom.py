@@ -20,18 +20,18 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
     sys.path.insert(0, os.path.dirname(script_dir))
     os.environ['INTERACTIVE_HTML_BOM_CLI_MODE'] = 'True'
-    import InteractiveHtmlBom
 
     from InteractiveHtmlBom.core import ibom
     from InteractiveHtmlBom.core.config import Config
     from InteractiveHtmlBom.ecad import get_parser_by_extension
     from InteractiveHtmlBom.version import version
     from InteractiveHtmlBom.errors import (ExitCodes, ParsingException,
-                                          exit_error)
+                                           exit_error)
 
     create_wx_app = 'INTERACTIVE_HTML_BOM_NO_DISPLAY' not in os.environ
     if create_wx_app:
         import wx
+
         app = wx.App()
 
     parser = argparse.ArgumentParser(
@@ -51,7 +51,8 @@ if __name__ == "__main__":
     parser = get_parser_by_extension(os.path.abspath(args.file), config, logger)
     if args.show_dialog:
         if not create_wx_app:
-            exit_error(logger, ExitCodes.ERROR_NO_DISPLAY, "Can not show dialog when "
+            exit_error(logger, ExitCodes.ERROR_NO_DISPLAY,
+                       "Can not show dialog when "
                        "INTERACTIVE_HTML_BOM_NO_DISPLAY is set.")
         try:
             ibom.run_with_dialog(parser, config, logger)

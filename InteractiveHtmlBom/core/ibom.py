@@ -7,6 +7,7 @@ import os
 import re
 import sys
 from datetime import datetime
+from typing import Optional
 
 import wx
 
@@ -42,12 +43,12 @@ class Logger(object):
 
     def warn(self, msg):
         if self.cli:
-            self.logger.warn(msg)
+            self.logger.warning(msg)
         else:
             wx.LogWarning(msg)
 
 
-log = None  # type: Logger or None
+log = None  # type: Optional[Logger]
 
 
 def skip_component(m, config):
@@ -92,7 +93,6 @@ def generate_bom(pcb_footprints, config):
     Generate BOM from pcb layout.
     :param pcb_footprints: list of footprints on the pcb
     :param config: Config object
-    :param extra_data: Extra fields data
     :return: dict of BOM tables (qty, value, footprint, refs) and dnp components
     """
 
@@ -103,12 +103,12 @@ def generate_bom(pcb_footprints, config):
         return [convert(c)
                 for c in re.split('([0-9]+)', key)]
 
-    def natural_sort(l):
+    def natural_sort(lst):
         """
         Natural sort for strings containing numbers
         """
 
-        return sorted(l, key=lambda r: (alphanum_key(r[0]), r[1]))
+        return sorted(lst, key=lambda r: (alphanum_key(r[0]), r[1]))
 
     # build grouped part list
     skipped_components = []
@@ -139,8 +139,8 @@ def generate_bom(pcb_footprints, config):
         bom_table.append(bom_row)
 
     # sort table by reference prefix, footprint and quantity
-    def sort_func(row):
-        qty, _, fp, rf, e = row
+    def row_sort_key(element):
+        qty, _, fp, rf, e = element
         prefix = re.findall('^[A-Z]*', rf[0][0])[0]
         if prefix in config.component_sort_order:
             ref_ord = config.component_sort_order.index(prefix)
@@ -150,7 +150,7 @@ def generate_bom(pcb_footprints, config):
 
     if '~' not in config.component_sort_order:
         config.component_sort_order.append('~')
-    bom_table = sorted(bom_table, key=sort_func)
+    bom_table = sorted(bom_table, key=row_sort_key)
 
     result = {
         'both': bom_table,
@@ -166,7 +166,7 @@ def generate_bom(pcb_footprints, config):
                 filtered_table.append((len(filtered_refs), row[1],
                                        row[2], filtered_refs, row[4]))
 
-        result[layer] = sorted(filtered_table, key=sort_func)
+        result[layer] = sorted(filtered_table, key=row_sort_key)
 
     return result
 
@@ -180,8 +180,8 @@ def open_file(filename):
             subprocess.call(('open', filename))
         elif sys.platform.startswith('linux'):
             subprocess.call(('xdg-open', filename))
-    except OSError as oe:
-        log.warn('Failed to open browser: {}'.format(oe.message))
+    except Exception as e:
+        log.warn('Failed to open browser: {}'.format(e))
 
 
 def process_substitutions(bom_name_format, pcb_file_name, metadata):

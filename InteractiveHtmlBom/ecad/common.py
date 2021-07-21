@@ -62,6 +62,7 @@ class EcadParser(object):
 
         {
             'segment': add_segment,
+            'rect': add_segment,  # bbox of a rect and segment are the same
             'circle': add_circle,
             'arc': add_svgpath,
             'polygon': add_polygon,
