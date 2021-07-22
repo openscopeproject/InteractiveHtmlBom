@@ -29,11 +29,7 @@ function setBomHandlers() {
     if (wasDragged) {
       // Redraw whole BOM
       populateBomTable();
-    } else {
-      // The element wasn't dragged -> simulate click
-      e.target.click();
     }
-
   }
 
   const mouseMoveHandler = function(e) {
