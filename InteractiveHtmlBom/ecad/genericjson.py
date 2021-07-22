@@ -1,5 +1,7 @@
 import io
 import json
+import os.path
+from typing import List
 from jsonschema import validate, ValidationError
 
 from .common import EcadParser, Component, BoundingBox
@@ -8,8 +10,30 @@ from .common import EcadParser, Component, BoundingBox
 class GenericJsonParser(EcadParser):
     COMPATIBLE_SPEC_VERSIONS = [1]
 
+    def extra_data_file_filter(self):
+        return "Json file ({f})|{f}".format(f=os.path.basename(self.file_name))
+
+    def latest_extra_data(self, extra_dirs=None):
+        return self.file_name
+
+    def get_extra_field_data(self, file_name):
+        if os.path.abspath(file_name) != os.path.abspath(self.file_name):
+            return None
+
+        _, components = self._parse()
+        field_set = set()
+        comp_dict = {}
+
+        for c in components:
+            ref_fields = comp_dict.setdefault(c.ref, {})
+
+            for k, v in c.extra_fields.items():
+                field_set.add(k)
+                ref_fields[k] = v
+
+        return list(field_set), comp_dict
+
     def get_generic_json_pcb(self):
-        from os import path
         with io.open(self.file_name, 'r', encoding='utf-8') as f:
             pcb = json.load(f)
 
@@ -20,10 +44,10 @@ class GenericJsonParser(EcadParser):
             raise ValidationError("Unsupported spec_version ({})"
                                   .format(pcb['spec_version']))
 
-        schema_dir = path.join(path.dirname(__file__), 'schema')
-        schema_file_name = path.join(schema_dir,
-                                     'genericjsonpcbdata_v{}.schema'
-                                     .format(pcb['spec_version']))
+        schema_dir = os.path.join(os.path.dirname(__file__), 'schema')
+        schema_file_name = os.path.join(schema_dir,
+                                        'genericjsonpcbdata_v{}.schema'.format(
+                                            pcb['spec_version']))
 
         with io.open(schema_file_name, 'r', encoding='utf-8') as f:
             schema = json.load(f)
@@ -43,7 +67,8 @@ class GenericJsonParser(EcadParser):
 
         return True
 
-    def parse(self):
+    def _parse(self):
+        # type: () -> (dict, List[Component])
         try:
             pcb = self.get_generic_json_pcb()
         except ValidationError as e:
@@ -57,10 +82,16 @@ class GenericJsonParser(EcadParser):
                               .format(self.file_name))
             return None, None
 
-        self.logger.info('Successfully parsed {}'.format(self.file_name))
-
         pcbdata = pcb['pcbdata']
         components = [Component(**c) for c in pcb['components']]
+
+        self.logger.info('Successfully parsed {}'.format(self.file_name))
+
+        return pcbdata, components
+
+    def parse(self):
+        # type: () -> (dict, List[Component])
+        pcbdata, components = self._parse()
 
         # override board bounding box based on edges
         board_outline_bbox = BoundingBox()

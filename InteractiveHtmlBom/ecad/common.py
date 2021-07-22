@@ -14,7 +14,6 @@ class EcadParser(object):
         self.file_name = file_name
         self.config = config
         self.logger = logger
-        self.extra_data_func = lambda f, b: ([], {})
 
     def parse(self):
         """
@@ -27,12 +26,64 @@ class EcadParser(object):
         """
         pass
 
+    @staticmethod
+    def normalize_field_names(data):
+        field_map = {f.lower(): f for f in reversed(data[0])}
+
+        def remap(ref_fields):
+            return {field_map[f.lower()]: v for (f, v) in
+                    sorted(ref_fields.items(), reverse=True)}
+
+        field_data = {r: remap(d) for (r, d) in data[1].items()}
+        return field_map.values(), field_data
+
+    def get_extra_field_data(self, file_name):
+        """
+        Abstract method that may be overridden in implementations that support
+        extra field data.
+        :return: tuple of the format
+            (
+                [field_name1, field_name2,... ],
+                {
+                    ref1: {
+                        field_name1: field_value1,
+                        field_name2: field_value2,
+                        ...
+                    ],
+                    ref2: ...
+                }
+            )
+        """
+        return [], {}
+
+    def parse_extra_data(self, file_name, normalize_case):
+        """
+        Parses the file and returns extra field data.
+        :param file_name: path to file containing extra data
+        :param normalize_case: if true, normalize case so that
+                               "mpn", "Mpn", "MPN" fields are combined
+        :return:
+        """
+        data = self.get_extra_field_data(file_name)
+        if normalize_case:
+            data = self.normalize_field_names(data)
+        return sorted(data[0]), data[1]
+
     def latest_extra_data(self, extra_dirs=None):
         """
         Abstract method that may be overridden in implementations that support
         extra field data.
         :param extra_dirs: List of extra directories to search.
         :return: File name of most recent file with extra field data.
+        """
+        return None
+
+    def extra_data_file_filter(self):
+        """
+        Abstract method that may be overridden in implementations that support
+        extra field data.
+        :return: File open dialog filter string, eg:
+                 "Netlist and xml files (*.net; *.xml)|*.net;*.xml"
         """
         return None
 

@@ -303,12 +303,11 @@ def run_with_dialog(parser, config, logger):
         config.save()
 
     config.load_from_ini()
-    dlg = SettingsDialog(
-            extra_data_func=parser.extra_data_func,
-            config_save_func=save_config,
-            file_name_format_hint=config.FILE_NAME_FORMAT_HINT,
-            version=config.version
-    )
+    dlg = SettingsDialog(extra_data_func=parser.parse_extra_data,
+                         extra_data_wildcard=parser.extra_data_file_filter(),
+                         config_save_func=save_config,
+                         file_name_format_hint=config.FILE_NAME_FORMAT_HINT,
+                         version=config.version)
     try:
         config.netlist_initial_directory = os.path.dirname(parser.file_name)
         extra_data_file = parser.latest_extra_data(

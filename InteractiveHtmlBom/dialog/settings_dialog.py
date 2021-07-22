@@ -11,11 +11,12 @@ def pop_error(msg):
 
 
 class SettingsDialog(dialog_base.SettingsDialogBase):
-    def __init__(self, extra_data_func, config_save_func,
+    def __init__(self, extra_data_func, extra_data_wildcard, config_save_func,
                  file_name_format_hint, version):
         dialog_base.SettingsDialogBase.__init__(self, None)
         self.panel = SettingsDialogPanel(
-            self, extra_data_func, config_save_func, file_name_format_hint)
+            self, extra_data_func, extra_data_wildcard, config_save_func,
+            file_name_format_hint)
         best_size = self.panel.BestSize
         # hack for some gtk themes that incorrectly calculate best size
         best_size.IncBy(dx=0, dy=30)
@@ -33,20 +34,21 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
             self.SetSizeHintsSz(sz1, sz2)
 
     def set_extra_data_path(self, extra_data_file):
-        self.panel.extra.netlistFilePicker.Path = extra_data_file
+        self.panel.extra.extraDataFilePicker.Path = extra_data_file
         self.panel.extra.OnNetlistFileChanged(None)
 
 
 # Implementing settings_dialog
 class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
-    def __init__(self, parent, extra_data_func, config_save_func,
-                 file_name_format_hint):
+    def __init__(self, parent, extra_data_func, extra_data_wildcard,
+                 config_save_func, file_name_format_hint):
         self.config_save_func = config_save_func
         dialog_base.SettingsDialogPanel.__init__(self, parent)
         self.general = GeneralSettingsPanel(self.notebook,
                                             file_name_format_hint)
         self.html = HtmlSettingsPanel(self.notebook)
-        self.extra = ExtraFieldsPanel(self.notebook, extra_data_func)
+        self.extra = ExtraFieldsPanel(self.notebook, extra_data_func,
+                                      extra_data_wildcard)
         self.notebook.AddPage(self.general, "General")
         self.notebook.AddPage(self.html, "Html defaults")
         self.notebook.AddPage(self.extra, "Extra fields")
@@ -178,7 +180,7 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
 class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
     NONE_STRING = '<none>'
 
-    def __init__(self, parent, extra_data_func):
+    def __init__(self, parent, extra_data_func, extra_data_wildcard):
         dialog_base.ExtraFieldsPanelBase.__init__(self, parent)
         self.extra_data_func = extra_data_func
         self.extra_field_data = None
@@ -187,6 +189,28 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
             os.path.join(bitmaps, "btn-arrow-up.png"), wx.BITMAP_TYPE_PNG))
         self.m_btnDown.SetBitmap(wx.Bitmap(
             os.path.join(bitmaps, "btn-arrow-down.png"), wx.BITMAP_TYPE_PNG))
+        self.set_file_picker_wildcard(extra_data_wildcard)
+
+    def set_file_picker_wildcard(self, extra_data_wildcard):
+        if extra_data_wildcard is None:
+            self.extraDataFilePicker.Disable()
+            return
+
+        # wxFilePickerCtrl doesn't support changing wildcard at runtime
+        # so we have to replace it
+        picker_parent = self.extraDataFilePicker.GetParent()
+        new_picker = wx.FilePickerCtrl(
+            picker_parent, wx.ID_ANY, wx.EmptyString,
+            u"Select a file",
+            extra_data_wildcard,
+            wx.DefaultPosition, wx.DefaultSize,
+            (wx.FLP_DEFAULT_STYLE | wx.FLP_FILE_MUST_EXIST | wx.FLP_OPEN |
+             wx.FLP_SMALL | wx.FLP_USE_TEXTCTRL | wx.BORDER_SIMPLE))
+        self.GetSizer().Replace(self.extraDataFilePicker, new_picker,
+                                recursive=True)
+        self.extraDataFilePicker.Destroy()
+        self.extraDataFilePicker = new_picker
+        self.Layout()
 
     # Handlers for ExtraFieldsPanelBase events.
     def OnExtraFieldsUp(self, event):
@@ -213,17 +237,17 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
             self.extraFieldsList.SetSelection(selection + 1)
 
     def OnNetlistFileChanged(self, event):
-        netlist_file = self.netlistFilePicker.Path
-        if not os.path.isfile(netlist_file):
+        extra_data_file = self.extraDataFilePicker.Path
+        if not os.path.isfile(extra_data_file):
             return
         self.extra_field_data = None
         try:
             self.extra_field_data = self.extra_data_func(
-                netlist_file, self.normalizeCaseCheckbox.Value)
+                extra_data_file, self.normalizeCaseCheckbox.Value)
         except Exception as e:
             pop_error(
-                "Failed to parse file %s\n\n%s" % (netlist_file, e.message))
-            self.netlistFilePicker.Path = ''
+                "Failed to parse file %s\n\n%s" % (extra_data_file, e))
+            self.extraDataFilePicker.Path = ''
         if self.extra_field_data is not None:
             field_list = list(self.extra_field_data[0])
             self.extraFieldsList.SetItems(field_list)

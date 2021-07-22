@@ -1,23 +1,31 @@
 import os
+import pcbnew
 
 from .xmlparser import XmlParser
 from .netlistparser import NetlistParser
 
 PARSERS = {
     '.xml': XmlParser,
-    '.net': NetlistParser
+    '.net': NetlistParser,
 }
 
 
-def parse_schematic_data(file_name, normalize_case):
+if hasattr(pcbnew, 'FOOTPRINT'):
+    PARSERS['.kicad_pcb'] = None
+
+
+def parse_schematic_data(file_name):
     if not os.path.isfile(file_name):
         return None
     extension = os.path.splitext(file_name)[1]
     if extension not in PARSERS:
         return None
     else:
-        parser = PARSERS[extension](file_name)
-        return parser.parse(normalize_case)
+        parser_cls = PARSERS[extension]
+        if parser_cls is None:
+            return None
+        parser = parser_cls(file_name)
+        return parser.get_extra_field_data()
 
 
 def find_latest_schematic_data(base_name, directories):

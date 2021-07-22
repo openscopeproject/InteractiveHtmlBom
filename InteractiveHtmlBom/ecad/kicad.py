@@ -23,21 +23,47 @@ class PcbnewParser(EcadParser):
         else:
             self.footprints = list(self.board.GetFootprints())
         self.font_parser = FontParser()
-        self.extra_data_func = parse_schematic_data
+
+    def get_extra_field_data(self, file_name):
+        if os.path.abspath(file_name) == os.path.abspath(self.file_name):
+            return self.parse_extra_data_from_pcb()
+        if os.path.splitext(file_name)[1] == '.kicad_pcb':
+            return None
+        return parse_schematic_data(file_name)
+
+    def parse_extra_data_from_pcb(self):
+        field_set = set()
+        comp_dict = {}
+
+        for f in self.footprints:  # type: pcbnew.FOOTPRINT
+            props = f.GetProperties()
+            ref = f.GetReference()
+            ref_fields = comp_dict.setdefault(ref, {})
+
+            for k, v in props.items():
+                field_set.add(k)
+                ref_fields[k] = v
+
+        return list(field_set), comp_dict
 
     def latest_extra_data(self, extra_dirs=None):
         base_name = os.path.splitext(os.path.basename(self.file_name))[0]
         extra_dirs.append(self.board.GetPlotOptions().GetOutputDirectory())
         file_dir_name = os.path.dirname(self.file_name)
-        directories = [
-            file_dir_name,
-        ]
+        directories = [file_dir_name]
         for dir in extra_dirs:
             if not os.path.isabs(dir):
                 dir = os.path.join(file_dir_name, dir)
             if os.path.exists(dir):
                 directories.append(dir)
         return find_latest_schematic_data(base_name, directories)
+
+    def extra_data_file_filter(self):
+        if hasattr(self.board, 'GetModules'):
+            return "Netlist and xml files (*.net; *.xml)|*.net;*.xml"
+        else:
+            return ("Netlist, xml and pcb files (*.net; *.xml; *.kicad_pcb)|"
+                    "*.net;*.xml;*.kicad_pcb")
 
     @staticmethod
     def normalize(point):
@@ -109,8 +135,8 @@ class PcbnewParser(EcadParser):
             return {
                 "type": shape,
                 "start": start,
-                "cpa": self.normalize(d.GetBezControl1()),
-                "cpb": self.normalize(d.GetBezControl2()),
+                "cpa": self.normalize(d.GetBezierC1()),
+                "cpb": self.normalize(d.GetBezierC2()),
                 "end": end,
                 "width": d.GetWidth() * 1e-6
             }
@@ -143,9 +169,9 @@ class PcbnewParser(EcadParser):
             segments = [self.normalize(p) for p in d.TransformToSegmentList()]
             lines = []
             for i in range(0, len(segments), 2):
-                if i == 0 or segments[i-1] != segments[i]:
+                if i == 0 or segments[i - 1] != segments[i]:
                     lines.append([segments[i]])
-                lines[-1].append(segments[i+1])
+                lines[-1].append(segments[i + 1])
             return {
                 "thickness": thickness,
                 "svgpath": create_path(lines)
@@ -511,20 +537,20 @@ class PcbnewParser(EcadParser):
                              self.config.board_variant_blacklist or
                              self.config.dnp_field)
 
-        if not self.config.netlist_file and need_extra_fields:
+        if not self.config.extra_data_file and need_extra_fields:
             self.logger.warn('Ignoring extra fields related config parameters '
                              'since no netlist/xml file was specified.')
             need_extra_fields = False
 
         extra_field_data = None
-        if (self.config.netlist_file and
-                os.path.isfile(self.config.netlist_file)):
-            extra_field_data = self.extra_data_func(
-                self.config.netlist_file, self.config.normalize_field_case)
+        if (self.config.extra_data_file and
+                os.path.isfile(self.config.extra_data_file)):
+            extra_field_data = self.parse_extra_data(
+                self.config.extra_data_file, self.config.normalize_field_case)
 
         if extra_field_data is None and need_extra_fields:
             raise ParsingException(
-                'Failed parsing %s' % self.config.netlist_file)
+                'Failed parsing %s' % self.config.extra_data_file)
 
         extra_field_data = extra_field_data[1] if extra_field_data else None
 
@@ -543,7 +569,7 @@ class PcbnewParser(EcadParser):
         if not file_date:
             file_mtime = os.path.getmtime(self.file_name)
             file_date = datetime.fromtimestamp(file_mtime).strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                '%Y-%m-%d %H:%M:%S')
         pcb_file_name = os.path.basename(self.file_name)
         if not title:
             # remove .kicad_pcb extension
@@ -568,9 +594,9 @@ class PcbnewParser(EcadParser):
             "edges": edges,
             "drawings": {
                 "silkscreen": self.parse_drawings_on_layers(
-                        drawings, pcbnew.F_SilkS, pcbnew.B_SilkS),
+                    drawings, pcbnew.F_SilkS, pcbnew.B_SilkS),
                 "fabrication": self.parse_drawings_on_layers(
-                        drawings, pcbnew.F_Fab, pcbnew.B_Fab),
+                    drawings, pcbnew.F_Fab, pcbnew.B_Fab),
             },
             "footprints": self.parse_footprints(),
             "metadata": {

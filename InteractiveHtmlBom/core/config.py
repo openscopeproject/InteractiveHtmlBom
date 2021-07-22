@@ -68,7 +68,7 @@ class Config:
     include_nets = False
 
     # Extra fields section
-    netlist_file = None
+    extra_data_file = None
     netlist_initial_directory = ''  # This is relative to pcb file directory
     extra_fields = []
     normalize_field_case = False
@@ -217,7 +217,7 @@ class Config:
         self.include_nets = dlg.general.includeNetsCheckbox.IsChecked()
 
         # Extra fields
-        self.netlist_file = dlg.extra.netlistFilePicker.Path
+        self.extra_data_file = dlg.extra.extraDataFilePicker.Path
         self.extra_fields = list(dlg.extra.extraFieldsList.GetCheckedStrings())
         self.normalize_field_case = dlg.extra.normalizeCaseCheckbox.Value
         self.board_variant_field = dlg.extra.boardVariantFieldBox.Value
@@ -265,7 +265,7 @@ class Config:
         dlg.general.includeNetsCheckbox.Value = self.include_nets
 
         # Extra fields
-        dlg.extra.netlistFilePicker.SetInitialDirectory(
+        dlg.extra.extraDataFilePicker.SetInitialDirectory(
                 self.netlist_initial_directory)
 
         def safe_set_checked_strings(clb, strings):
@@ -358,6 +358,8 @@ class Config:
 
         # Extra fields section
         parser.add_argument('--netlist-file',
+                            help='(Deprecated) Path to netlist or xml file.')
+        parser.add_argument('--extra-data-file',
                             help='Path to netlist or xml file.')
         parser.add_argument('--extra-fields',
                             default=self._join(self.extra_fields),
@@ -410,7 +412,7 @@ class Config:
         self.include_nets = args.include_nets
 
         # Extra
-        self.netlist_file = args.netlist_file
+        self.extra_data_file = args.extra_data_file or args.netlist_file
         self.extra_fields = self._split(args.extra_fields)
         self.normalize_field_case = args.normalize_field_case
         self.board_variant_field = args.variant_field
