@@ -7,7 +7,6 @@ import os
 import re
 import sys
 from datetime import datetime
-from typing import Optional
 
 import wx
 
@@ -48,7 +47,7 @@ class Logger(object):
             wx.LogWarning(msg)
 
 
-log = None  # type: Optional[Logger]
+log = None
 
 
 def skip_component(m, config):
@@ -93,7 +92,8 @@ def generate_bom(pcb_footprints, config):
     Generate BOM from pcb layout.
     :param pcb_footprints: list of footprints on the pcb
     :param config: Config object
-    :return: dict of BOM tables (qty, value, footprint, refs) and dnp components
+    :return: dict of BOM tables (qty, value, footprint, refs)
+             and dnp components
     """
 
     def convert(text):

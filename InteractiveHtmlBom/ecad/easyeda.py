@@ -1,6 +1,5 @@
 import io
 import sys
-from typing import Optional
 
 from .common import EcadParser, Component, BoundingBox
 
@@ -364,7 +363,7 @@ class EasyEdaParser(EcadParser):
                 'ARC': self.parse_arc,
                 'PAD': self.parse_pad,
                 'HOLE': self.parse_hole,
-            }.get(shape[0], None)  # type: Optional[callable]
+            }.get(shape[0], None)
             if parse_func:
                 layer, json_list = parse_func(shape[1])
                 drawings.setdefault(layer, []).extend(json_list)

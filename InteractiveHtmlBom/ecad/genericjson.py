@@ -1,7 +1,6 @@
 import io
 import json
 import os.path
-from typing import List
 from jsonschema import validate, ValidationError
 
 from .common import EcadParser, Component, BoundingBox
@@ -68,7 +67,6 @@ class GenericJsonParser(EcadParser):
         return True
 
     def _parse(self):
-        # type: () -> (dict, List[Component])
         try:
             pcb = self.get_generic_json_pcb()
         except ValidationError as e:
@@ -90,7 +88,6 @@ class GenericJsonParser(EcadParser):
         return pcbdata, components
 
     def parse(self):
-        # type: () -> (dict, List[Component])
         pcbdata, components = self._parse()
 
         # override board bounding box based on edges
