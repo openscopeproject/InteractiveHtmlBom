@@ -10,7 +10,7 @@ var currentHighlightedRowId;
 var highlightHandlers = [];
 var footprintIndexToHandler = {};
 var netsToHandler = {};
-var darkenedFootprints = new Set();
+var markedFootprints = new Set();
 var highlightedFootprints = [];
 var highlightedNet = null;
 var lastClicked;
@@ -184,7 +184,7 @@ function setBomCheckboxState(checkbox, element, references) {
 function createCheckboxChangeHandler(checkbox, references, row) {
   return function() {
     refsSet = getStoredCheckboxRefs(checkbox);
-    var darkenWhenChecked = settings.darkenWhenChecked == checkbox;
+    var markWhenChecked = settings.markWhenChecked == checkbox;
     eventArgs = {
       checkbox: checkbox,
       refs: references,
@@ -194,10 +194,10 @@ function createCheckboxChangeHandler(checkbox, references, row) {
       for (var ref of references) {
         refsSet.add(ref[1]);
       }
-      if (darkenWhenChecked) {
+      if (markWhenChecked) {
         row.classList.add("checked");
         for(var ref of references) {
-          darkenedFootprints.add(ref[1]);
+          markedFootprints.add(ref[1]);
         }
         drawHighlights();
       }
@@ -207,10 +207,10 @@ function createCheckboxChangeHandler(checkbox, references, row) {
       for (var ref of references) {
         refsSet.delete(ref[1]);
       }
-      if (darkenWhenChecked) {
+      if (markWhenChecked) {
         row.classList.remove("checked");
         for(var ref of references) {
-          darkenedFootprints.delete(ref[1]);
+          markedFootprints.delete(ref[1]);
         }
         drawHighlights();
       }
@@ -627,7 +627,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
               input.type = "checkbox";
               input.onchange = createCheckboxChangeHandler(checkbox, references, tr);
               setBomCheckboxState(checkbox, input, references);
-              if (input.checked && settings.darkenWhenChecked == checkbox) {
+              if (input.checked && settings.markWhenChecked == checkbox) {
                 tr.classList.add("checked");
               }
               td.appendChild(input);
@@ -1006,16 +1006,16 @@ function setBomCheckboxes(value) {
   writeStorage("bomCheckboxes", value);
   settings.checkboxes = value.split(",").map((e) => e.trim()).filter((e) => e);
   prepCheckboxes();
-  populateDarkenWhenCheckedOptions();
-  setDarkenWhenChecked(settings.darkenWhenChecked);
+  populateMarkWhenCheckedOptions();
+  setMarkWhenChecked(settings.markWhenChecked);
 }
 
-function setDarkenWhenChecked(value) {
-  writeStorage("darkenWhenChecked", value);
-  settings.darkenWhenChecked = value;
-  darkenedFootprints.clear();
+function setMarkWhenChecked(value) {
+  writeStorage("markWhenChecked", value);
+  settings.markWhenChecked = value;
+  markedFootprints.clear();
   for(var ref of (value ? getStoredCheckboxRefs(value) : [])) {
-    darkenedFootprints.add(ref);
+    markedFootprints.add(ref);
   }
   populateBomTable();
   drawHighlights();
@@ -1050,8 +1050,8 @@ function prepCheckboxes() {
   }
 }
 
-function populateDarkenWhenCheckedOptions() {
-  var container = document.getElementById("darkenWhenCheckedContainer");
+function populateMarkWhenCheckedOptions() {
+  var container = document.getElementById("markWhenCheckedContainer");
 
   if (settings.checkboxes.length == 0) {
     container.parentElement.style.display = "none";
@@ -1062,21 +1062,21 @@ function populateDarkenWhenCheckedOptions() {
   container.parentElement.style.display = "inline-block";
 
   function createOption(name, displayName) {
-    var id = "darkenWhenChecked-" + name;
+    var id = "markWhenChecked-" + name;
 
     var div = document.createElement("div");
     div.classList.add("radio-container");
 
     var input = document.createElement("input");
     input.type = "radio";
-    input.name = "darkenWhenChecked";
+    input.name = "markWhenChecked";
     input.value = name;
     input.id = id;
-    input.onchange = () => setDarkenWhenChecked(name);
+    input.onchange = () => setMarkWhenChecked(name);
     div.appendChild(input);
 
     // Preserve the selected element when the checkboxes change
-    if (name == settings.darkenWhenChecked) {
+    if (name == settings.markWhenChecked) {
       input.checked = true;
     }
 

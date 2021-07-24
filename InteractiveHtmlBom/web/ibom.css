@@ -4,11 +4,11 @@
   --pad-hole-color: #CCCCCC;
   --pad-color-highlight: #D04040;
   --pad-color-highlight-both: #D0D040;
-  --pad-color-highlight-darkened: #40D040;
+  --pad-color-highlight-marked: #67cc67;
   --pin1-outline-color: #ffb629;
-  --pin1-outline-color-highlight: #b4ff03;
-  --pin1-outline-color-highlight-both: #b4ff03;
-  --pin1-outline-color-highlight-darkened: #b4ff03;
+  --pin1-outline-color-highlight: #ffb629;
+  --pin1-outline-color-highlight-both: #fcbb39;
+  --pin1-outline-color-highlight-marked: #fdbe41;
   --silkscreen-edge-color: #aa4;
   --silkscreen-polygon-color: #4aa;
   --silkscreen-text-color: #4aa;
@@ -236,11 +236,11 @@ canvas:active {
 }
 
 .bom tr.checked {
-  color: #aaa;
+  color: #1cb53d;
 }
 
 .dark .bom tr.checked {
-  color: #666;
+  color: #2cce54;
 }
 
 .bom tr {

@@ -359,17 +359,17 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
     var mod = pcbdata.footprints[i];
     var outline = settings.renderDnpOutline && pcbdata.bom.skipped.includes(i);
     var h = highlightedFootprints.includes(i);
-    var d = darkenedFootprints.has(i);
+    var d = markedFootprints.has(i);
     if (highlight) {
       if(h && d) {
         colors.pad = style.getPropertyValue('--pad-color-highlight-both');
-        colors.outline = style.getPropertyValue('--pin1-outline-highlight-both');
+        colors.outline = style.getPropertyValue('--pin1-outline-color-highlight-both');
       } else if (h) {
         colors.pad = style.getPropertyValue('--pad-color-highlight');
         colors.outline = style.getPropertyValue('--pin1-outline-color-highlight');
       } else if (d) {
-        colors.pad = style.getPropertyValue('--pad-color-highlight-darkened');
-        colors.outline = style.getPropertyValue('--pin1-outline-color-highlight-darkened');
+        colors.pad = style.getPropertyValue('--pad-color-highlight-marked');
+        colors.outline = style.getPropertyValue('--pin1-outline-color-highlight-marked');
       }
     }
     if( h || d || !highlight) {
@@ -483,7 +483,7 @@ function drawHighlightsOnLayer(canvasdict, clear = true) {
   if (clear) {
     clearCanvas(canvasdict.highlight);
   }
-  if (darkenedFootprints.size > 0 || highlightedFootprints.length > 0) {
+  if (markedFootprints.size > 0 || highlightedFootprints.length > 0) {
     drawFootprints(canvasdict.highlight, canvasdict.layer,
       canvasdict.transform.s * canvasdict.transform.zoom, true);
   }
