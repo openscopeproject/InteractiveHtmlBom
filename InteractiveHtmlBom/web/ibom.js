@@ -10,6 +10,7 @@ var currentHighlightedRowId;
 var highlightHandlers = [];
 var footprintIndexToHandler = {};
 var netsToHandler = {};
+var darkenedFootprints = new Set();
 var highlightedFootprints = [];
 var highlightedNet = null;
 var lastClicked;
@@ -195,6 +196,10 @@ function createCheckboxChangeHandler(checkbox, references, row) {
       }
       if (darkenWhenChecked) {
         row.classList.add("checked");
+        for(var ref of references) {
+          darkenedFootprints.add(ref[1]);
+        }
+        drawHighlights();
       }
       eventArgs.state = 'checked';
     } else {
@@ -204,6 +209,10 @@ function createCheckboxChangeHandler(checkbox, references, row) {
       }
       if (darkenWhenChecked) {
         row.classList.remove("checked");
+        for(var ref of references) {
+          darkenedFootprints.delete(ref[1]);
+        }
+        drawHighlights();
       }
       eventArgs.state = 'unchecked';
     }
@@ -995,16 +1004,21 @@ function checkBomCheckbox(bomrowid, checkboxname) {
 
 function setBomCheckboxes(value) {
   writeStorage("bomCheckboxes", value);
-  settings.checkboxes = value.split(",").filter((e) => e);
+  settings.checkboxes = value.split(",").map((e) => e.trim()).filter((e) => e);
   prepCheckboxes();
-  populateBomTable();
   populateDarkenWhenCheckedOptions();
+  setDarkenWhenChecked(settings.darkenWhenChecked);
 }
 
 function setDarkenWhenChecked(value) {
   writeStorage("darkenWhenChecked", value);
   settings.darkenWhenChecked = value;
+  darkenedFootprints.clear();
+  for(var ref of (value ? getStoredCheckboxRefs(value) : [])) {
+    darkenedFootprints.add(ref);
+  }
   populateBomTable();
+  drawHighlights();
 }
 
 function prepCheckboxes() {
@@ -1177,7 +1191,7 @@ window.onload = function(e) {
     hideNetlistButton();
   }
   initDone = true;
-  prepCheckboxes();
+  setBomCheckboxes(document.getElementById("bomCheckboxes").value);
   // Triggers render
   changeBomLayout(settings.bomlayout);
 

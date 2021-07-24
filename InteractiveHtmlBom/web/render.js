@@ -297,7 +297,7 @@ function drawPadHole(ctx, pad, padHoleColor) {
   ctx.restore();
 }
 
-function drawFootprint(ctx, layer, scalefactor, footprint, padColor, padHoleColor, outlineColor, highlight, outline) {
+function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, outline) {
   if (highlight) {
     // draw bounding box
     if (footprint.layer == layer) {
@@ -306,10 +306,10 @@ function drawFootprint(ctx, layer, scalefactor, footprint, padColor, padHoleColo
       ctx.translate(...footprint.bbox.pos);
       ctx.rotate(deg2rad(-footprint.bbox.angle));
       ctx.translate(...footprint.bbox.relpos);
-      ctx.fillStyle = padColor;
+      ctx.fillStyle = colors.pad;
       ctx.fillRect(0, 0, ...footprint.bbox.size);
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = padColor;
+      ctx.strokeStyle = colors.pad;
       ctx.strokeRect(0, 0, ...footprint.bbox.size);
       ctx.restore();
     }
@@ -317,21 +317,21 @@ function drawFootprint(ctx, layer, scalefactor, footprint, padColor, padHoleColo
   // draw drawings
   for (var drawing of footprint.drawings) {
     if (drawing.layer == layer) {
-      drawDrawing(ctx, scalefactor, drawing.drawing, padColor);
+      drawDrawing(ctx, scalefactor, drawing.drawing, colors.pad);
     }
   }
   // draw pads
   if (settings.renderPads) {
     for (var pad of footprint.pads) {
       if (pad.layers.includes(layer)) {
-        drawPad(ctx, pad, padColor, outline);
+        drawPad(ctx, pad, colors.pad, outline);
         if (pad.pin1 && settings.highlightpin1) {
-          drawPad(ctx, pad, outlineColor, true);
+          drawPad(ctx, pad, colors.outline, true);
         }
       }
     }
     for (var pad of footprint.pads) {
-      drawPadHole(ctx, pad, padHoleColor);
+      drawPadHole(ctx, pad, colors.padHole);
     }
   }
 }
@@ -348,18 +348,32 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 3 / scalefactor;
   var style = getComputedStyle(topmostdiv);
-  var padColor = style.getPropertyValue('--pad-color');
-  var padHoleColor = style.getPropertyValue('--pad-hole-color');
-  var outlineColor = style.getPropertyValue('--pin1-outline-color');
-  if (highlight) {
-    padColor = style.getPropertyValue('--pad-color-highlight');
-    outlineColor = style.getPropertyValue('--pin1-outline-color-highlight');
+
+  var colors = {
+    pad: style.getPropertyValue('--pad-color'),
+    padHole: style.getPropertyValue('--pad-hole-color'),
+    outline: style.getPropertyValue('--pin1-outline-color'),
   }
+
   for (var i = 0; i < pcbdata.footprints.length; i++) {
     var mod = pcbdata.footprints[i];
     var outline = settings.renderDnpOutline && pcbdata.bom.skipped.includes(i);
-    if (!highlight || highlightedFootprints.includes(i)) {
-      drawFootprint(ctx, layer, scalefactor, mod, padColor, padHoleColor, outlineColor, highlight, outline);
+    var h = highlightedFootprints.includes(i);
+    var d = darkenedFootprints.has(i);
+    if (highlight) {
+      if(h && d) {
+        colors.pad = style.getPropertyValue('--pad-color-highlight-both');
+        colors.outline = style.getPropertyValue('--pin1-outline-highlight-both');
+      } else if (h) {
+        colors.pad = style.getPropertyValue('--pad-color-highlight');
+        colors.outline = style.getPropertyValue('--pin1-outline-color-highlight');
+      } else if (d) {
+        colors.pad = style.getPropertyValue('--pad-color-highlight-darkened');
+        colors.outline = style.getPropertyValue('--pin1-outline-color-highlight-darkened');
+      }
+    }
+    if( h || d || !highlight) {
+      drawFootprint(ctx, layer, scalefactor, mod, colors, highlight, outline);
     }
   }
 }
@@ -469,7 +483,7 @@ function drawHighlightsOnLayer(canvasdict, clear = true) {
   if (clear) {
     clearCanvas(canvasdict.highlight);
   }
-  if (highlightedFootprints.length > 0) {
+  if (darkenedFootprints.size > 0 || highlightedFootprints.length > 0) {
     drawFootprints(canvasdict.highlight, canvasdict.layer,
       canvasdict.transform.s * canvasdict.transform.zoom, true);
   }
