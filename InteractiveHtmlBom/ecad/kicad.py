@@ -422,7 +422,7 @@ class PcbnewParser(EcadParser):
     def parse_tracks(self, tracks):
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
         for track in tracks:
-            if track.GetClass() == "VIA":
+            if track.GetClass() in ["VIA", "PCB_VIA"]:
                 track_dict = {
                     "start": self.normalize(track.GetStart()),
                     "end": self.normalize(track.GetEnd()),
@@ -434,7 +434,7 @@ class PcbnewParser(EcadParser):
                         result[layer].append(track_dict)
             else:
                 if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
-                    if track.GetClass() == "ARC":
+                    if track.GetClass() in ["ARC", "PCB_ARC"]:
                         a1 = round(track.GetArcAngleStart() * 0.1, 2)
                         a2 = round((track.GetArcAngleStart() +
                                     track.GetAngle()) * 0.1, 2)
