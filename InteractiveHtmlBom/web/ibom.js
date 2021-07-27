@@ -196,7 +196,7 @@ function createCheckboxChangeHandler(checkbox, references, row) {
       }
       if (markWhenChecked) {
         row.classList.add("checked");
-        for(var ref of references) {
+        for (var ref of references) {
           markedFootprints.add(ref[1]);
         }
         drawHighlights();
@@ -209,7 +209,7 @@ function createCheckboxChangeHandler(checkbox, references, row) {
       }
       if (markWhenChecked) {
         row.classList.remove("checked");
-        for(var ref of references) {
+        for (var ref of references) {
           markedFootprints.delete(ref[1]);
         }
         drawHighlights();
@@ -354,20 +354,22 @@ function createColumnHeader(name, cls, comparator, is_checkbox = false) {
     th.setAttribute("col_name", "bom-checkbox");
   else
     th.setAttribute("col_name", name);
-  th.style.cursor = "pointer";
   var span = document.createElement("SPAN");
   span.classList.add("sortmark");
   span.classList.add("none");
   th.appendChild(span);
-  th.onclick = function() {
-    if (currentSortColumn && this !== currentSortColumn) {
+  var spacer = document.createElement("div");
+  spacer.className = "column-spacer";
+  th.appendChild(spacer);
+  spacer.onclick = function() {
+    if (currentSortColumn && th !== currentSortColumn) {
       // Currently sorted by another column
       currentSortColumn.childNodes[1].classList.remove(currentSortOrder);
       currentSortColumn.childNodes[1].classList.add("none");
       currentSortColumn = null;
       currentSortOrder = null;
     }
-    if (currentSortColumn && this === currentSortColumn) {
+    if (currentSortColumn && th === currentSortColumn) {
       // Already sorted by this column
       if (currentSortOrder == "asc") {
         // Sort by this column, descending order
@@ -388,12 +390,16 @@ function createColumnHeader(name, cls, comparator, is_checkbox = false) {
     } else {
       // Sort by this column, ascending order
       bomSortFunction = comparator;
-      currentSortColumn = this;
+      currentSortColumn = th;
       currentSortColumn.childNodes[1].classList.remove("none");
       currentSortColumn.childNodes[1].classList.add("asc");
       currentSortOrder = "asc";
     }
     populateBomBody();
+  }
+  if (is_checkbox) {
+    spacer.onclick = fancyDblClickHandler(
+      spacer, spacer.onclick, checkboxSetUnsetAllHandler(name));
   }
   return th;
 }
@@ -489,8 +495,6 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
         for (var checkbox of settings.checkboxes) {
           th = createColumnHeader(
             checkbox, "bom-checkbox", checkboxCompareClosure(checkbox), true);
-          th.onclick = fancyDblClickHandler(
-            th, th.onclick.bind(th), checkboxSetUnsetAllHandler(checkbox));
           tr.appendChild(th);
         }
       }
@@ -739,6 +743,7 @@ function populateBomTable() {
   populateBomHeader();
   populateBomBody();
   setBomHandlers();
+  resizableGrid(bomhead);
 }
 
 function footprintsClicked(footprintIndexes) {
@@ -1014,7 +1019,7 @@ function setMarkWhenChecked(value) {
   writeStorage("markWhenChecked", value);
   settings.markWhenChecked = value;
   markedFootprints.clear();
-  for(var ref of (value ? getStoredCheckboxRefs(value) : [])) {
+  for (var ref of (value ? getStoredCheckboxRefs(value) : [])) {
     markedFootprints.add(ref);
   }
   populateBomTable();

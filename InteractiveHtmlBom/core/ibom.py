@@ -26,7 +26,7 @@ class Logger(object):
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.INFO)
         formatter = logging.Formatter(
-                "%(asctime)-15s %(levelname)s %(message)s")
+            "%(asctime)-15s %(levelname)s %(message)s")
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
 
@@ -237,7 +237,7 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     else:
         bom_file_dir = os.path.join(pcb_file_dir, config.bom_dest_dir)
     bom_file_name = process_substitutions(
-            config.bom_name_format, pcb_file_name, pcbdata['metadata'])
+        config.bom_name_format, pcb_file_name, pcbdata['metadata'])
     bom_file_name = os.path.join(bom_file_dir, bom_file_name)
     bom_file_dir = os.path.dirname(bom_file_name)
     if not os.path.isdir(bom_file_dir):
@@ -257,7 +257,7 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     html = html.replace('///CONFIG///', config_js)
     html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
-    html = html.replace('///TABLEDRAG///', get_file_content('table-drag.js'))
+    html = html.replace('///TABLEUTILJS///', get_file_content('table-util.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
     html = html.replace('///USERJS///', get_file_content('user.js'))
     html = html.replace('///USERHEADER///',
@@ -311,7 +311,7 @@ def run_with_dialog(parser, config, logger):
     try:
         config.netlist_initial_directory = os.path.dirname(parser.file_name)
         extra_data_file = parser.latest_extra_data(
-                extra_dirs=[config.bom_dest_dir])
+            extra_dirs=[config.bom_dest_dir])
         if extra_data_file is not None:
             dlg.set_extra_data_path(extra_data_file)
         config.transfer_to_dialog(dlg.panel)

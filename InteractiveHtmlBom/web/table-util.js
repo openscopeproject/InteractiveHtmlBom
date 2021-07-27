@@ -142,9 +142,9 @@ function setBomHandlers() {
   }
 
   const mouseDownHandler = function(e) {
-    // The sortmark shouldn't be draggable
-    if (e.target.classList.contains("sortmark"))
-      return;
+    var target = e.target;
+    if (target.tagName.toLowerCase() != "td")
+      target = target.parentElement;
 
     // Used to check if a dragging has ever happened
     wasDragged = false;
@@ -161,10 +161,10 @@ function setBomHandlers() {
 
     // Get all compound headers for the current column
     var compoundHeaders;
-    if (e.target.classList.contains("bom-checkbox")) {
+    if (target.classList.contains("bom-checkbox")) {
       compoundHeaders = Array.from(bh.querySelectorAll("th.bom-checkbox"));
     } else {
-      compoundHeaders = [e.target];
+      compoundHeaders = [target];
     }
 
     // Create new table which will display the column
@@ -223,7 +223,7 @@ function setBomHandlers() {
     yOffset = e.screenY - compoundHeaders[0].offsetTop;
 
     // Get name for the column in settings.columnOrder
-    dragName = getColumnOrderName(e.target);
+    dragName = getColumnOrderName(target);
 
     // Change text and class for placeholder elements
     placeHolderElements = placeHolderElements.map(function(e) {
@@ -277,10 +277,8 @@ function getBoundingClientRectFromMultiple(elements) {
 
 function cloneElementWithDimensions(elem) {
   var newElem = elem.cloneNode(true);
-  newElem.style.height = window.getComputedStyle(elem)
-    .height;
-  newElem.style.width = window.getComputedStyle(elem)
-    .width;
+  newElem.style.height = window.getComputedStyle(elem).height;
+  newElem.style.width = window.getComputedStyle(elem).width;
   return newElem;
 }
 
@@ -296,4 +294,77 @@ function getColumnOrderName(elem) {
     return "checkboxes";
   else
     return cname;
+}
+
+function resizableGrid(tablehead) {
+  var cols = tablehead.firstElementChild.children;
+  var rowWidth = tablehead.offsetWidth;
+
+  for (var i = 1; i < cols.length; i++) {
+    if (cols[i].classList.contains("bom-checkbox"))
+      continue;
+    cols[i].style.width = ((cols[i].clientWidth - paddingDiff(cols[i])) * 100 / rowWidth) + '%';
+  }
+
+  for (var i = 1; i < cols.length - 1; i++) {
+    var div = document.createElement('div');
+    div.className = "column-width-handle";
+    cols[i].appendChild(div);
+    setListeners(div);
+  }
+
+  function setListeners(div) {
+    var startX, curCol, nxtCol, curColWidth, nxtColWidth, rowWidth;
+
+    div.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      curCol = e.target.parentElement;
+      nxtCol = curCol.nextElementSibling;
+      startX = e.pageX;
+
+      var padding = paddingDiff(curCol);
+
+      rowWidth = curCol.parentElement.offsetWidth;
+      curColWidth = curCol.clientWidth - padding;
+      nxtColWidth = nxtCol.clientWidth - padding;
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (startX) {
+        var diffX = e.pageX - startX;
+        diffX = -Math.min(-diffX, curColWidth - 20);
+        diffX = Math.min(diffX, nxtColWidth - 20);
+
+        curCol.style.width = ((curColWidth + diffX) * 100 / rowWidth) + '%';
+        nxtCol.style.width = ((nxtColWidth - diffX) * 100 / rowWidth) + '%';
+        console.log(`${curColWidth + nxtColWidth} ${(curColWidth + diffX) * 100 / rowWidth + (nxtColWidth - diffX) * 100 / rowWidth}`);
+      }
+    });
+
+    document.addEventListener('mouseup', function(e) {
+      curCol = undefined;
+      nxtCol = undefined;
+      startX = undefined;
+      nxtColWidth = undefined;
+      curColWidth = undefined
+    });
+  }
+
+  function paddingDiff(col) {
+
+    if (getStyleVal(col, 'box-sizing') == 'border-box') {
+      return 0;
+    }
+
+    var padLeft = getStyleVal(col, 'padding-left');
+    var padRight = getStyleVal(col, 'padding-right');
+    return (parseInt(padLeft) + parseInt(padRight));
+
+  }
+
+  function getStyleVal(elm, css) {
+    return (window.getComputedStyle(elm, null).getPropertyValue(css))
+  }
 }
