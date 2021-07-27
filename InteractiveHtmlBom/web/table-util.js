@@ -154,6 +154,7 @@ function setBomHandlers() {
     draggingElement.classList.add("dragging");
     draggingElement.style.display = "none";
     draggingElement.style.position = "absolute";
+    draggingElement.style.overflow = "hidden";
 
     // Get bomhead and bombody elements
     const bh = document.getElementById("bomhead");

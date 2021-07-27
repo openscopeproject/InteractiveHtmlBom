@@ -614,7 +614,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
       columns.forEach((column) => {
         if (column === placeholderColumn) {
           var n = 1;
-          if (column === "bom-checkbox")
+          if (column === "checkboxes")
             n = settings.checkboxes.length;
           for (i = 0; i < n; i++) {
             td = placeHolderElements.shift();
