@@ -159,7 +159,7 @@ class PcbnewParser(EcadParser):
 
     def parse_text(self, d):
         pos = self.normalize(d.GetPosition())
-        if not d.IsVisible():
+        if not d.IsVisible() and d.GetClass() != "PTEXT":
             return None
         if hasattr(d, "GetTextThickness"):
             thickness = d.GetTextThickness() * 1e-6
