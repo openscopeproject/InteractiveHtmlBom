@@ -367,6 +367,7 @@
                 "type": { "const": "circle" },
                 "start": { "$ref": "#/definitions/Coordinates" },
                 "radius": { "type": "number" },
+                "filled": { "type": "integer" },
                 "width": { "type": "number" }
             },
             "required": ["type", "start", "radius", "width"],
@@ -413,6 +414,8 @@
             "additionalProperties": false,
             "properties": {
                 "type": { "const": "polygon" },
+                "filled": { "type": "integer" },
+                "width": { "type": "number" },
                 "svgpath": { "type": "string" },
                 "pos": { "$ref": "#/definitions/Coordinates" },
                 "angle": { "type": "number" },

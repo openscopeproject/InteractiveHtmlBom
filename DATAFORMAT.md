@@ -161,6 +161,9 @@ attribute.
   "type": "circle",
   "start": [x, y],
   "radius": radius,
+  // Optional boolean, defaults to 0
+  "filled": 0,
+  // Line width (only has effect for non-filled shapes)
   "width": width,
 }
 ```
@@ -199,6 +202,10 @@ attribute.
 ```js
 {
   "type": "polygon",
+  // Optional, defaults to 1
+  "filled": 1,
+  // Line width (only has effect for non-filled shapes)
+  "width": width
   // SVG path of the polygon given as 'd' attribute of svg spec.
   // If this parameter is specified everything below it is ignored.
   "svgpath": svgpath,

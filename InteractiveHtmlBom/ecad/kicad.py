@@ -84,20 +84,35 @@ class PcbnewParser(EcadParser):
             return None
         start = self.normalize(d.GetStart())
         end = self.normalize(d.GetEnd())
-        if shape in ["segment", "rect"]:
+        if shape == "segment" or shape == "rect" and not d.IsFilled():
             return {
                 "type": shape,
                 "start": start,
                 "end": end,
                 "width": d.GetWidth() * 1e-6
             }
-        if shape == "circle":
+        if shape == "rect" and d.IsFilled():
             return {
+                "type": "polygon",
+                "pos": start,
+                "angle": 0,
+                "polygons": [[
+                    [0, 0],
+                    [end[0] - start[0], 0],
+                    [end[0] - start[0], end[1] - start[1]],
+                    [0, end[1] - start[1]]
+                ]]
+            }
+        if shape == "circle":
+            shape_dict = {
                 "type": shape,
                 "start": start,
                 "radius": d.GetRadius() * 1e-6,
                 "width": d.GetWidth() * 1e-6
             }
+            if d.IsFilled():
+                shape_dict["filled"] = 1
+            return shape_dict
         if shape == "arc":
             a1 = round(d.GetArcAngleStart() * 0.1, 2)
             a2 = round((d.GetArcAngleStart() + d.GetAngle()) * 0.1, 2)
@@ -125,12 +140,16 @@ class PcbnewParser(EcadParser):
                 parent_footprint = d.GetParentFootprint()
             if parent_footprint is not None:
                 angle = parent_footprint.GetOrientation() * 0.1,
-            return {
+            shape_dict = {
                 "type": shape,
                 "pos": start,
                 "angle": angle,
                 "polygons": polygons
             }
+            if not d.IsFilled():
+                shape_dict["filled"] = 0
+                shape_dict["width"] = d.GetWidth() * 1e-6
+            return shape_dict
         if shape == "curve":
             return {
                 "type": shape,
@@ -290,6 +309,8 @@ class PcbnewParser(EcadParser):
             pcbnew.PAD_SHAPE_OVAL: "oval",
             pcbnew.PAD_SHAPE_CIRCLE: "circle",
         }
+        if hasattr(pcbnew, "PAD_SHAPE_TRAPEZOID"):
+            shape_lookup[pcbnew.PAD_SHAPE_TRAPEZOID] = "trapezoid"
         if hasattr(pcbnew, "PAD_SHAPE_ROUNDRECT"):
             shape_lookup[pcbnew.PAD_SHAPE_ROUNDRECT] = "roundrect"
         if hasattr(pcbnew, "PAD_SHAPE_CUSTOM"):
@@ -312,10 +333,18 @@ class PcbnewParser(EcadParser):
             polygon_set = pad.GetCustomShapeAsPolygon()
             if polygon_set.HasHoles():
                 self.logger.warn('Detected holes in custom pad polygons')
-            if polygon_set.IsSelfIntersecting():
-                self.logger.warn(
-                    'Detected self intersecting polygons in custom pad')
             pad_dict["polygons"] = self.parse_poly_set(polygon_set)
+        if shape == "trapezoid":
+            # treat trapezoid as custom shape
+            pad_dict["shape"] = "custom"
+            delta = self.normalize(pad.GetDelta())
+            pad_dict["polygons"] = [[
+                [size[0] / 2 + delta[1] / 2, size[1] / 2 - delta[0] / 2],
+                [-size[0] / 2 - delta[1] / 2, size[1] / 2 + delta[0] / 2],
+                [-size[0] / 2 + delta[1] / 2, -size[1] / 2 - delta[0] / 2],
+                [size[0] / 2 - delta[1] / 2, -size[1] / 2 + delta[0] / 2],
+            ]]
+
         if shape in ["roundrect", "chamfrect"]:
             pad_dict["radius"] = pad.GetRoundRectCornerRadius() * 1e-6
         if shape == "chamfrect":
@@ -498,8 +527,7 @@ class PcbnewParser(EcadParser):
     def parse_netlist(net_info):
         # type: (pcbnew.NETINFO_LIST) -> list
         nets = net_info.NetsByName().asdict().keys()
-        nets = [str(s) for s in nets]
-        nets.sort()
+        nets = sorted([str(s) for s in nets])
         return nets
 
     @staticmethod

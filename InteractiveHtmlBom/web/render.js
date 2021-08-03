@@ -111,6 +111,7 @@ function drawText(ctx, text, color) {
 
 function drawedge(ctx, scalefactor, edge, color) {
   ctx.strokeStyle = color;
+  ctx.fillStyle = color;
   ctx.lineWidth = Math.max(1 / scalefactor, edge.width);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
@@ -147,7 +148,10 @@ function drawedge(ctx, scalefactor, edge, color) {
       ctx.moveTo(...edge.start);
       ctx.bezierCurveTo(...edge.cpa, ...edge.cpb, ...edge.end);
     }
-    ctx.stroke();
+    if("filled" in edge && edge.filled)
+      ctx.fill();
+    else
+      ctx.stroke();
   }
 }
 
@@ -216,14 +220,22 @@ function getPolygonsPath(shape) {
   return shape.path2d;
 }
 
-function drawPolygonShape(ctx, shape, color) {
+function drawPolygonShape(ctx, scalefactor, shape, color) {
   ctx.save();
-  ctx.fillStyle = color;
   if (!("svgpath" in shape)) {
     ctx.translate(...shape.pos);
     ctx.rotate(deg2rad(-shape.angle));
   }
-  ctx.fill(getPolygonsPath(shape));
+  if("filled" in shape && !shape.filled) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1 / scalefactor, shape.width);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.stroke(getPolygonsPath(shape));
+  } else {
+    ctx.fillStyle = color;
+    ctx.fill(getPolygonsPath(shape));
+  }
   ctx.restore();
 }
 
@@ -231,7 +243,7 @@ function drawDrawing(ctx, scalefactor, drawing, color) {
   if (["segment", "arc", "circle", "curve", "rect"].includes(drawing.type)) {
     drawedge(ctx, scalefactor, drawing, color);
   } else if (drawing.type == "polygon") {
-    drawPolygonShape(ctx, drawing, color);
+    drawPolygonShape(ctx, scalefactor, drawing, color);
   } else {
     drawText(ctx, drawing, color);
   }
@@ -340,7 +352,7 @@ function drawEdgeCuts(canvas, scalefactor) {
   var ctx = canvas.getContext("2d");
   var edgecolor = getComputedStyle(topmostdiv).getPropertyValue('--pcb-edge-color');
   for (var edge of pcbdata.edges) {
-    drawedge(ctx, scalefactor, edge, edgecolor);
+    drawDrawing(ctx, scalefactor, edge, edgecolor);
   }
 }
 
@@ -384,7 +396,7 @@ function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonCo
     if (["segment", "arc", "circle", "curve", "rect"].includes(d.type)) {
       drawedge(ctx, scalefactor, d, edgeColor);
     } else if (d.type == "polygon") {
-      drawPolygonShape(ctx, d, polygonColor);
+      drawPolygonShape(ctx, scalefactor, d, polygonColor);
     } else {
       drawText(ctx, d, textColor);
     }
@@ -508,7 +520,7 @@ function drawBackground(canvasdict, clear = true) {
   drawFootprints(canvasdict.bg, canvasdict.layer,
     canvasdict.transform.s * canvasdict.transform.zoom, false);
 
-  drawEdgeCuts(canvasdict.bg, canvasdict.transform.s);
+  drawEdgeCuts(canvasdict.bg, canvasdict.transform.s * canvasdict.transform.zoom);
 
   var style = getComputedStyle(topmostdiv);
   var edgeColor = style.getPropertyValue('--silkscreen-edge-color');
