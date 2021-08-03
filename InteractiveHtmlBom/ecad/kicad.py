@@ -84,14 +84,15 @@ class PcbnewParser(EcadParser):
             return None
         start = self.normalize(d.GetStart())
         end = self.normalize(d.GetEnd())
-        if shape == "segment" or shape == "rect" and not d.IsFilled():
+        if (shape == "segment" or shape == "rect" and
+                not (hasattr(d, "IsFilled") and d.IsFilled())):
             return {
                 "type": shape,
                 "start": start,
                 "end": end,
                 "width": d.GetWidth() * 1e-6
             }
-        if shape == "rect" and d.IsFilled():
+        if shape == "rect" and hasattr(d, "IsFilled") and d.IsFilled():
             return {
                 "type": "polygon",
                 "pos": start,
@@ -110,7 +111,7 @@ class PcbnewParser(EcadParser):
                 "radius": d.GetRadius() * 1e-6,
                 "width": d.GetWidth() * 1e-6
             }
-            if d.IsFilled():
+            if hasattr(d, "IsFilled") and d.IsFilled():
                 shape_dict["filled"] = 1
             return shape_dict
         if shape == "arc":
@@ -146,7 +147,7 @@ class PcbnewParser(EcadParser):
                 "angle": angle,
                 "polygons": polygons
             }
-            if not d.IsFilled():
+            if hasattr(d, "IsFilled") and not d.IsFilled():
                 shape_dict["filled"] = 0
                 shape_dict["width"] = d.GetWidth() * 1e-6
             return shape_dict
