@@ -2,7 +2,7 @@
 set pathofEDASourceFile=%1
 set FilePath=%~dp0
 
-::delete --show-dialog after frist start up and setting
+::delete --show-dialog after first start up and setting
 set option=--show-dialog
 
 ::detect current language of user.
