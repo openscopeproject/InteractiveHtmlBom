@@ -152,11 +152,17 @@ class PcbnewParser(EcadParser):
                 shape_dict["width"] = d.GetWidth() * 1e-6
             return shape_dict
         if shape == "curve":
+            if hasattr(d, "GetBezierC1"):
+                c1 = self.normalize(d.GetBezierC1())
+                c2 = self.normalize(d.GetBezierC2())
+            else:
+                c1 = self.normalize(d.GetBezControl1())
+                c2 = self.normalize(d.GetBezControl2())
             return {
                 "type": shape,
                 "start": start,
-                "cpa": self.normalize(d.GetBezierC1()),
-                "cpb": self.normalize(d.GetBezierC2()),
+                "cpa": c1,
+                "cpb": c2,
                 "end": end,
                 "width": d.GetWidth() * 1e-6
             }
