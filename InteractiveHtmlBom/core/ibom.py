@@ -119,7 +119,7 @@ def generate_bom(pcb_footprints, config):
             continue
 
         # group part refs by value and footprint
-        norm_value, unit = units.componentValue(f.val)
+        norm_value, unit = units.componentValue(f.val, f.ref)
 
         extras = []
         if config.extra_fields:
