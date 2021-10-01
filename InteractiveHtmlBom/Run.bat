@@ -6,9 +6,12 @@ set FilePath=%~dp0
 set option=--show-dialog
 
 ::detect current language of user.
-FOR /F "tokens=3" %%a IN ('reg query "HKCU\Control Panel\Desktop" /v PreferredUILanguages ^| find "PreferredUILanguages"') DO set language=%%a
-set language=%language:~,2%
-if %language%==zh (
+FOR /F "tokens=3" %%a IN (
+	'reg query "HKLM\SYSTEM\ControlSet001\Control\Nls\Language" /v InstallLanguage ^| find "InstallLanguage"'
+) DO (
+	set language=%%a
+)
+if %language%==0804 (
 	call %FilePath%\i18n\language_zh.bat
 ) else (
 	call %FilePath%\i18n\language_en.bat

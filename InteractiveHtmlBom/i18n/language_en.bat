@@ -1,7 +1,7 @@
 ::start up echo
 set i18n_gitAddr=                                 https://github.com/openscopeproject/InteractiveHtmlBom
 set i18n_batScar=                                                Bat file by Scarrrr0725
-set i18n_thx4using=                                       Thankyou For Using Generate Interactive Bom
+set i18n_thx4using=                                      Thank You For Using Generate Interactive Bom
 
 ::convert
 set i18n_draghere=Please Drag the EasyEDA PCB source file here :
