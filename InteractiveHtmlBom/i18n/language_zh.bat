@@ -9,9 +9,9 @@ set i18n_batScar=                                           Bat 文件： Scarrr
 set i18n_thx4using=                                           感谢使用 Generate Interactive Bom
 
 ::convert
-set i18n_draghere=请将您的EDA PCB源文件拖移至此 :
+set i18n_draghere=请将您的 EDA PCB 源文件拖移至此：
 set i18n_converting=导出中 . . . . . ."
 
 ::converted
-set i18n_again=请问是否转换其他文件 ？ 
-set i18n_converted=                                    您的EDA源文件已成功导出 Bom ！
+set i18n_again=请问是否转换其他文件？
+set i18n_converted=                                   您的 EDA 源文件已成功导出 Bom！
