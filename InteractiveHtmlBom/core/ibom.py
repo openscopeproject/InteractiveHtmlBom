@@ -113,58 +113,78 @@ def generate_bom(pcb_footprints, config):
     # build grouped part list
     skipped_components = []
     part_groups = {}
+    group_by = set(config.group_fields)
+    index_to_fields = {}
+
     for i, f in enumerate(pcb_footprints):
         if skip_component(f, config):
             skipped_components.append(i)
             continue
 
         # group part refs by value and footprint
-        norm_value, unit = units.componentValue(f.val, f.ref)
+        fields = []
+        group_key = []
 
-        extras = []
-        if config.extra_fields:
-            extras = [f.extra_fields.get(ef, '')
-                      for ef in config.extra_fields]
+        for field in config.show_fields:
+            if field == "Value":
+                fields.append(f.val)
+                if "Value" in group_by:
+                    norm_value, unit = units.componentValue(f.val, f.ref)
+                    group_key.append(norm_value)
+                    group_key.append(unit)
+            elif field == "Footprint":
+                fields.append(f.footprint)
+                if "Footprint" in group_by:
+                    group_key.append(f.footprint)
+                    group_key.append(f.attr)
+            else:
+                fields.append(f.extra_fields.get(field, ''))
+                if field in group_by:
+                    group_key.append(f.extra_fields.get(field, ''))
 
-        group_key = (norm_value, unit, tuple(extras), f.footprint, f.attr)
-        valrefs = part_groups.setdefault(group_key, [f.val, []])
-        valrefs[1].append((f.ref, i))
+        index_to_fields[i] = fields
+        refs = part_groups.setdefault(tuple(group_key), [])
+        refs.append((f.ref, i))
 
-    # build bom table, sort refs
     bom_table = []
-    for (_, _, extras, footprint, _), valrefs in part_groups.items():
-        bom_row = (
-            len(valrefs[1]), valrefs[0], footprint,
-            natural_sort(valrefs[1]), extras)
-        bom_table.append(bom_row)
 
-    # sort table by reference prefix, footprint and quantity
+    for _, refs in part_groups.items():
+        # Fixup values to normalized string
+        if "Value" in group_by and "Value" in config.show_fields:
+            index = config.show_fields.index("Value")
+            value = index_to_fields[refs[0][1]][index]
+            for ref in refs:
+                index_to_fields[ref[1]][index] = value
+
+        bom_table.append(natural_sort(refs))
+
+    # sort table by reference prefix and quantity
     def row_sort_key(element):
-        qty, _, fp, rf, e = element
-        prefix = re.findall('^[A-Z]*', rf[0][0])[0]
+        prefix = re.findall('^[A-Z]*', element[0][0])[0]
         if prefix in config.component_sort_order:
             ref_ord = config.component_sort_order.index(prefix)
         else:
             ref_ord = config.component_sort_order.index('~')
-        return ref_ord, e, fp, -qty, alphanum_key(rf[0][0])
+        return ref_ord, len(element), alphanum_key(element[0][0])
 
     if '~' not in config.component_sort_order:
         config.component_sort_order.append('~')
+
     bom_table = sorted(bom_table, key=row_sort_key)
 
     result = {
         'both': bom_table,
-        'skipped': skipped_components
+        'skipped': skipped_components,
+        'fields': index_to_fields
     }
 
     for layer in ['F', 'B']:
         filtered_table = []
         for row in bom_table:
-            filtered_refs = [ref for ref in row[3]
+            filtered_refs = [ref for ref in row
                              if pcb_footprints[ref[1]].layer == layer]
             if filtered_refs:
-                filtered_table.append((len(filtered_refs), row[1],
-                                       row[2], filtered_refs, row[4]))
+                filtered_table.append(filtered_refs)
 
         result[layer] = sorted(filtered_table, key=row_sort_key)
 

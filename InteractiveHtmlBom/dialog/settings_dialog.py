@@ -2,6 +2,7 @@ import os
 import re
 
 import wx
+import wx.grid
 
 from . import dialog_base
 
@@ -34,8 +35,8 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
             self.SetSizeHintsSz(sz1, sz2)
 
     def set_extra_data_path(self, extra_data_file):
-        self.panel.extra.extraDataFilePicker.Path = extra_data_file
-        self.panel.extra.OnNetlistFileChanged(None)
+        self.panel.fields.extraDataFilePicker.Path = extra_data_file
+        self.panel.fields.OnExtraDataFileChanged(None)
 
 
 # Implementing settings_dialog
@@ -47,11 +48,11 @@ class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
         self.general = GeneralSettingsPanel(self.notebook,
                                             file_name_format_hint)
         self.html = HtmlSettingsPanel(self.notebook)
-        self.extra = ExtraFieldsPanel(self.notebook, extra_data_func,
-                                      extra_data_wildcard)
+        self.fields = FieldsPanel(self.notebook, extra_data_func,
+                                  extra_data_wildcard)
         self.notebook.AddPage(self.general, "General")
         self.notebook.AddPage(self.html, "Html defaults")
-        self.notebook.AddPage(self.extra, "Extra fields")
+        self.notebook.AddPage(self.fields, "Fields")
 
     def OnExit(self, event):
         self.GetParent().EndModal(wx.ID_CANCEL)
@@ -176,12 +177,13 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
         self.componentSortOrderBox.SetItems(tmp)
 
 
-# Implementing ExtraFieldsPanelBase
-class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
+# Implementing FieldsPanelBase
+class FieldsPanel(dialog_base.FieldsPanelBase):
     NONE_STRING = '<none>'
+    FIELDS_GRID_COLUMNS = 3
 
     def __init__(self, parent, extra_data_func, extra_data_wildcard):
-        dialog_base.ExtraFieldsPanelBase.__init__(self, parent)
+        dialog_base.FieldsPanelBase.__init__(self, parent)
         self.extra_data_func = extra_data_func
         self.extra_field_data = None
         bitmaps = os.path.join(os.path.dirname(__file__), "bitmaps")
@@ -190,6 +192,16 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
         self.m_btnDown.SetBitmap(wx.Bitmap(
             os.path.join(bitmaps, "btn-arrow-down.png"), wx.BITMAP_TYPE_PNG))
         self.set_file_picker_wildcard(extra_data_wildcard)
+        self._setFieldsList([])
+        for i in range(2):
+            box = self.GetTextExtent(self.fieldsGrid.GetColLabelValue(i))
+            if hasattr(box, "x"):
+                width = box.x
+            else:
+                width = box[0]
+            width = int(width * 1.1 + 5)
+            self.fieldsGrid.SetColMinimalWidth(i, width)
+            self.fieldsGrid.SetColSize(i, width)
 
     def set_file_picker_wildcard(self, extra_data_wildcard):
         if extra_data_wildcard is None:
@@ -212,34 +224,66 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
         self.extraDataFilePicker = new_picker
         self.Layout()
 
-    # Handlers for ExtraFieldsPanelBase events.
-    def OnExtraFieldsUp(self, event):
-        selection = self.extraFieldsList.Selection
-        if selection != wx.NOT_FOUND and selection > 0:
-            item = self.extraFieldsList.GetString(selection)
-            checked = self.extraFieldsList.IsChecked(selection)
-            self.extraFieldsList.Delete(selection)
-            self.extraFieldsList.Insert(item, selection - 1)
-            if checked:
-                self.extraFieldsList.Check(selection - 1)
-            self.extraFieldsList.SetSelection(selection - 1)
+    def _swapRows(self, a, b):
+        for i in range(self.FIELDS_GRID_COLUMNS):
+            va = self.fieldsGrid.GetCellValue(a, i)
+            vb = self.fieldsGrid.GetCellValue(b, i)
+            self.fieldsGrid.SetCellValue(a, i, vb)
+            self.fieldsGrid.SetCellValue(b, i, va)
 
-    def OnExtraFieldsDown(self, event):
-        selection = self.extraFieldsList.Selection
-        size = self.extraFieldsList.Count
-        if selection != wx.NOT_FOUND and selection < size - 1:
-            item = self.extraFieldsList.GetString(selection)
-            checked = self.extraFieldsList.IsChecked(selection)
-            self.extraFieldsList.Delete(selection)
-            self.extraFieldsList.Insert(item, selection + 1)
-            if checked:
-                self.extraFieldsList.Check(selection + 1)
-            self.extraFieldsList.SetSelection(selection + 1)
+    # Handlers for FieldsPanelBase events.
+    def OnGridCellClicked(self, event):
+        self.fieldsGrid.ClearSelection()
+        self.fieldsGrid.SelectRow(event.Row)
+        if event.Col < 2:
+            # toggle checkbox
+            val = self.fieldsGrid.GetCellValue(event.Row, event.Col)
+            val = "" if val else "1"
+            self.fieldsGrid.SetCellValue(event.Row, event.Col, val)
+            # group shouldn't be enabled without show
+            if event.Col == 0 and val == "":
+                self.fieldsGrid.SetCellValue(event.Row, 1, val)
+            if event.Col == 1 and val == "1":
+                self.fieldsGrid.SetCellValue(event.Row, 0, val)
 
-    def OnNetlistFileChanged(self, event):
+    def OnFieldsUp(self, event):
+        selection = self.fieldsGrid.SelectedRows
+        if len(selection) == 1 and selection[0] > 0:
+            self._swapRows(selection[0], selection[0] - 1)
+            self.fieldsGrid.ClearSelection()
+            self.fieldsGrid.SelectRow(selection[0] - 1)
+
+    def OnFieldsDown(self, event):
+        selection = self.fieldsGrid.SelectedRows
+        size = self.fieldsGrid.NumberRows
+        if len(selection) == 1 and selection[0] < size - 1:
+            self._swapRows(selection[0], selection[0] + 1)
+            self.fieldsGrid.ClearSelection()
+            self.fieldsGrid.SelectRow(selection[0] + 1)
+
+    def _setFieldsList(self, fields):
+        if self.fieldsGrid.NumberRows:
+            self.fieldsGrid.DeleteRows(0, self.fieldsGrid.NumberRows)
+        self.fieldsGrid.AppendRows(len(fields))
+        row = 0
+        for f in fields:
+            self.fieldsGrid.SetCellValue(row, 0, "1")
+            self.fieldsGrid.SetCellValue(row, 1, "1")
+            self.fieldsGrid.SetCellRenderer(
+                row, 0, wx.grid.GridCellBoolRenderer())
+            self.fieldsGrid.SetCellRenderer(
+                row, 1, wx.grid.GridCellBoolRenderer())
+            self.fieldsGrid.SetCellValue(row, 2, f)
+            self.fieldsGrid.SetCellAlignment(
+                row, 2, wx.ALIGN_LEFT, wx.ALIGN_TOP)
+            self.fieldsGrid.SetReadOnly(row, 2)
+            row += 1
+
+    def OnExtraDataFileChanged(self, event):
         extra_data_file = self.extraDataFilePicker.Path
         if not os.path.isfile(extra_data_file):
             return
+
         self.extra_field_data = None
         try:
             self.extra_field_data = self.extra_data_func(
@@ -248,9 +292,10 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
             pop_error(
                 "Failed to parse file %s\n\n%s" % (extra_data_file, e))
             self.extraDataFilePicker.Path = ''
+
         if self.extra_field_data is not None:
             field_list = list(self.extra_field_data[0])
-            self.extraFieldsList.SetItems(field_list)
+            self._setFieldsList(["Value", "Footprint"] + field_list)
             field_list.append(self.NONE_STRING)
             self.boardVariantFieldBox.SetItems(field_list)
             self.boardVariantFieldBox.SetStringSelection(self.NONE_STRING)
@@ -274,10 +319,33 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
         self.boardVariantBlacklist.SetItems(list(variant_set))
 
     def OnSize(self, event):
-        # Trick the listCheckBox best size calculations
-        items = self.extraFieldsList.GetStrings()
-        checked_items = self.extraFieldsList.GetCheckedStrings()
-        self.extraFieldsList.SetItems([])
         self.Layout()
-        self.extraFieldsList.SetItems(items)
-        self.extraFieldsList.SetCheckedStrings(checked_items)
+        g = self.fieldsGrid
+        g.SetColSize(
+            2, g.GetClientSize().x - g.GetColSize(0) - g.GetColSize(1) - 30)
+
+    def GetShowFields(self):
+        result = []
+        for row in range(self.fieldsGrid.NumberRows):
+            if self.fieldsGrid.GetCellValue(row, 0) == "1":
+                result.append(self.fieldsGrid.GetCellValue(row, 2))
+        return result
+
+    def GetGroupFields(self):
+        result = []
+        for row in range(self.fieldsGrid.NumberRows):
+            if self.fieldsGrid.GetCellValue(row, 1) == "1":
+                result.append(self.fieldsGrid.GetCellValue(row, 2))
+        return result
+
+    def SetCheckedFields(self, show, group):
+        group = [s for s in group if s in show]
+        current = []
+        for row in range(self.fieldsGrid.NumberRows):
+            current.append(self.fieldsGrid.GetCellValue(row, 2))
+        new = [s for s in current if s not in show]
+        self._setFieldsList(show + new)
+        for row in range(self.fieldsGrid.NumberRows):
+            field = self.fieldsGrid.GetCellValue(row, 2)
+            self.fieldsGrid.SetCellValue(row, 0, "1" if field in show else "")
+            self.fieldsGrid.SetCellValue(row, 1, "1" if field in group else "")

@@ -567,7 +567,10 @@ class PcbnewParser(EcadParser):
         from ..errors import ParsingException
 
         # Get extra field data from netlist
-        need_extra_fields = (self.config.extra_fields or
+        field_set = set(self.config.show_fields)
+        field_set.discard("Value")
+        field_set.discard("Footprint")
+        need_extra_fields = (field_set or
                              self.config.board_variant_whitelist or
                              self.config.board_variant_blacklist or
                              self.config.dnp_field)

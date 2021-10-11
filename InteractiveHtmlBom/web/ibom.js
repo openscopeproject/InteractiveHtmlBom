@@ -182,7 +182,7 @@ function setBomCheckboxState(checkbox, element, references) {
 }
 
 function createCheckboxChangeHandler(checkbox, references, row) {
-  return function() {
+  return function () {
     refsSet = getStoredCheckboxRefs(checkbox);
     var markWhenChecked = settings.markWhenChecked == checkbox;
     eventArgs = {
@@ -233,7 +233,7 @@ function clearHighlightedFootprints() {
 }
 
 function createRowHighlightHandler(rowid, refs, net) {
-  return function() {
+  return function () {
     if (currentHighlightedRowId) {
       if (currentHighlightedRowId == rowid) {
         return;
@@ -247,10 +247,10 @@ function createRowHighlightHandler(rowid, refs, net) {
     drawHighlights();
     EventHandler.emitEvent(
       IBOM_EVENT_TYPES.HIGHLIGHT_EVENT, {
-        rowid: rowid,
-        refs: refs,
-        net: net
-      });
+      rowid: rowid,
+      refs: refs,
+      net: net
+    });
   }
 }
 
@@ -261,37 +261,28 @@ function entryMatches(entry) {
   }
   // check refs
   if (!settings.hiddenColumns.includes("references")) {
-    for (var ref of entry[3]) {
+    for (var ref of entry) {
       if (ref[0].toLowerCase().indexOf(filter) >= 0) {
         return true;
       }
     }
   }
-  // check extra fields
-  if (!settings.hiddenColumns.includes("extrafields")) {
-    for (var i in config.extra_fields) {
-      if (entry[4][i].toLowerCase().indexOf(filter) >= 0) {
-        return true;
+  // check fields
+  for (var i in config.fields) {
+    var f = config.fields[i];
+    if (!settings.hiddenColumns.includes(f)) {
+      for (var ref of entry) {
+        if (pcbdata.bom.fields[ref[1]][i].toLowerCase().indexOf(filter) >= 0) {
+          return true;
+        }
       }
-    }
-  }
-  // check value
-  if (!settings.hiddenColumns.includes("value")) {
-    if (entry[1].toLowerCase().indexOf(filter) >= 0) {
-      return true;
-    }
-  }
-  // check footprint
-  if (!settings.hiddenColumns.includes("footprint")) {
-    if (entry[2].toLowerCase().indexOf(filter) >= 0) {
-      return true;
     }
   }
   return false;
 }
 
 function findRefInEntry(entry) {
-  return entry[3].filter(r => r[0].toLowerCase() == reflookup);
+  return entry.filter(r => r[0].toLowerCase() == reflookup);
 }
 
 function highlightFilter(s) {
@@ -318,7 +309,7 @@ function highlightFilter(s) {
 }
 
 function checkboxSetUnsetAllHandler(checkboxname) {
-  return function() {
+  return function () {
     var checkboxnum = 0;
     while (checkboxnum < settings.checkboxes.length &&
       settings.checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
@@ -361,7 +352,7 @@ function createColumnHeader(name, cls, comparator, is_checkbox = false) {
   var spacer = document.createElement("div");
   spacer.className = "column-spacer";
   th.appendChild(spacer);
-  spacer.onclick = function() {
+  spacer.onclick = function () {
     if (currentSortColumn && th !== currentSortColumn) {
       // Currently sorted by another column
       currentSortColumn.childNodes[1].classList.remove(currentSortOrder);
@@ -373,7 +364,7 @@ function createColumnHeader(name, cls, comparator, is_checkbox = false) {
       // Already sorted by this column
       if (currentSortOrder == "asc") {
         // Sort by this column, descending order
-        bomSortFunction = function(a, b) {
+        bomSortFunction = function (a, b) {
           return -comparator(a, b);
         }
         currentSortColumn.childNodes[1].classList.remove("asc");
@@ -440,7 +431,7 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
     var input = document.createElement("input");
     input.classList.add("visibility_checkbox");
     input.type = "checkbox";
-    input.onchange = function(e) {
+    input.onchange = function (e) {
       setShowBOMColumn(column, e.target.checked)
     };
     input.checked = !(settings.hiddenColumns.includes(column));
@@ -461,7 +452,7 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
   }
   tr.appendChild(th);
 
-  var checkboxCompareClosure = function(checkbox) {
+  var checkboxCompareClosure = function (checkbox) {
     return (a, b) => {
       var stateA = getCheckboxState(checkbox, a[3]);
       var stateB = getCheckboxState(checkbox, b[3]);
@@ -470,6 +461,15 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
       return 0;
     }
   }
+  var stringFieldCompareClosure = function (fieldIndex) {
+    return (a, b) => {
+      var fa = pcbdata.bom.fields[a[0][1]][fieldIndex];
+      var fb = pcbdata.bom.fields[b[0][1]][fieldIndex];
+      if (fa != fb) return fa > fb ? 1 : -1;
+      else return 0;
+    }
+  }
+
   if (settings.bommode == "netlist") {
     th = createColumnHeader("Net name", "bom-netname", (a, b) => {
       if (a > b) return -1;
@@ -480,6 +480,8 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
   } else {
     // Filter hidden columns
     var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
+    var valueIndex = config.fields.indexOf("Value");
+    var footprintIndex = config.fields.indexOf("Footprint");
     columns.forEach((column) => {
       if (column === placeHolderColumn) {
         var n = 1;
@@ -490,54 +492,44 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
           tr.appendChild(td);
         }
         return;
-      }
-      if (column === "checkboxes") {
+      } else if (column === "checkboxes") {
         for (var checkbox of settings.checkboxes) {
           th = createColumnHeader(
             checkbox, "bom-checkbox", checkboxCompareClosure(checkbox), true);
           tr.appendChild(th);
         }
-      }
-      if (column === "References") {
+      } else if (column === "References") {
         tr.appendChild(createColumnHeader("References", "references", (a, b) => {
           var i = 0;
-          while (i < a[3].length && i < b[3].length) {
-            if (a[3][i] != b[3][i]) return a[3][i] > b[3][i] ? 1 : -1;
+          while (i < a.length && i < b.length) {
+            if (a[i] != b[i]) return a[i] > b[i] ? 1 : -1;
             i++;
           }
-          return a[3].length - b[3].length;
+          return a.length - b.length;
         }));
-      }
-      if (column === "Value") {
+      } else if (column === "Value") {
         tr.appendChild(createColumnHeader("Value", "value", (a, b) => {
-          return valueCompare(a[5], b[5], a[1], b[1]);
+          var ra = a[0][1], rb = b[0][1];
+          return valueCompare(
+            pcbdata.bom.parsedValues[ra], pcbdata.bom.parsedValues[rb],
+            pcbdata.bom.fields[ra][valueIndex], pcbdata.bom.fields[rb][valueIndex]);
         }));
-      }
-      if (column === "Footprint") {
-        tr.appendChild(createColumnHeader("Footprint", "footprint", (a, b) => {
-          if (a[2] != b[2]) return a[2] > b[2] ? 1 : -1;
-          else return 0;
-        }));
-      }
-      if (column === "Quantity" && settings.bommode == "grouped") {
-        tr.appendChild(createColumnHeader("Quantity", "quantity", (a, b) => {
-          return a[3].length - b[3].length;
-        }));
-      }
-      // Extra fields
-      var extraFieldCompareClosure = function(fieldIndex) {
-        return (a, b) => {
-          var fa = a[4][fieldIndex];
-          var fb = b[4][fieldIndex];
-          if (fa != fb) return fa > fb ? 1 : -1;
-          else return 0;
-        }
-      }
-      var i = config.extra_fields.indexOf(column);
-      if (i < 0)
         return;
-      tr.appendChild(createColumnHeader(
-        column, `extrafield${i+1}`, extraFieldCompareClosure(i)));
+      } else if (column === "Footprint") {
+        tr.appendChild(createColumnHeader(
+          "Footprint", "footprint", stringFieldCompareClosure(footprintIndex)));
+      } else if (column === "Quantity" && settings.bommode == "grouped") {
+        tr.appendChild(createColumnHeader("Quantity", "quantity", (a, b) => {
+          return a.length - b.length;
+        }));
+      } else {
+        // Other fields
+        var i = config.fields.indexOf(column);
+        if (i < 0)
+          return;
+        tr.appendChild(createColumnHeader(
+          column, `field${i + 1}`, stringFieldCompareClosure(i)));
+      }
     });
   }
   bomhead.appendChild(tr);
@@ -570,10 +562,8 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
       // expand bom table
       expandedTable = []
       for (var bomentry of bomtable) {
-        for (var ref of bomentry[3]) {
-          expandedTable.push([1, bomentry[1], bomentry[2],
-            [ref], bomentry[4], bomentry[5]
-          ]);
+        for (var ref of bomentry) {
+          expandedTable.push([ref]);
         }
       }
       bomtable = expandedTable;
@@ -607,7 +597,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           continue;
         }
       } else {
-        references = bomentry[3];
+        references = bomentry;
       }
       // Filter hidden columns
       var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
@@ -621,9 +611,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
             tr.appendChild(td);
           }
           return;
-        }
-        // Checkboxes
-        if (column === "checkboxes") {
+        } else if (column === "checkboxes") {
           for (var checkbox of settings.checkboxes) {
             if (checkbox) {
               td = document.createElement("TD");
@@ -638,38 +626,26 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
               tr.appendChild(td);
             }
           }
-        }
-        // References
-        if (column === "References") {
+        } else if (column === "References") {
           td = document.createElement("TD");
           td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
           tr.appendChild(td);
-        }
-        // Value
-        if (column === "Value") {
-          td = document.createElement("TD");
-          td.innerHTML = highlightFilter(bomentry[1]);
-          tr.appendChild(td);
-        }
-        // Footprint
-        if (column === "Footprint") {
-          td = document.createElement("TD");
-          td.innerHTML = highlightFilter(bomentry[2]);
-          tr.appendChild(td);
-        }
-        if (column === "Quantity" && settings.bommode == "grouped") {
+        } else if (column === "Quantity" && settings.bommode == "grouped") {
           // Quantity
           td = document.createElement("TD");
-          td.textContent = bomentry[3].length;
+          td.textContent = references.length;
+          tr.appendChild(td);
+        } else {
+          // All the other fields
+          var field_index = config.fields.indexOf(column)
+          if (field_index < 0)
+            return;
+          var valueSet = new Set();
+          references.map(r => r[1]).forEach((id) => valueSet.add(pcbdata.bom.fields[id][field_index]));
+          td = document.createElement("TD");
+          td.innerHTML = highlightFilter(Array.from(valueSet).join(", "));
           tr.appendChild(td);
         }
-        // Extra fields
-        var i = config.extra_fields.indexOf(column)
-        if (i < 0)
-          return;
-        td = document.createElement("TD");
-        td.innerHTML = highlightFilter(bomentry[4][i]);
-        tr.appendChild(td);
       });
     }
     bom.appendChild(tr);
@@ -694,11 +670,11 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
   }
   EventHandler.emitEvent(
     IBOM_EVENT_TYPES.BOM_BODY_CHANGE_EVENT, {
-      filter: filter,
-      reflookup: reflookup,
-      checkboxes: settings.checkboxes,
-      bommode: settings.bommode,
-    });
+    filter: filter,
+    reflookup: reflookup,
+    checkboxes: settings.checkboxes,
+    bommode: settings.bommode,
+  });
 }
 
 function highlightPreviousRow() {
@@ -1107,7 +1083,7 @@ function updateCheckboxStats(checkbox) {
   td.lastChild.innerHTML = checked + "/" + total + " (" + Math.round(percent) + "%)";
 }
 
-document.onkeydown = function(e) {
+document.onkeydown = function (e) {
   switch (e.key) {
     case "n":
       if (document.activeElement.type == "text") {
@@ -1180,7 +1156,7 @@ function hideNetlistButton() {
   document.getElementById("bom-netlist-btn").style.display = "none";
 }
 
-window.onload = function(e) {
+window.onload = function (e) {
   initUtils();
   initRender();
   initStorage();

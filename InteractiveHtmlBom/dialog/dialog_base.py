@@ -9,6 +9,7 @@
 
 import wx
 import wx.xrc
+import wx.grid
 
 ###########################################################################
 ## Class SettingsDialogBase
@@ -396,17 +397,17 @@ class GeneralSettingsPanelBase ( wx.Panel ):
 
 
 ###########################################################################
-## Class ExtraFieldsPanelBase
+## Class FieldsPanelBase
 ###########################################################################
 
-class ExtraFieldsPanelBase ( wx.Panel ):
+class FieldsPanelBase ( wx.Panel ):
 
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
         wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
 
         bSizer42 = wx.BoxSizer( wx.VERTICAL )
 
-        sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Netlist or xml file" ), wx.VERTICAL )
+        sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Extra data file" ), wx.VERTICAL )
 
         self.extraDataFilePicker = wx.FilePickerCtrl( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select a file", u"Netlist and xml files (*.net; *.xml)|*.net;*.xml", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_SMALL|wx.FLP_USE_TEXTCTRL|wx.BORDER_SIMPLE )
         sbSizer7.Add( self.extraDataFilePicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
@@ -414,27 +415,48 @@ class ExtraFieldsPanelBase ( wx.Panel ):
 
         bSizer42.Add( sbSizer7, 0, wx.ALL|wx.EXPAND, 5 )
 
-        extraFieldsSizer = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Extra fields" ), wx.VERTICAL )
+        fieldsSizer = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Fields" ), wx.VERTICAL )
 
         bSizer4 = wx.BoxSizer( wx.HORIZONTAL )
 
-        bSizer6 = wx.BoxSizer( wx.VERTICAL )
+        self.fieldsGrid = wx.grid.Grid( fieldsSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 
-        extraFieldsListChoices = []
-        self.extraFieldsList = wx.CheckListBox( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, extraFieldsListChoices, 0|wx.BORDER_SIMPLE )
-        bSizer6.Add( self.extraFieldsList, 1, wx.ALL|wx.EXPAND, 5 )
+        # Grid
+        self.fieldsGrid.CreateGrid( 2, 3 )
+        self.fieldsGrid.EnableEditing( True )
+        self.fieldsGrid.EnableGridLines( True )
+        self.fieldsGrid.EnableDragGridSize( False )
+        self.fieldsGrid.SetMargins( 0, 0 )
 
+        # Columns
+        self.fieldsGrid.AutoSizeColumns()
+        self.fieldsGrid.EnableDragColMove( False )
+        self.fieldsGrid.EnableDragColSize( True )
+        self.fieldsGrid.SetColLabelSize( 30 )
+        self.fieldsGrid.SetColLabelValue( 0, u"Show" )
+        self.fieldsGrid.SetColLabelValue( 1, u"Group" )
+        self.fieldsGrid.SetColLabelValue( 2, u"Name" )
+        self.fieldsGrid.SetColLabelAlignment( wx.ALIGN_CENTER, wx.ALIGN_CENTER )
 
-        bSizer4.Add( bSizer6, 1, wx.EXPAND, 5 )
+        # Rows
+        self.fieldsGrid.EnableDragRowSize( False )
+        self.fieldsGrid.SetRowLabelSize( 0 )
+        self.fieldsGrid.SetRowLabelAlignment( wx.ALIGN_CENTER, wx.ALIGN_CENTER )
+
+        # Label Appearance
+
+        # Cell Defaults
+        self.fieldsGrid.SetDefaultCellAlignment( wx.ALIGN_CENTER, wx.ALIGN_TOP )
+        bSizer4.Add( self.fieldsGrid, 1, wx.ALL|wx.EXPAND, 5 )
 
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_btnUp = wx.BitmapButton( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
+        self.m_btnUp = wx.BitmapButton( fieldsSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
         self.m_btnUp.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer5.Add( self.m_btnUp, 0, wx.ALL, 5 )
 
-        self.m_btnDown = wx.BitmapButton( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
+        self.m_btnDown = wx.BitmapButton( fieldsSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
         self.m_btnDown.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer5.Add( self.m_btnDown, 0, wx.ALL, 5 )
@@ -443,13 +465,13 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         bSizer4.Add( bSizer5, 0, 0, 5 )
 
 
-        extraFieldsSizer.Add( bSizer4, 1, wx.EXPAND, 5 )
+        fieldsSizer.Add( bSizer4, 1, wx.EXPAND, 5 )
 
-        self.normalizeCaseCheckbox = wx.CheckBox( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Normalize field name case", wx.DefaultPosition, wx.DefaultSize, 0 )
-        extraFieldsSizer.Add( self.normalizeCaseCheckbox, 0, wx.ALL|wx.EXPAND, 5 )
+        self.normalizeCaseCheckbox = wx.CheckBox( fieldsSizer.GetStaticBox(), wx.ID_ANY, u"Normalize field name case", wx.DefaultPosition, wx.DefaultSize, 0 )
+        fieldsSizer.Add( self.normalizeCaseCheckbox, 0, wx.ALL|wx.EXPAND, 5 )
 
 
-        bSizer42.Add( extraFieldsSizer, 2, wx.ALL|wx.EXPAND, 5 )
+        bSizer42.Add( fieldsSizer, 2, wx.ALL|wx.EXPAND, 5 )
 
         sbSizer32 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Board variant" ), wx.VERTICAL )
 
@@ -519,9 +541,10 @@ class ExtraFieldsPanelBase ( wx.Panel ):
 
         # Connect Events
         self.Bind( wx.EVT_SIZE, self.OnSize )
-        self.extraDataFilePicker.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnNetlistFileChanged )
-        self.m_btnUp.Bind( wx.EVT_BUTTON, self.OnExtraFieldsUp )
-        self.m_btnDown.Bind( wx.EVT_BUTTON, self.OnExtraFieldsDown )
+        self.extraDataFilePicker.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnExtraDataFileChanged )
+        self.fieldsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnGridCellClicked )
+        self.m_btnUp.Bind( wx.EVT_BUTTON, self.OnFieldsUp )
+        self.m_btnDown.Bind( wx.EVT_BUTTON, self.OnFieldsDown )
         self.normalizeCaseCheckbox.Bind( wx.EVT_CHECKBOX, self.OnNetlistFileChanged )
         self.boardVariantFieldBox.Bind( wx.EVT_COMBOBOX, self.OnBoardVariantFieldChange )
 
@@ -533,15 +556,20 @@ class ExtraFieldsPanelBase ( wx.Panel ):
     def OnSize( self, event ):
         event.Skip()
 
+    def OnExtraDataFileChanged( self, event ):
+        event.Skip()
+
+    def OnGridCellClicked( self, event ):
+        event.Skip()
+
+    def OnFieldsUp( self, event ):
+        event.Skip()
+
+    def OnFieldsDown( self, event ):
+        event.Skip()
+
     def OnNetlistFileChanged( self, event ):
         event.Skip()
-
-    def OnExtraFieldsUp( self, event ):
-        event.Skip()
-
-    def OnExtraFieldsDown( self, event ):
-        event.Skip()
-
 
     def OnBoardVariantFieldChange( self, event ):
         event.Skip()

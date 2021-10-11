@@ -177,9 +177,11 @@ function initUtils() {
     "([GgMmKkUuNnPp])?" +
     "([0-9]*)" +
     "(\\b.*)?$", "");
-  for (var bom_type of ["both", "F", "B"]) {
-    for (var row of pcbdata.bom[bom_type]) {
-      row.push(parseValue(row[1], row[3][0][0]));
+  if (config.fields.includes("Value")) {
+    var index = config.fields.indexOf("Value");
+    pcbdata.bom["parsedValues"] = {};
+    for (var id in pcbdata.bom.fields) {
+      pcbdata.bom.parsedValues[id] = parseValue(pcbdata.bom.fields[id][index])
     }
   }
 }
@@ -458,6 +460,8 @@ var settings = {
   renderDnpOutline: false,
   renderTracks: true,
   renderZones: true,
+  columnOrder: [],
+  hiddenColumns: [],
 }
 
 function initDefaults() {
@@ -518,7 +522,7 @@ function initDefaults() {
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
 
-  var fields = ["checkboxes"].concat(config.fields);
+  var fields = ["checkboxes", "References"].concat(config.fields).concat(["Quantity"]);
   var hcols = JSON.parse(readStorage("hiddenColumns"));
   if (hcols === null) {
     hcols = [];

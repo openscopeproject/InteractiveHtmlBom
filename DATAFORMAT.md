@@ -101,6 +101,13 @@ pcbdata = {
     "B":  [bomrow1, bomrow2, ...],
     // numeric IDs of DNP components that are not in BOM
     "skipped": [id1, id2, ...]
+    // Fields map is keyed on component ID with values being field data.
+    // It's order corresponds to order of fields data in config struct.
+    "fields" {
+      id1: [field1, field2, ...],
+      id2: [field1, field2, ...],
+      ...
+    }
   },
   // Contains parsed stroke data from newstroke font for
   // characters used on the pcb.
@@ -333,17 +340,7 @@ Footprints are a collection of pads, drawings and some metadata.
 
 # bom row struct
 
-Bom row is a 5-tuple (array in js)
-
-```js
-[
-  group_component_count,
-  value,
-  footprint_name,
-  reference_set,
-  extra_data
-]
-```
+Bom row is a list of reference sets
 
 Reference set is array of tuples of (ref, id) where id is just
 a unique numeric identifier for each footprint that helps avoid
@@ -354,13 +351,6 @@ collisions when references are duplicated.
   [reference_name, footprint_id],
   ...
 ]
-```
-
-Extra data is array of extra field data. It's order corresponds
-to order of extra field data in config struct.
-
-```js
-[field1_value, field2_value, ...]
 ```
 
 # config struct

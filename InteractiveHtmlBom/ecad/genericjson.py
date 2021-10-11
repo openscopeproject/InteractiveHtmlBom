@@ -56,7 +56,6 @@ class GenericJsonParser(EcadParser):
         return pcb
 
     def _verify(self, pcb):
-
         """Spot check the pcb object."""
 
         if len(pcb['pcbdata']['footprints']) != len(pcb['components']):
@@ -97,12 +96,12 @@ class GenericJsonParser(EcadParser):
         if board_outline_bbox.initialized():
             pcbdata['edges_bbox'] = board_outline_bbox.to_dict()
 
-        if self.config.extra_fields:
+        extra_fields = set(self.config.show_fields)
+        extra_fields.discard("Footprint")
+        extra_fields.discard("Value")
+        if extra_fields:
             for c in components:
-                extra_field_data = {}
-                for f in self.config.extra_fields:
-                    fv = ("" if f not in c.extra_fields else c.extra_fields[f])
-                    extra_field_data[f] = fv
-                c.extra_fields = extra_field_data
+                c.extra_fields = {
+                    f: c.extra_fields.get(f, "") for f in extra_fields}
 
         return pcbdata, components

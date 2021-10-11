@@ -190,9 +190,3 @@ def compareValues(c1, c2):
             return True  # no units for component 2
 
     return False
-
-
-print(compMatch("1µF"))
-print(compMatch("1u"))
-
-print(componentValue("1µ", "C2"))
