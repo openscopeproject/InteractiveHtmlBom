@@ -454,8 +454,8 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
 
   var checkboxCompareClosure = function (checkbox) {
     return (a, b) => {
-      var stateA = getCheckboxState(checkbox, a[3]);
-      var stateB = getCheckboxState(checkbox, b[3]);
+      var stateA = getCheckboxState(checkbox, a);
+      var stateB = getCheckboxState(checkbox, b);
       if (stateA > stateB) return -1;
       if (stateA < stateB) return 1;
       return 0;
