@@ -469,7 +469,23 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
       else return 0;
     }
   }
-
+  var referenceRegex = /(?<prefix>[^0-9]+)(?<number>[0-9]+)/;
+  var compareRefs = (a, b) => {
+    var ra = referenceRegex.exec(a);
+    var rb = referenceRegex.exec(b);
+    if (ra === null || rb === null) {
+      if (a != b) return a > b ? 1 : -1;
+      return 0;
+    } else {
+      if (ra.groups.prefix != rb.groups.prefix) {
+        return ra.groups.prefix > rb.groups.prefix ? 1 : -1;
+      }
+      if (ra.groups.number != rb.groups.number) {
+        return parseInt(ra.groups.number) > parseInt(rb.groups.number) ? 1 : -1;
+      }
+      return 0;
+    }
+  }
   if (settings.bommode == "netlist") {
     th = createColumnHeader("Net name", "bom-netname", (a, b) => {
       if (a > b) return -1;
@@ -502,7 +518,7 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
         tr.appendChild(createColumnHeader("References", "references", (a, b) => {
           var i = 0;
           while (i < a.length && i < b.length) {
-            if (a[i] != b[i]) return a[i] > b[i] ? 1 : -1;
+            if (a[i] != b[i]) return compareRefs(a[i][0], b[i][0]);
             i++;
           }
           return a.length - b.length;

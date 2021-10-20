@@ -160,12 +160,12 @@ def generate_bom(pcb_footprints, config):
 
     # sort table by reference prefix and quantity
     def row_sort_key(element):
-        prefix = re.findall('^[A-Z]*', element[0][0])[0]
+        prefix = re.findall('^[^0-9]*', element[0][0])[0]
         if prefix in config.component_sort_order:
             ref_ord = config.component_sort_order.index(prefix)
         else:
             ref_ord = config.component_sort_order.index('~')
-        return ref_ord, len(element), alphanum_key(element[0][0])
+        return ref_ord, -len(element), alphanum_key(element[0][0])
 
     if '~' not in config.component_sort_order:
         config.component_sort_order.append('~')
