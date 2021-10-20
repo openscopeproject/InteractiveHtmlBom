@@ -184,7 +184,7 @@ attribute.
   // SVG path of the arc given as 'd' attribute of svg spec.
   // If this parameter is specified everything below it is ignored.
   "svgpath": svgpath,
-  "start": [x, y],
+  "start": [x, y], // arc center
   "radius": radius,
   "startangle": angle1,
   "endangle": angle2,

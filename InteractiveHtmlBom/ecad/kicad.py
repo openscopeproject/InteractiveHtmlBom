@@ -69,6 +69,18 @@ class PcbnewParser(EcadParser):
     def normalize(point):
         return [point[0] * 1e-6, point[1] * 1e-6]
 
+    @staticmethod
+    def get_arc_angles(d):
+        # type: (pcbnew.PCB_SHAPE) -> tuple
+        a1 = d.GetArcAngleStart()
+        if hasattr(d, "GetAngle"):
+            a2 = a1 + d.GetAngle()
+        else:
+            a2 = a1 + d.GetArcAngle()
+        if a2 < a1:
+            a1, a2 = a2, a1
+        return round(a1 * 0.1, 2), round(a2 * 0.1, 2)
+
     def parse_shape(self, d):
         # type: (pcbnew.PCB_SHAPE) -> dict or None
         shape = {
@@ -115,10 +127,9 @@ class PcbnewParser(EcadParser):
                 shape_dict["filled"] = 1
             return shape_dict
         if shape == "arc":
-            a1 = round(d.GetArcAngleStart() * 0.1, 2)
-            a2 = round((d.GetArcAngleStart() + d.GetAngle()) * 0.1, 2)
-            if d.GetAngle() < 0:
-                (a1, a2) = (a2, a1)
+            a1, a2 = self.get_arc_angles(d)
+            if hasattr(d, "GetCenter"):
+                start = self.normalize(d.GetCenter())
             return {
                 "type": shape,
                 "start": start,
@@ -471,11 +482,7 @@ class PcbnewParser(EcadParser):
             else:
                 if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     if track.GetClass() in ["ARC", "PCB_ARC"]:
-                        a1 = round(track.GetArcAngleStart() * 0.1, 2)
-                        a2 = round((track.GetArcAngleStart() +
-                                    track.GetAngle()) * 0.1, 2)
-                        if track.GetAngle() < 0:
-                            (a1, a2) = (a2, a1)
+                        a1, a2 = self.get_arc_angles(track)
                         track_dict = {
                             "center": self.normalize(track.GetCenter()),
                             "startangle": a1,
