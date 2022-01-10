@@ -999,6 +999,22 @@ function checkBomCheckbox(bomrowid, checkboxname) {
   checkbox.onchange();
 }
 
+function uncheckBomCheckbox(bomrowid, checkboxname) {
+  var checkboxnum = 0;
+  while (checkboxnum < settings.checkboxes.length &&
+    settings.checkboxes[checkboxnum].toLowerCase() != checkboxname.toLowerCase()) {
+    checkboxnum++;
+  }
+  if (!bomrowid || checkboxnum >= settings.checkboxes.length) {
+    return;
+  }
+  var bomrow = document.getElementById(bomrowid);
+  var checkbox = bomrow.childNodes[checkboxnum + 1].childNodes[0];
+  checkbox.checked = false;
+  checkbox.indeterminate = false;
+  checkbox.onchange();
+}
+
 function setBomCheckboxes(value) {
   writeStorage("bomCheckboxes", value);
   settings.checkboxes = value.split(",").map((e) => e.trim()).filter((e) => e);
@@ -1107,6 +1123,26 @@ document.onkeydown = function (e) {
       }
       if (currentHighlightedRowId !== null) {
         checkBomCheckbox(currentHighlightedRowId, "placed");
+        highlightNextRow();
+        e.preventDefault();
+      }
+      break;
+    case "ArrowRight":
+      if (document.activeElement.type == "text") {
+        return;
+      }
+      if (currentHighlightedRowId !== null) {
+        checkBomCheckbox(currentHighlightedRowId, "placed");
+        highlightNextRow();
+        e.preventDefault();
+      }
+      break;
+	  case "ArrowLeft":
+      if (document.activeElement.type == "text") {
+        return;
+      }
+      if (currentHighlightedRowId !== null) {
+        uncheckBomCheckbox(currentHighlightedRowId, "placed");
         highlightNextRow();
         e.preventDefault();
       }
