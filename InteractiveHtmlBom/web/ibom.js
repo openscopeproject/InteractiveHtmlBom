@@ -1143,7 +1143,7 @@ document.onkeydown = function (e) {
       }
       if (currentHighlightedRowId !== null) {
         uncheckBomCheckbox(currentHighlightedRowId, "placed");
-        highlightNextRow();
+        //highlightNextRow();
         e.preventDefault();
       }
       break;
