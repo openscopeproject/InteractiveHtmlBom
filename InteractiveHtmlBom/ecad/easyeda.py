@@ -222,7 +222,7 @@ class EasyEdaParser(EcadParser):
             "layers": pad_layers,
             "pos": [x, y],
             "size": [width, height],
-            "angle": -angle,
+            "angle": angle,
             "shape": pad_shape,
             "type": pad_type,
         }

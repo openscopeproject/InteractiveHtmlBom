@@ -30,6 +30,11 @@ function drawText(ctx, text, color) {
     ctx.restore();
     return;
   }
+  if ("polygons" in text) {
+    ctx.fill(getPolygonsPath(text));
+    ctx.restore();
+    return;
+  }
   ctx.translate(...text.pos);
   ctx.translate(text.thickness * 0.5, 0);
   var angle = -text.angle;
@@ -280,7 +285,7 @@ function getCachedPadPath(pad) {
 function drawPad(ctx, pad, color, outline) {
   ctx.save();
   ctx.translate(...pad.pos);
-  ctx.rotate(deg2rad(pad.angle));
+  ctx.rotate(-deg2rad(pad.angle));
   if (pad.offset) {
     ctx.translate(...pad.offset);
   }
@@ -299,7 +304,7 @@ function drawPadHole(ctx, pad, padHoleColor) {
   if (pad.type != "th") return;
   ctx.save();
   ctx.translate(...pad.pos);
-  ctx.rotate(deg2rad(pad.angle));
+  ctx.rotate(-deg2rad(pad.angle));
   ctx.fillStyle = padHoleColor;
   if (pad.drillshape == "oblong") {
     ctx.fill(getOblongPath(pad.drillsize));
@@ -546,7 +551,6 @@ function drawBackground(canvasdict, clear = true) {
 function prepareCanvas(canvas, flip, transform) {
   var ctx = canvas.getContext("2d");
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  var fontsize = 1.55;
   ctx.scale(transform.zoom, transform.zoom);
   ctx.translate(transform.panx, transform.pany);
   if (flip) {
@@ -703,7 +707,7 @@ function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d)
 
 function pointWithinPad(x, y, pad) {
   var v = [x - pad.pos[0], y - pad.pos[1]];
-  v = rotateVector(v, -pad.angle);
+  v = rotateVector(v, pad.angle);
   if (pad.offset) {
     v[0] -= pad.offset[0];
     v[1] -= pad.offset[1];

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Oct 26 2018)
+## Python code generated with wxFormBuilder (version 3.10.1-0-g8feb16b3)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO *NOT* EDIT THIS FILE!
@@ -50,7 +50,7 @@ class SettingsDialogPanel ( wx.Panel ):
         bSizer39.Add( self.m_button41, 0, wx.ALL, 5 )
 
 
-        bSizer39.Add( ( 50, 0), 0, wx.EXPAND, 5 )
+        bSizer39.Add( ( 50, 0), 1, wx.EXPAND, 5 )
 
         self.m_button42 = wx.Button( self, wx.ID_ANY, u"Generate BOM", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
 
@@ -61,7 +61,7 @@ class SettingsDialogPanel ( wx.Panel ):
         bSizer39.Add( self.m_button43, 0, wx.ALL, 5 )
 
 
-        bSizer20.Add( bSizer39, 0, wx.ALIGN_CENTER, 5 )
+        bSizer20.Add( bSizer39, 0, wx.EXPAND, 5 )
 
 
         self.SetSizer( bSizer20 )
@@ -76,7 +76,7 @@ class SettingsDialogPanel ( wx.Panel ):
         pass
 
 
-    # Virtual event handlers, overide them in your derived class
+    # Virtual event handlers, override them in your derived class
     def OnSaveSettings( self, event ):
         event.Skip()
 
@@ -191,7 +191,7 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         pass
 
 
-    # Virtual event handlers, overide them in your derived class
+    # Virtual event handlers, override them in your derived class
     def OnBoardRotationSlider( self, event ):
         event.Skip()
 
@@ -370,7 +370,7 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         pass
 
 
-    # Virtual event handlers, overide them in your derived class
+    # Virtual event handlers, override them in your derived class
     def OnSize( self, event ):
         event.Skip()
 
@@ -432,10 +432,10 @@ class FieldsPanelBase ( wx.Panel ):
         self.fieldsGrid.AutoSizeColumns()
         self.fieldsGrid.EnableDragColMove( False )
         self.fieldsGrid.EnableDragColSize( True )
-        self.fieldsGrid.SetColLabelSize( 30 )
         self.fieldsGrid.SetColLabelValue( 0, u"Show" )
         self.fieldsGrid.SetColLabelValue( 1, u"Group" )
         self.fieldsGrid.SetColLabelValue( 2, u"Name" )
+        self.fieldsGrid.SetColLabelSize( 30 )
         self.fieldsGrid.SetColLabelAlignment( wx.ALIGN_CENTER, wx.ALIGN_CENTER )
 
         # Rows
@@ -552,7 +552,7 @@ class FieldsPanelBase ( wx.Panel ):
         pass
 
 
-    # Virtual event handlers, overide them in your derived class
+    # Virtual event handlers, override them in your derived class
     def OnSize( self, event ):
         event.Skip()
 

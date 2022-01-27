@@ -67,19 +67,25 @@ class PcbnewParser(EcadParser):
 
     @staticmethod
     def normalize(point):
-        return [point[0] * 1e-6, point[1] * 1e-6]
+        return [point.x * 1e-6, point.y * 1e-6]
 
     @staticmethod
-    def get_arc_angles(d):
-        # type: (pcbnew.PCB_SHAPE) -> tuple
-        a1 = d.GetArcAngleStart()
-        if hasattr(d, "GetAngle"):
-            a2 = a1 + d.GetAngle()
+    def normalize_angle(angle):
+        if isinstance(angle, int) or isinstance(angle, float):
+            return angle * 0.1
         else:
-            a2 = a1 + d.GetArcAngle()
+            return angle.AsDegrees()
+
+    def get_arc_angles(self, d):
+        # type: (pcbnew.PCB_SHAPE) -> tuple
+        a1 = self.normalize_angle(d.GetArcAngleStart())
+        if hasattr(d, "GetAngle"):
+            a2 = a1 + self.normalize_angle(d.GetAngle())
+        else:
+            a2 = a1 + self.normalize_angle(d.GetArcAngle())
         if a2 < a1:
             a1, a2 = a2, a1
-        return round(a1 * 0.1, 2), round(a2 * 0.1, 2)
+        return round(a1, 2), round(a2, 2)
 
     def parse_shape(self, d):
         # type: (pcbnew.PCB_SHAPE) -> dict or None
@@ -151,7 +157,7 @@ class PcbnewParser(EcadParser):
             else:
                 parent_footprint = d.GetParentFootprint()
             if parent_footprint is not None:
-                angle = parent_footprint.GetOrientation() * 0.1,
+                angle = self.normalize_angle(parent_footprint.GetOrientation())
             shape_dict = {
                 "type": shape,
                 "pos": start,
@@ -178,26 +184,34 @@ class PcbnewParser(EcadParser):
                 "width": d.GetWidth() * 1e-6
             }
 
-    def parse_poly_set(self, polygon_set):
+    def parse_line_chain(self, shape):
+        # type: (pcbnew.SHAPE_LINE_CHAIN) -> list
         result = []
-        for polygon_index in range(polygon_set.OutlineCount()):
-            outline = polygon_set.Outline(polygon_index)
-            if not hasattr(outline, "PointCount"):
-                self.logger.warn("No PointCount method on outline object. "
-                                 "Unpatched kicad version?")
-                return result
-            parsed_outline = []
-            for point_index in range(outline.PointCount()):
-                point = outline.CPoint(point_index)
-                parsed_outline.append(self.normalize([point.x, point.y]))
-            result.append(parsed_outline)
+        if not hasattr(shape, "PointCount"):
+            self.logger.warn("No PointCount method on outline object. "
+                             "Unpatched kicad version?")
+            return result
+
+        for point_index in range(shape.PointCount()):
+            result.append(
+                self.normalize(shape.CPoint(point_index)))
+
+        return result
+
+    def parse_poly_set(self, poly):
+        # type: (pcbnew.SHAPE_POLY_SET) -> list
+        result = []
+
+        for i in range(poly.OutlineCount()):
+            result.append(self.parse_line_chain(poly.Outline(i)))
 
         return result
 
     def parse_text(self, d):
-        pos = self.normalize(d.GetPosition())
-        if not d.IsVisible() and d.GetClass() != "PTEXT":
+        # type: (pcbnew.PCB_TEXT) -> dict
+        if not d.IsVisible() and d.GetClass() not in ["PTEXT", "PCB_TEXT"]:
             return None
+        pos = self.normalize(d.GetPosition())
         if hasattr(d, "GetTextThickness"):
             thickness = d.GetTextThickness() * 1e-6
         else:
@@ -213,13 +227,38 @@ class PcbnewParser(EcadParser):
                 "thickness": thickness,
                 "svgpath": create_path(lines)
             }
+        elif hasattr(d, 'GetEffectiveTextShape'):
+            shape = d.GetEffectiveTextShape(
+                aTriangulate=False)  # type: pcbnew.SHAPE_COMPOUND
+            segments = []
+            polygons = []
+            for s in shape.GetSubshapes():
+                if s.Type() == pcbnew.SH_LINE_CHAIN:
+                    polygons.append(self.parse_line_chain(s))
+                elif s.Type() == pcbnew.SH_SEGMENT:
+                    seg = s.GetSeg()
+                    segments.append(
+                        [self.normalize(seg.A), self.normalize(seg.B)])
+                else:
+                    self.logger.warn(
+                        "Unsupported subshape in text: %s" % s.Type())
+            if segments:
+                return {
+                    "thickness": thickness,
+                    "svgpath": create_path(segments)
+                }
+            else:
+                return {
+                    "polygons": polygons
+                }
+
         if d.GetClass() == "MTEXT":
-            angle = d.GetDrawRotation() * 0.1
+            angle = self.normalize_angle(d.GetDrawRotation())
         else:
             if hasattr(d, "GetTextAngle"):
-                angle = d.GetTextAngle() * 0.1
+                angle = self.normalize_angle(d.GetTextAngle())
             else:
-                angle = d.GetOrientation() * 0.1
+                angle = self.normalize_angle(d.GetOrientation())
         if hasattr(d, "GetTextHeight"):
             height = d.GetTextHeight() * 1e-6
             width = d.GetTextWidth() * 1e-6
@@ -250,15 +289,47 @@ class PcbnewParser(EcadParser):
             "angle": angle
         }
 
+    def parse_dimension(self, d):
+        # type: (pcbnew.PCB_DIMENSION_BASE) -> dict
+        segments = []
+        circles = []
+        for s in d.GetShapes():
+            s = s.Cast()
+            if s.Type() == pcbnew.SH_SEGMENT:
+                seg = s.GetSeg()
+                segments.append(
+                    [self.normalize(seg.A), self.normalize(seg.B)])
+            elif s.Type() == pcbnew.SH_CIRCLE:
+                circles.append(
+                    [self.normalize(s.GetCenter()), s.GetRadius() * 1e-6])
+            else:
+                self.logger.info(
+                    "Unsupported shape type in dimension object: %s", s.Type())
+
+        svgpath = create_path(segments, circles=circles)
+
+        return {
+            "thickness": d.GetLineThickness() * 1e-6,
+            "svgpath": svgpath
+        }
+
     def parse_drawing(self, d):
+        # type: (pcbnew.BOARD_ITEM) -> list
+        result = []
+        s = None
         if d.GetClass() in ["DRAWSEGMENT", "MGRAPHIC", "PCB_SHAPE"]:
-            return self.parse_shape(d)
-        elif d.GetClass() in ["PTEXT", "MTEXT"]:
-            return self.parse_text(d)
+            s = self.parse_shape(d)
+        elif d.GetClass() in ["PTEXT", "MTEXT", "FP_TEXT", "PCB_TEXT"]:
+            s = self.parse_text(d)
+        elif d.GetClass().startswith("PCB_DIM"):
+            result.append(self.parse_dimension(d))
+            s = self.parse_text(d.Text())
         else:
             self.logger.info("Unsupported drawing class %s, skipping",
                              d.GetClass())
-            return None
+        if s:
+            result.append(s)
+        return result
 
     def parse_edges(self, pcb):
         edges = []
@@ -269,8 +340,7 @@ class PcbnewParser(EcadParser):
                 drawings.append(g)
         for d in drawings:
             if d.GetLayer() == pcbnew.Edge_Cuts:
-                parsed_drawing = self.parse_drawing(d)
-                if parsed_drawing:
+                for parsed_drawing in self.parse_drawing(d):
                     edges.append(parsed_drawing)
                     if bbox is None:
                         bbox = d.GetBoundingBox()
@@ -287,15 +357,13 @@ class PcbnewParser(EcadParser):
         for d in drawings:
             if d[1].GetLayer() not in [f_layer, b_layer]:
                 continue
-            drawing = self.parse_drawing(d[1])
-            if not drawing:
-                continue
-            if d[0] in ["ref", "val"]:
-                drawing[d[0]] = 1
-            if d[1].GetLayer() == f_layer:
-                front.append(drawing)
-            else:
-                back.append(drawing)
+            for drawing in self.parse_drawing(d[1]):
+                if d[0] in ["ref", "val"]:
+                    drawing[d[0]] = 1
+                if d[1].GetLayer() == f_layer:
+                    front.append(drawing)
+                else:
+                    back.append(drawing)
 
         return {
             "F": front,
@@ -321,7 +389,7 @@ class PcbnewParser(EcadParser):
             layers.append("B")
         pos = self.normalize(pad.GetPosition())
         size = self.normalize(pad.GetSize())
-        angle = pad.GetOrientation() * -0.1
+        angle = self.normalize_angle(pad.GetOrientation())
         shape_lookup = {
             pcbnew.PAD_SHAPE_RECT: "rect",
             pcbnew.PAD_SHAPE_OVAL: "oval",
@@ -401,8 +469,14 @@ class PcbnewParser(EcadParser):
                 f_copy = pcbnew.MODULE(f)
             else:
                 f_copy = pcbnew.FOOTPRINT(f)
-            f_copy.SetOrientation(0)
-            f_copy.SetPosition(pcbnew.wxPoint(0, 0))
+            try:
+                f_copy.SetOrientation(0)
+            except TypeError:
+                f_copy.SetOrientation(
+                    pcbnew.EDA_ANGLE(0, pcbnew.TENTHS_OF_A_DEGREE_T))
+            pos = f_copy.GetPosition()
+            pos.x = pos.y = 0
+            f_copy.SetPosition(pos)
             if hasattr(f_copy, 'GetFootprintRect'):
                 footprint_rect = f_copy.GetFootprintRect()
             else:
@@ -411,7 +485,7 @@ class PcbnewParser(EcadParser):
                 "pos": self.normalize(f.GetPosition()),
                 "relpos": self.normalize(footprint_rect.GetPosition()),
                 "size": self.normalize(footprint_rect.GetSize()),
-                "angle": f.GetOrientation() * 0.1,
+                "angle": self.normalize_angle(f.GetOrientation()),
             }
 
             # graphical drawings
@@ -420,13 +494,11 @@ class PcbnewParser(EcadParser):
                 # we only care about copper ones, silkscreen is taken care of
                 if d.GetLayer() not in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     continue
-                drawing = self.parse_drawing(d)
-                if not drawing:
-                    continue
-                drawings.append({
-                    "layer": "F" if d.GetLayer() == pcbnew.F_Cu else "B",
-                    "drawing": drawing,
-                })
+                for drawing in self.parse_drawing(d):
+                    drawings.append({
+                        "layer": "F" if d.GetLayer() == pcbnew.F_Cu else "B",
+                        "drawing": drawing,
+                    })
 
             # footprint pads
             pads = []

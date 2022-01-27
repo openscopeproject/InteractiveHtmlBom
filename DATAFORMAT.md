@@ -240,6 +240,14 @@ attribute.
   // will not attempt to read character data from newstroke font and
   // will draw the path as is. "thickness" will be used as stroke width.
   "svgpath": svgpath,
+  // If polygons are specified then remaining attributes are ignored
+  "polygons": [
+    // Polygons are described as set of outlines.
+    [
+      [point1x, point1y], [point2x, point2y], ...
+    ],
+    ...
+  ],
   "height": height,
   "width": width,
   // -1: justify left/top

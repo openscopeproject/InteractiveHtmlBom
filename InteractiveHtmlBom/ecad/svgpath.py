@@ -109,9 +109,10 @@ class Arc(object):
             This is the angular distance (in degrees) between the start and
             end of the arc after the arc has been sent to the unit circle
             through self.u1transform().
-            It is $\\Delta\\theta$ in the official documentation and ranges from
-            -360 to 360; being positive when the arc travels CCW and negative
-            otherwise (i.e. is positive/negative when sweep == True/False).
+            It is $\\Delta\\theta$ in the official documentation and ranges
+            from -360 to 360; being positive when the arc travels CCW and
+            negative otherwise (i.e. is positive/negative when
+            sweep == True/False).
         self.center : complex
             This is the center of the arc's ellipse.
         self.phi : float
@@ -221,10 +222,8 @@ class Arc(object):
         # coordinates, which is a translation moving the center of the
         # ellipse to the origin and a dilation stretching the ellipse to be
         # the unit circle
-        u1 = (x1p - cp.real) / rx + 1j * (
-                y1p - cp.imag) / ry  # transformed start
-        u2 = (-x1p - cp.real) / rx + 1j * (
-                -y1p - cp.imag) / ry  # transformed end
+        u1 = (x1p - cp.real) / rx + 1j * (y1p - cp.imag) / ry
+        u2 = (-x1p - cp.real) / rx + 1j * (-y1p - cp.imag) / ry
 
         # clip in case of floating point error
         u1 = clip(u1.real, -1, 1) + 1j * clip(u1.imag, -1, 1)
@@ -285,9 +284,9 @@ class Arc(object):
 
         # z = self.rot_matrix*(rx*cos(angle) + 1j*ry*sin(angle)) + self.center
         x = rx * cosphi * cos(angle) - ry * sinphi * sin(
-                angle) + self.center.real
+            angle) + self.center.real
         y = rx * sinphi * cos(angle) + ry * cosphi * sin(
-                angle) + self.center.imag
+            angle) + self.center.imag
         return complex(x, y)
 
     def bbox(self):
@@ -323,7 +322,8 @@ class Arc(object):
             atan_y = atan((ry / rx) / tan(self.phi))
 
         def angle_inv(ang, q):  # inverse of angle from Arc.derivative()
-            return ((ang + pi * q) * (360 / (2 * pi)) - self.theta) / self.delta
+            return ((ang + pi * q) * (360 / (2 * pi)) -
+                    self.theta) / self.delta
 
         xtrema = [self.start.real, self.end.real]
         ytrema = [self.start.imag, self.end.imag]
@@ -380,8 +380,8 @@ def parse_path(pathdef, logger, current_pos=0j):
             # and we don't change the command. Check that it's allowed:
             if command is None:
                 raise ValueError(
-                        "Unallowed implicit command in %s, position %s" % (
-                            pathdef, len(pathdef.split()) - len(elements)))
+                    "Unallowed implicit command in %s, position %s" % (
+                        pathdef, len(pathdef.split()) - len(elements)))
 
         if command == 'M':
             # Moveto command.
@@ -503,22 +503,36 @@ def parse_path(pathdef, logger, current_pos=0j):
             if not absolute:
                 end += current_pos
 
-            segments.append(Arc(current_pos, radius, rotation, arc, sweep, end))
+            segments.append(
+                Arc(current_pos, radius, rotation, arc, sweep, end))
             current_pos = end
 
     return segments
 
 
-def create_path(lines):
+def create_path(lines, circles=[]):
     """Returns a path d-string."""
 
     def limit_digits(val):
         return format(val, '.6f').rstrip('0').replace(',', '.').rstrip('.')
 
+    def different_points(a, b):
+        return abs(a[0] - b[0]) > 1e-6 or abs(a[1] - b[1]) > 1e-6
+
     parts = []
-    for line in lines:
-        parts.append('M{},{}'.format(*map(limit_digits, line[0])))
+
+    for i, line in enumerate(lines):
+        if i == 0 or different_points(lines[i - 1][-1], line[0]):
+            parts.append('M{},{}'.format(*map(limit_digits, line[0])))
         for point in line[1:]:
             parts.append('L{},{}'.format(*map(limit_digits, point)))
+
+    for circle in circles:
+        cx, cy, r = circle[0][0], circle[0][1], circle[1]
+        parts.append('M{},{}'.format(limit_digits(cx - r), limit_digits(cy)))
+        parts.append('a {},{} 0 1,0 {},0'.format(
+                     *map(limit_digits, [r, r, r + r])))
+        parts.append('a {},{} 0 1,0 -{},0'.format(
+                     *map(limit_digits, [r, r, r + r])))
 
     return ''.join(parts)
