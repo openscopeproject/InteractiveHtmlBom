@@ -911,7 +911,7 @@ function changeBomLayout(layout) {
         canvassplit = null;
       }
       bomsplit = Split(['#bomdiv', '#canvasdiv'], {
-        sizes: [50, 50],
+        sizes: [70, 30],
         onDragEnd: resizeAll,
         gutterSize: 5
       });

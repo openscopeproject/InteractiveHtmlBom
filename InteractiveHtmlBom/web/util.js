@@ -318,6 +318,47 @@ function saveImage(layer) {
   saveFile(filename, dataURLtoBlob(imgdata));
 }
 
+function saveData(e) {
+  var text = '';
+  for (var node of bomhead.childNodes[0].childNodes) {
+    if (node.firstChild) {
+      text = text + node.firstChild.nodeValue;
+    }
+    if (node != bomhead.childNodes[0].lastChild) {
+      text += e=='csv'?';':'\t';
+    }
+  }
+  text += '\n';
+  for (var row of bombody.childNodes) {
+    for (var cell of row.childNodes) {
+      for (var node of cell.childNodes) {
+        if (node.nodeName == "INPUT") {
+          if (node.checked) {
+            text = text + '✓';
+          }
+        } else if (node.nodeName == "MARK") {
+          text = text + node.firstChild.nodeValue;
+        } else {
+          text = text + node.nodeValue;
+        }
+      }
+      if (cell != row.lastChild) {
+        text += e=='csv'?';':'\t';
+      }
+    }
+    text += '\n';
+  }
+
+  let content = "data:text/" + (e=='csv'?"csv":"txt") + ";charset=utf-8," + text;
+  var encodedUri = encodeURI(content);
+  var link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `${pcbdata.metadata.title}.`+e);
+  document.body.appendChild(link); // Required for FF
+  
+  link.click(); // This will download the data file.
+}
+
 function saveSettings() {
   var data = {
     type: "InteractiveHtmlBom settings",
