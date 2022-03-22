@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24px"
+   height="24px"
+   viewBox="0 0 24 24"
+   fill="none"
+   version="1.1"
+   id="svg8267"
+   sodipodi:docname="question-svgrepo-com.svg"
+   inkscape:version="1.2-alpha1 (1:1.2.0-alpha1+devel+202203211746+a3054d06db)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8271" />
+  <sodipodi:namedview
+     id="namedview8269"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="23.458333"
+     inkscape:cx="12"
+     inkscape:cy="12.021314"
+     inkscape:window-width="1366"
+     inkscape:window-height="714"
+     inkscape:window-x="1920"
+     inkscape:window-y="339"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg8267" />
+  <path
+     d="M12.75 18.99C12.75 18.5758 12.4142 18.24 12 18.24C11.5857 18.24 11.25 18.5758 11.25 18.99H12.75ZM11.25 19C11.25 19.4142 11.5857 19.75 12 19.75C12.4142 19.75 12.75 19.4142 12.75 19H11.25ZM16 9H15.25L15.25 9.00001L16 9ZM11.25 16C11.25 16.4142 11.5858 16.75 12 16.75C12.4142 16.75 12.75 16.4142 12.75 16H11.25ZM12 5.75C12.4142 5.75 12.75 5.41421 12.75 5C12.75 4.58579 12.4142 4.25 12 4.25V5.75ZM7.39965 7.81306C7.2964 8.2142 7.53789 8.62308 7.93903 8.72633C8.34017 8.82957 8.74906 8.58808 8.8523 8.18694L7.39965 7.81306ZM15.5623 5.85793C15.2882 5.54737 14.8143 5.51782 14.5037 5.79191C14.1932 6.066 14.1636 6.53996 14.4377 6.85051L15.5623 5.85793ZM11.25 18.99V19H12.75V18.99H11.25ZM15.25 9.00001C15.25 9.86166 15.0398 10.3068 14.7972 10.6C14.5186 10.9365 14.1504 11.1466 13.6025 11.489C13.0884 11.8103 12.466 12.2263 11.9958 12.9512C11.521 13.6832 11.25 14.6491 11.25 16H12.75C12.75 14.8509 12.979 14.1918 13.2542 13.7675C13.534 13.3362 13.9116 13.0647 14.3975 12.761C14.8496 12.4784 15.4813 12.126 15.9528 11.5563C16.4602 10.9432 16.75 10.1383 16.75 8.99999L15.25 9.00001ZM8.8523 8.18694C9.21313 6.78504 10.4866 5.75 12 5.75V4.25C9.78562 4.25 7.92691 5.76451 7.39965 7.81306L8.8523 8.18694ZM14.4377 6.85051C14.9437 7.42388 15.25 8.17527 15.25 9H16.75C16.75 7.79588 16.3009 6.69482 15.5623 5.85793L14.4377 6.85051Z"
+     fill="#001A72"
+     id="path8265"
+     style="fill:#0093c4;fill-opacity:1" />
+</svg>

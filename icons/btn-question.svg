@@ -1,87 +1,48 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="24"
-   height="24"
-   viewBox="0 0 6.3499998 6.3499998"
+   width="24px"
+   height="24px"
+   viewBox="0 0 24 24"
+   fill="none"
    version="1.1"
-   id="svg8"
-   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
-   sodipodi:docname="btn-question.svg"
-   inkscape:export-filename="D:\OSP\KicadBomPlugin\InteractiveHtmlBom\dialog\bitmaps\btn-question.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96">
+   id="svg3911"
+   sodipodi:docname="info-circle-svgrepo-com.svg"
+   inkscape:version="1.2-alpha1 (1:1.2.0-alpha1+devel+202203211746+a3054d06db)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
   <defs
-     id="defs2" />
+     id="defs3915" />
   <sodipodi:namedview
-     id="base"
+     id="namedview3913"
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="27.958333"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="23.458333"
      inkscape:cx="12"
-     inkscape:cy="9.3516477"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer1"
-     inkscape:document-rotation="0"
-     showgrid="true"
-     showguides="true"
-     inkscape:lockguides="true"
-     inkscape:window-width="1346"
-     inkscape:window-height="1198"
-     inkscape:window-x="601"
-     inkscape:window-y="175"
-     inkscape:window-maximized="0"
-     units="px">
-    <inkscape:grid
-       type="xygrid"
-       id="grid833" />
-  </sodipodi:namedview>
-  <metadata
-     id="metadata5">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1">
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:5.82083px;line-height:1.25;font-family:'CaskaydiaCove Nerd Font Mono';-inkscape-font-specification:'CaskaydiaCove Nerd Font Mono Bold';white-space:pre;inline-size:2.91042;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="1.5875"
-       y="1.5875"
-       id="text846"><tspan
-         style="visibility:hidden"
-         x="1.5875"
-         y="1.5875"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:5.82083px;font-family:'CaskaydiaCove Nerd Font Mono';-inkscape-font-specification:'CaskaydiaCove Nerd Font Mono Bold';stroke-width:0.264583">?</tspan></tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.25251px;line-height:1.25;font-family:'CaskaydiaCove Nerd Font';-inkscape-font-specification:'CaskaydiaCove Nerd Font';fill:#008ebf;fill-opacity:1;stroke:none;stroke-width:0.302187;"
-       x="0.90885961"
-       y="5.7593102"
-       id="text850"
-       transform="scale(1.0205218,0.97989088)"><tspan
-         sodipodi:role="line"
-         id="tspan848"
-         x="0.90885961"
-         y="5.7593102"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.25251px;font-family:'CaskaydiaCove Nerd Font';-inkscape-font-specification:'CaskaydiaCove Nerd Font';stroke-width:0.302187;fill:#008ebf;fill-opacity:1;">?</tspan></text>
-  </g>
+     inkscape:cy="12.021314"
+     inkscape:window-width="1366"
+     inkscape:window-height="714"
+     inkscape:window-x="1920"
+     inkscape:window-y="339"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3911" />
+  <path
+     d="m 11.25,17 c 0,0.4142 0.3358,0.75 0.75,0.75 0.4142,0 0.75,-0.3358 0.75,-0.75 z m 1.5,-7 C 12.75,9.58579 12.4142,9.25 12,9.25 11.5858,9.25 11.25,9.58579 11.25,10 Z m -1.5,-2.99004 c 0,0.41422 0.3358,0.75 0.75,0.75 0.4142,0 0.75,-0.33578 0.75,-0.75 z m 1.5,-0.00999 c 0,-0.41421 -0.3358,-0.75 -0.75,-0.75 -0.4142,0 -0.75,0.33579 -0.75,0.75 z M 12.75,17 v -7 h -1.5 v 7 z m 0,-9.99004 V 6.99997 h -1.5 v 0.00999 z"
+     fill="#001a72"
+     id="path3909"
+     sodipodi:nodetypes="cscccscccscccscccccccccccc"
+     style="fill:#0093c4;fill-opacity:1" />
+  <path
+     d="M 3.95442,10.166 C 4.04608,9.76202 3.79293,9.36025 3.38898,9.26859 2.98504,9.17693 2.58327,9.43009 2.49161,9.83404 Z M 5.49981,4.73283 C 5.19117,5.00907 5.1649,5.48322 5.44115,5.79187 5.71739,6.10051 6.19154,6.12678 6.50019,5.85053 Z M 20.25,12 c 0,4.5563 -3.6937,8.25 -8.25,8.25 v 1.5 c 5.3848,0 9.75,-4.3652 9.75,-9.75 z M 12,20.25 C 7.44365,20.25 3.75,16.5563 3.75,12 h -1.5 c 0,5.3848 4.36522,9.75 9.75,9.75 z m 0,-16.5 c 4.5563,0 8.25,3.69365 8.25,8.25 h 1.5 C 21.75,6.61522 17.3848,2.25 12,2.25 Z M 3.75,12 c 0,-0.6312 0.07074,-1.2449 0.20442,-1.834 L 2.49161,9.83404 C 2.33338,10.5313 2.25,11.2564 2.25,12 Z M 6.50019,5.85053 C 7.96026,4.54373 9.88655,3.75 12,3.75 v -1.5 c -2.49667,0 -4.77572,0.9394 -6.50019,2.48283 z"
+     fill="#001a72"
+     id="path5486"
+     sodipodi:nodetypes="cccccsccccccccccccccccccccccccccc"
+     style="fill:#546a79;fill-opacity:1" />
 </svg>
