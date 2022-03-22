@@ -46,19 +46,19 @@ class SettingsDialogPanel ( wx.Panel ):
 
         bSizer39 = wx.BoxSizer( wx.HORIZONTAL )
 
-        self.m_button41 = wx.Button( self, wx.ID_ANY, u"Save current settings", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
-        bSizer39.Add( self.m_button41, 0, wx.ALL, 5 )
+        self.saveSettingsBtn = wx.Button( self, wx.ID_ANY, u"Save current settings...", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
+        bSizer39.Add( self.saveSettingsBtn, 0, wx.ALL, 5 )
 
 
         bSizer39.Add( ( 50, 0), 1, wx.EXPAND, 5 )
 
-        self.m_button42 = wx.Button( self, wx.ID_ANY, u"Generate BOM", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
+        self.generateBomBtn = wx.Button( self, wx.ID_ANY, u"Generate BOM", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
 
-        self.m_button42.SetDefault()
-        bSizer39.Add( self.m_button42, 0, wx.ALL, 5 )
+        self.generateBomBtn.SetDefault()
+        bSizer39.Add( self.generateBomBtn, 0, wx.ALL, 5 )
 
-        self.m_button43 = wx.Button( self, wx.ID_CANCEL, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
-        bSizer39.Add( self.m_button43, 0, wx.ALL, 5 )
+        self.cancelBtn = wx.Button( self, wx.ID_CANCEL, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
+        bSizer39.Add( self.cancelBtn, 0, wx.ALL, 5 )
 
 
         bSizer20.Add( bSizer39, 0, wx.EXPAND, 5 )
@@ -68,16 +68,16 @@ class SettingsDialogPanel ( wx.Panel ):
         self.Layout()
 
         # Connect Events
-        self.m_button41.Bind( wx.EVT_BUTTON, self.OnSaveSettings )
-        self.m_button42.Bind( wx.EVT_BUTTON, self.OnGenerateBom )
-        self.m_button43.Bind( wx.EVT_BUTTON, self.OnExit )
+        self.saveSettingsBtn.Bind( wx.EVT_BUTTON, self.OnSave )
+        self.generateBomBtn.Bind( wx.EVT_BUTTON, self.OnGenerateBom )
+        self.cancelBtn.Bind( wx.EVT_BUTTON, self.OnExit )
 
     def __del__( self ):
         pass
 
 
     # Virtual event handlers, override them in your derived class
-    def OnSaveSettings( self, event ):
+    def OnSave( self, event ):
         event.Skip()
 
     def OnGenerateBom( self, event ):

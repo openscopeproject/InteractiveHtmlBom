@@ -54,17 +54,36 @@ class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
         self.notebook.AddPage(self.html, "Html defaults")
         self.notebook.AddPage(self.fields, "Fields")
 
+        self.save_menu = wx.Menu()
+        self.save_locally = self.save_menu.Append(
+            wx.ID_ANY, u"Locally", wx.EmptyString, wx.ITEM_NORMAL)
+        self.save_globally = self.save_menu.Append(
+            wx.ID_ANY, u"Globally", wx.EmptyString, wx.ITEM_NORMAL)
+
+        self.Bind(
+            wx.EVT_MENU, self.OnSaveLocally, id=self.save_locally.GetId())
+        self.Bind(
+            wx.EVT_MENU, self.OnSaveGlobally, id=self.save_globally.GetId())
+
     def OnExit(self, event):
         self.GetParent().EndModal(wx.ID_CANCEL)
-
-    def OnSaveSettings(self, event):
-        self.config_save_func(self)
 
     def OnGenerateBom(self, event):
         self.GetParent().EndModal(wx.ID_OK)
 
     def finish_init(self):
         self.html.OnBoardRotationSlider(None)
+
+    def OnSave(self, event):
+        # type: (wx.CommandEvent) -> None
+        pos = wx.Point(0, event.GetEventObject().GetSize().y)
+        self.saveSettingsBtn.PopupMenu(self.save_menu, pos)
+
+    def OnSaveGlobally(self, event):
+        self.config_save_func(self)
+
+    def OnSaveLocally(self, event):
+        self.config_save_func(self, locally=True)
 
 
 # Implementing HtmlSettingsPanelBase

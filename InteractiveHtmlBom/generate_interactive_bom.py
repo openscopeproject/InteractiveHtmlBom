@@ -40,15 +40,22 @@ if __name__ == "__main__":
     parser.add_argument('file',
                         type=lambda s: to_utf(s),
                         help="KiCad PCB file")
-    config = Config(version)
-    config.add_options(parser, config.FILE_NAME_FORMAT_HINT)
+
+    Config.add_options(parser)
     args = parser.parse_args()
     logger = ibom.Logger(cli=True)
+
     if not os.path.isfile(args.file):
         exit_error(logger, ExitCodes.ERROR_FILE_NOT_FOUND,
                    "File %s does not exist." % args.file)
+
     print("Loading %s" % args.file)
-    parser = get_parser_by_extension(os.path.abspath(args.file), config, logger)
+
+    config = Config(version, os.path.dirname(os.path.abspath(args.file)))
+
+    parser = get_parser_by_extension(
+        os.path.abspath(args.file), config, logger)
+
     if args.show_dialog:
         if not create_wx_app:
             exit_error(logger, ExitCodes.ERROR_NO_DISPLAY,

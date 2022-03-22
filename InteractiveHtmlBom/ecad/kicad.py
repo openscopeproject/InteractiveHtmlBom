@@ -778,16 +778,18 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
     def Run(self):
         from ..version import version
         from ..errors import ParsingException
-        config = Config(version)
+
+        logger = ibom.Logger()
         board = pcbnew.GetBoard()
         pcb_file_name = board.GetFileName()
 
-        logger = ibom.Logger()
         if not pcb_file_name:
             logger.error('Please save the board file before generating BOM.')
             return
 
+        config = Config(version, os.path.dirname(pcb_file_name))
         parser = PcbnewParser(pcb_file_name, config, logger, board)
+
         try:
             ibom.run_with_dialog(parser, config, logger)
         except ParsingException as e:

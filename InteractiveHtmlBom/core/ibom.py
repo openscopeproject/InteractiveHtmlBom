@@ -318,9 +318,9 @@ def main(parser, config, logger):
 
 def run_with_dialog(parser, config, logger):
     # type: (EcadParser, Config, Logger) -> None
-    def save_config(dialog_panel):
+    def save_config(dialog_panel, locally=False):
         config.set_from_dialog(dialog_panel)
-        config.save()
+        config.save(locally)
 
     config.load_from_ini()
     dlg = SettingsDialog(extra_data_func=parser.parse_extra_data,

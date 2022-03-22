@@ -26,7 +26,6 @@ class Config:
     )  # type: str
 
     # Helper constants
-    config_file = os.path.join(os.path.dirname(__file__), '..', 'config.ini')
     bom_view_choices = ['bom-only', 'left-right', 'top-bottom']
     layer_view_choices = ['F', 'FB', 'B']
     default_sort_order = [
@@ -88,14 +87,22 @@ class Config:
     def _join(lst):
         return ','.join([s.replace(',', '\\,') for s in lst])
 
-    def __init__(self, version):
+    def __init__(self, version, local_dir):
         self.version = version
+        self.local_config_file = os.path.join(local_dir, 'ibom.config.ini')
+        self.global_config_file = os.path.join(
+            os.path.dirname(__file__), '..', 'config.ini')
 
     def load_from_ini(self):
         """Init from config file if it exists."""
-        if not os.path.isfile(self.config_file):
+        if os.path.isfile(self.local_config_file):
+            file = self.local_config_file
+        elif os.path.isfile(self.global_config_file):
+            file = self.global_config_file
+        else:
             return
-        f = FileConfig(localFilename=self.config_file)
+
+        f = FileConfig(localFilename=file)
 
         f.SetPath('/html_defaults')
         self.dark_mode = f.ReadBool('dark_mode', self.dark_mode)
@@ -146,8 +153,10 @@ class Config:
             self._join(self.board_variant_blacklist)))
         self.dnp_field = f.Read('dnp_field', self.dnp_field)
 
-    def save(self):
-        f = FileConfig(localFilename=self.config_file)
+    def save(self, locally):
+        file = self.local_config_file if locally else self.global_config_file
+        print('Saving to', file)
+        f = FileConfig(localFilename=file)
 
         f.SetPath('/html_defaults')
         f.WriteBool('dark_mode', self.dark_mode)
@@ -294,9 +303,9 @@ class Config:
 
         dlg.finish_init()
 
-    # noinspection PyTypeChecker
-    def add_options(self, parser, file_name_format_hint):
-        # type: (argparse.ArgumentParser, str) -> None
+    @classmethod
+    def add_options(cls, parser):
+        # type: (argparse.ArgumentParser) -> None
         parser.add_argument('--show-dialog', action='store_true',
                             help='Shows config dialog. All other flags '
                                  'will be ignored.')
@@ -319,17 +328,17 @@ class Config:
                             help='Do not redraw pcb on drag by default.',
                             action='store_true')
         parser.add_argument('--board-rotation', type=int,
-                            default=self.board_rotation * 5,
+                            default=cls.board_rotation * 5,
                             help='Board rotation in degrees (-180 to 180). '
                                  'Will be rounded to multiple of 5.')
         parser.add_argument('--checkboxes',
-                            default=self.checkboxes,
+                            default=cls.checkboxes,
                             help='Comma separated list of checkbox columns.')
-        parser.add_argument('--bom-view', default=self.bom_view,
-                            choices=self.bom_view_choices,
+        parser.add_argument('--bom-view', default=cls.bom_view,
+                            choices=cls.bom_view_choices,
                             help='Default BOM view.')
-        parser.add_argument('--layer-view', default=self.layer_view,
-                            choices=self.layer_view_choices,
+        parser.add_argument('--layer-view', default=cls.layer_view,
+                            choices=cls.layer_view_choices,
                             help='Default layer view.')
         parser.add_argument('--no-compression',
                             help='Disable compression of pcb data.',
@@ -338,11 +347,11 @@ class Config:
                             action='store_true')
 
         # General
-        parser.add_argument('--dest-dir', default=self.bom_dest_dir,
+        parser.add_argument('--dest-dir', default=cls.bom_dest_dir,
                             help='Destination directory for bom file '
                                  'relative to pcb file directory.')
-        parser.add_argument('--name-format', default=self.bom_name_format,
-                            help=file_name_format_hint.replace('%', '%%'))
+        parser.add_argument('--name-format', default=cls.bom_name_format,
+                            help=cls.FILE_NAME_FORMAT_HINT.replace('%', '%%'))
         parser.add_argument('--include-tracks', action='store_true',
                             help='Include track/zone information in output. '
                                  'F.Cu and B.Cu layers only.')
@@ -351,9 +360,9 @@ class Config:
         parser.add_argument('--sort-order',
                             help='Default sort order for components. '
                                  'Must contain "~" once.',
-                            default=','.join(self.component_sort_order))
+                            default=','.join(cls.component_sort_order))
         parser.add_argument('--blacklist',
-                            default=','.join(self.component_blacklist),
+                            default=','.join(cls.component_blacklist),
                             help='List of comma separated blacklisted '
                                  'components or prefixes with *. '
                                  'E.g. "X1,MH*"')
@@ -372,10 +381,10 @@ class Config:
                                  'for --show-fields and --group-fields '
                                  'with values "Value,Footprint,X,Y"')
         parser.add_argument('--show-fields',
-                            default=self._join(self.show_fields),
+                            default=cls._join(cls.show_fields),
                             help='List of fields to show in the BOM.')
         parser.add_argument('--group-fields',
-                            default=self._join(self.group_fields),
+                            default=cls._join(cls.group_fields),
                             help='Fields that components will be grouped by.')
         parser.add_argument('--normalize-field-case',
                             help='Normalize extra field name case. E.g. "MPN" '
@@ -390,7 +399,7 @@ class Config:
         parser.add_argument('--variants-blacklist', default='',
                             help='List of board variants to '
                                  'exclude from the BOM.')
-        parser.add_argument('--dnp-field', default=self.dnp_field,
+        parser.add_argument('--dnp-field', default=cls.dnp_field,
                             help='Name of the extra field that indicates '
                                  'do not populate status. Components with '
                                  'this field not empty will be excluded.')

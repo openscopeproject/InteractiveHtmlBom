@@ -1,4 +1,5 @@
-from dialog.settings_dialog import *
+import wx
+from dialog.settings_dialog import SettingsDialog
 
 
 class MyApp(wx.App):
