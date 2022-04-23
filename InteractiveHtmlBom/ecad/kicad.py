@@ -675,14 +675,15 @@ class PcbnewParser(EcadParser):
         title = title_block.GetTitle()
         revision = title_block.GetRevision()
         company = title_block.GetCompany()
+        file_date = title_block.GetDate()
         if (hasattr(self.board, "GetProject") and
                 hasattr(pcbnew, "ExpandTextVars")):
             project = self.board.GetProject()
             title = pcbnew.ExpandTextVars(title, project)
             revision = pcbnew.ExpandTextVars(revision, project)
             company = pcbnew.ExpandTextVars(company, project)
+            file_date = pcbnew.ExpandTextVars(file_date, project)
 
-        file_date = title_block.GetDate()
         if not file_date:
             file_mtime = os.path.getmtime(self.file_name)
             file_date = datetime.fromtimestamp(file_mtime).strftime(
