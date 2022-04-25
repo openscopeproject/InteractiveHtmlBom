@@ -321,7 +321,7 @@ class PcbnewParser(EcadParser):
             s = self.parse_shape(d)
         elif d.GetClass() in ["PTEXT", "MTEXT", "FP_TEXT", "PCB_TEXT"]:
             s = self.parse_text(d)
-        elif d.GetClass().startswith("PCB_DIM"):
+        elif d.GetClass().startswith("PCB_DIM") and hasattr(pcbnew, "VECTOR_SHAPEPTR"):
             result.append(self.parse_dimension(d))
             s = self.parse_text(d.Text())
         else:
