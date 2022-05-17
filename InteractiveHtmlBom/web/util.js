@@ -66,53 +66,80 @@ function focusInputField(input) {
   input.select();
 }
 
-function copyToClipboard() {
+function saveBomTable(e) {
   var text = '';
   for (var node of bomhead.childNodes[0].childNodes) {
     if (node.firstChild) {
-      text = text + node.firstChild.nodeValue;
+      text += (e == 'csv' ? `"${node.firstChild.nodeValue}"` : node.firstChild.nodeValue);
     }
     if (node != bomhead.childNodes[0].lastChild) {
-      text += '\t';
+      text += (e == 'csv' ? ',' : '\t');
     }
   }
   text += '\n';
   for (var row of bombody.childNodes) {
     for (var cell of row.childNodes) {
+      let val = '';
       for (var node of cell.childNodes) {
         if (node.nodeName == "INPUT") {
           if (node.checked) {
-            text = text + '✓';
+            val += '✓';
           }
         } else if (node.nodeName == "MARK") {
-          text = text + node.firstChild.nodeValue;
+          val += node.firstChild.nodeValue;
         } else {
-          text = text + node.nodeValue;
+          val += node.nodeValue;
         }
       }
+      if (e == 'csv') {
+        val = val.replace(/\"/g, '\"\"'); // pair of double-quote characters
+        if (isNumeric(val)) {
+          val = +val;                     // use number
+        } else {
+          val = `"${val}"`;               // enclosed within double-quote
+        }
+      }
+      text += val;
       if (cell != row.lastChild) {
-        text += '\t';
+        text += (e == 'csv' ? ',' : '\t');
       }
     }
     text += '\n';
   }
-  var textArea = document.createElement("textarea");
-  textArea.classList.add('clipboard-temp');
-  textArea.value = text;
 
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
+  if (e) {
+    // To file: csv or txt
+    var blob = new Blob([text], {
+      type: `text/${e}`
+    });
+    saveFile(`${pcbdata.metadata.title}.${e}`, blob);
+  } else {
+    // To clipboard
+    var textArea = document.createElement("textarea");
+    textArea.classList.add('clipboard-temp');
+    textArea.value = text;
 
-  try {
-    if (document.execCommand('copy')) {
-      console.log('Bom copied to clipboard.');
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      if (document.execCommand('copy')) {
+        console.log('Bom copied to clipboard.');
+      }
+    } catch (err) {
+      console.log('Can not copy to clipboard.');
     }
-  } catch (err) {
-    console.log('Can not copy to clipboard.');
-  }
 
-  document.body.removeChild(textArea);
+    document.body.removeChild(textArea);
+  }
+}
+
+function isNumeric(str) {
+  /* https://stackoverflow.com/a/175787 */
+  if (typeof str != "string") return false // we only process strings!
+  return !isNaN(str) &&                    // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+    !isNaN(parseFloat(str))                // ...and ensure strings of whitespace fail
 }
 
 function removeGutterNode(node) {

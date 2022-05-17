@@ -235,6 +235,13 @@
               <button class="savebtn" onclick="loadSettings()">Import</button>
             </div>
           </div>
+          <div class="menu-label">
+            <span style="margin-left: 5px;">Save bom table as</span>
+            <div class="flexbox">
+              <button class="savebtn" onclick="saveBomTable('csv')">csv</button>
+              <button class="savebtn" onclick="saveBomTable('txt')">txt</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -270,7 +277,7 @@
                oninput="updateFilter(this.value)">
         <div class="button-container hideonprint" style="float: left; margin: 0;">
           <button id="copy" title="Copy bom table to clipboard"
-               onclick="copyToClipboard()"></button>
+               onclick="saveBomTable()"></button>
         </div>
       </div>
       <div id="dbg"></div>
