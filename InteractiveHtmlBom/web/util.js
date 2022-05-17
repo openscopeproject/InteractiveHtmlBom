@@ -66,14 +66,14 @@ function focusInputField(input) {
   input.select();
 }
 
-function saveBomTable(e) {
+function saveBomTable(output) {
   var text = '';
   for (var node of bomhead.childNodes[0].childNodes) {
     if (node.firstChild) {
-      text += (e == 'csv' ? `"${node.firstChild.nodeValue}"` : node.firstChild.nodeValue);
+      text += (output == 'csv' ? `"${node.firstChild.nodeValue}"` : node.firstChild.nodeValue);
     }
     if (node != bomhead.childNodes[0].lastChild) {
-      text += (e == 'csv' ? ',' : '\t');
+      text += (output == 'csv' ? ',' : '\t');
     }
   }
   text += '\n';
@@ -91,7 +91,7 @@ function saveBomTable(e) {
           val += node.nodeValue;
         }
       }
-      if (e == 'csv') {
+      if (output == 'csv') {
         val = val.replace(/\"/g, '\"\"'); // pair of double-quote characters
         if (isNumeric(val)) {
           val = +val;                     // use number
@@ -101,18 +101,18 @@ function saveBomTable(e) {
       }
       text += val;
       if (cell != row.lastChild) {
-        text += (e == 'csv' ? ',' : '\t');
+        text += (output == 'csv' ? ',' : '\t');
       }
     }
     text += '\n';
   }
 
-  if (e) {
+  if (output != 'clipboard') {
     // To file: csv or txt
     var blob = new Blob([text], {
-      type: `text/${e}`
+      type: `text/${output}`
     });
-    saveFile(`${pcbdata.metadata.title}.${e}`, blob);
+    saveFile(`${pcbdata.metadata.title}.${output}`, blob);
   } else {
     // To clipboard
     var textArea = document.createElement("textarea");
@@ -137,9 +137,7 @@ function saveBomTable(e) {
 
 function isNumeric(str) {
   /* https://stackoverflow.com/a/175787 */
-  if (typeof str != "string") return false // we only process strings!
-  return !isNaN(str) &&                    // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
-    !isNaN(parseFloat(str))                // ...and ensure strings of whitespace fail
+  return (typeof str != "string" ? false : !isNaN(str) && !isNaN(parseFloat(str)));
 }
 
 function removeGutterNode(node) {
