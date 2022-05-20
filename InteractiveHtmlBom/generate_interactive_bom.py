@@ -41,7 +41,7 @@ if __name__ == "__main__":
                         type=lambda s: to_utf(s),
                         help="KiCad PCB file")
 
-    Config.add_options(parser)
+    Config.add_options(parser, version)
     args = parser.parse_args()
     logger = ibom.Logger(cli=True)
 
