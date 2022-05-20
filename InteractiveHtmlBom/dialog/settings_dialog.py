@@ -6,9 +6,26 @@ import wx.grid
 
 from . import dialog_base
 
+if hasattr(wx, "GetLibraryVersionInfo"):
+    WX_VERSION = wx.GetLibraryVersionInfo()  # type: wx.VersionInfo
+    WX_VERSION = (WX_VERSION.Major, WX_VERSION.Minor, WX_VERSION.Micro)
+else:
+    # old kicad used this (exact version doesnt matter)
+    WX_VERSION = (3, 0, 2)
+
 
 def pop_error(msg):
     wx.MessageBox(msg, 'Error', wx.OK | wx.ICON_ERROR)
+
+
+def get_btn_bitmap(bitmap):
+    path = os.path.join(os.path.dirname(__file__), "bitmaps", bitmap)
+    png = wx.Bitmap(path, wx.BITMAP_TYPE_PNG)
+
+    if WX_VERSION >= (3, 1, 6):
+        return wx.BitmapBundle(png)
+    else:
+        return png
 
 
 class SettingsDialog(dialog_base.SettingsDialogBase):
@@ -102,22 +119,24 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
 
     def __init__(self, parent, file_name_format_hint):
         dialog_base.GeneralSettingsPanelBase.__init__(self, parent)
+
         self.file_name_format_hint = file_name_format_hint
-        bitmaps = os.path.join(os.path.dirname(__file__), "bitmaps")
-        self.m_btnSortUp.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-arrow-up.png"), wx.BITMAP_TYPE_PNG))
-        self.m_btnSortDown.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-arrow-down.png"), wx.BITMAP_TYPE_PNG))
-        self.m_btnSortAdd.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-plus.png"), wx.BITMAP_TYPE_PNG))
-        self.m_btnSortRemove.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-minus.png"), wx.BITMAP_TYPE_PNG))
-        self.m_bpButton5.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-question.png"), wx.BITMAP_TYPE_PNG))
-        self.m_btnBlacklistAdd.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-plus.png"), wx.BITMAP_TYPE_PNG))
-        self.m_btnBlacklistRemove.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-minus.png"), wx.BITMAP_TYPE_PNG))
+
+        bmp_arrow_up = get_btn_bitmap("btn-arrow-up.png")
+        bmp_arrow_down = get_btn_bitmap("btn-arrow-down.png")
+        bmp_plus = get_btn_bitmap("btn-plus.png")
+        bmp_minus = get_btn_bitmap("btn-minus.png")
+        bmp_question = get_btn_bitmap("btn-question.png")
+
+        self.m_btnSortUp.SetBitmap(bmp_arrow_up)
+        self.m_btnSortDown.SetBitmap(bmp_arrow_down)
+        self.m_btnSortAdd.SetBitmap(bmp_plus)
+        self.m_btnSortRemove.SetBitmap(bmp_minus)
+        self.m_btnNameHint.SetBitmap(bmp_question)
+        self.m_btnBlacklistAdd.SetBitmap(bmp_plus)
+        self.m_btnBlacklistRemove.SetBitmap(bmp_minus)
+
+        self.Layout()
 
     # Handlers for GeneralSettingsPanelBase events.
     def OnComponentSortOrderUp(self, event):
@@ -205,11 +224,10 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
         dialog_base.FieldsPanelBase.__init__(self, parent)
         self.extra_data_func = extra_data_func
         self.extra_field_data = None
-        bitmaps = os.path.join(os.path.dirname(__file__), "bitmaps")
-        self.m_btnUp.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-arrow-up.png"), wx.BITMAP_TYPE_PNG))
-        self.m_btnDown.SetBitmap(wx.Bitmap(
-            os.path.join(bitmaps, "btn-arrow-down.png"), wx.BITMAP_TYPE_PNG))
+
+        self.m_btnUp.SetBitmap(get_btn_bitmap("btn-arrow-up.png"))
+        self.m_btnDown.SetBitmap(get_btn_bitmap("btn-arrow-down.png"))
+
         self.set_file_picker_wildcard(extra_data_wildcard)
         self._setFieldsList([])
         for i in range(2):
@@ -221,6 +239,8 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
             width = int(width * 1.1 + 5)
             self.fieldsGrid.SetColMinimalWidth(i, width)
             self.fieldsGrid.SetColSize(i, width)
+
+        self.Layout()
 
     def set_file_picker_wildcard(self, extra_data_wildcard):
         if extra_data_wildcard is None:
