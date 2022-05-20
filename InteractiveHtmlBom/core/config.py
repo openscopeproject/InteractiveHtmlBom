@@ -304,11 +304,12 @@ class Config:
         dlg.finish_init()
 
     @classmethod
-    def add_options(cls, parser):
-        # type: (argparse.ArgumentParser) -> None
+    def add_options(cls, parser, version):
+        # type: (argparse.ArgumentParser, str) -> None
         parser.add_argument('--show-dialog', action='store_true',
                             help='Shows config dialog. All other flags '
                                  'will be ignored.')
+        parser.add_argument('--version', action='version', version=version)
         # Html
         parser.add_argument('--dark-mode', help='Default to dark mode.',
                             action='store_true')
