@@ -305,7 +305,7 @@ class Config:
 
     @classmethod
     def add_options(cls, parser, version):
-        # type: (argparse.ArgumentParser) -> None
+        # type: (argparse.ArgumentParser, str) -> None
         parser.add_argument('--show-dialog', action='store_true',
                             help='Shows config dialog. All other flags '
                                  'will be ignored.')
