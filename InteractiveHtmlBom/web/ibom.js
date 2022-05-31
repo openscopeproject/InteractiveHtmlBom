@@ -593,6 +593,10 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
     if (filter && !entryMatches(bomentry)) {
       continue;
     }
+    if (pcbdata.bom.skipped.includes(bomentry[0][1])){
+      continue;
+    }
+
     var references = null;
     var netname = null;
     var tr = document.createElement("TR");
@@ -1099,6 +1103,23 @@ function updateCheckboxStats(checkbox) {
   td.lastChild.innerHTML = checked + "/" + total + " (" + Math.round(percent) + "%)";
 }
 
+
+function loadSkippedComponents() {
+  var bom_flat = pcbdata.bom.both.flat();
+
+  var skip_text = document.getElementById('skip-cmp-list').value;
+  var skip_cmp_refs = skip_text.split(",");
+
+  skip_cmp_refs = skip_cmp_refs.map(x => x.trim());
+
+  skips_ids = bom_flat.filter(function(item) { return skip_cmp_refs.includes(item[0]); }).map(it => it[1]);
+
+  pcbdata.bom.skipped = skips_ids.concat(default_bom_skipped);
+
+  populateBomTable();
+}
+
+
 document.onkeydown = function (e) {
   switch (e.key) {
     case "n":
@@ -1173,6 +1194,8 @@ function hideNetlistButton() {
 }
 
 window.onload = function (e) {
+  default_bom_skipped = pcbdata.bom.skipped;
+
   initUtils();
   initRender();
   initStorage();

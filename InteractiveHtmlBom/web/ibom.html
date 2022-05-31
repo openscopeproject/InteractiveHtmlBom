@@ -162,6 +162,22 @@
         <button id="bom-netlist-btn" class="right-most-button" onclick="changeBomMode('netlist')"
                 title="Netlist"></button>
       </div>
+
+      <div class="hideonprint menu" style="float: right; top: 8px;">
+        <button class="skip-cmp-btn"></button>
+        <div class="menu-content">
+          <div class="menu-label menu-label-top">
+            <div style="margin-left: 5px;">Skip Components</div>
+            <div class="flexbox">
+              <textarea id="skip-cmp-list" class="menu-textbox" type="text" value="" placeholder="Comma-separated Ref list"
+                  style="flex-grow: 1; width: 200px ;height:150px;""></textarea>
+            </div>
+            <div class="flexbox">
+              <button class="btn" onclick="loadSkippedComponents()">Skip</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="hideonprint menu" style="float: right; top: 8px;">
         <button class="statsbtn"></button>
         <div class="menu-content">
