@@ -102,26 +102,36 @@ class PcbnewParser(EcadParser):
             return None
         start = self.normalize(d.GetStart())
         end = self.normalize(d.GetEnd())
-        if (shape == "segment" or shape == "rect" and
-                not (hasattr(d, "IsFilled") and d.IsFilled())):
+        if shape == "segment":
             return {
                 "type": shape,
                 "start": start,
                 "end": end,
                 "width": d.GetWidth() * 1e-6
             }
-        if shape == "rect" and hasattr(d, "IsFilled") and d.IsFilled():
-            return {
+
+        if shape == "rect":
+            if hasattr(d, "GetRectCorners"):
+                points = list(map(self.normalize, d.GetRectCorners()))
+            else:
+                points = [
+                    start,
+                    [end[0], start[1]],
+                    end,
+                    [start[0], end[1]]
+                ]
+            shape_dict = {
                 "type": "polygon",
-                "pos": start,
+                "pos": [0, 0],
                 "angle": 0,
-                "polygons": [[
-                    [0, 0],
-                    [end[0] - start[0], 0],
-                    [end[0] - start[0], end[1] - start[1]],
-                    [0, end[1] - start[1]]
-                ]]
+                "polygons": [points],
+                "width": d.GetWidth() * 1e-6,
+                "filled": 0
             }
+            if hasattr(d, "IsFilled") and d.IsFilled():
+                shape_dict["filled"] = 1
+            return shape_dict
+
         if shape == "circle":
             shape_dict = {
                 "type": shape,
@@ -132,6 +142,7 @@ class PcbnewParser(EcadParser):
             if hasattr(d, "IsFilled") and d.IsFilled():
                 shape_dict["filled"] = 1
             return shape_dict
+
         if shape == "arc":
             a1, a2 = self.get_arc_angles(d)
             if hasattr(d, "GetCenter"):
@@ -144,6 +155,7 @@ class PcbnewParser(EcadParser):
                 "endangle": a2,
                 "width": d.GetWidth() * 1e-6
             }
+
         if shape == "polygon":
             if hasattr(d, "GetPolyShape"):
                 polygons = self.parse_poly_set(d.GetPolyShape())
@@ -321,7 +333,8 @@ class PcbnewParser(EcadParser):
             s = self.parse_shape(d)
         elif d.GetClass() in ["PTEXT", "MTEXT", "FP_TEXT", "PCB_TEXT"]:
             s = self.parse_text(d)
-        elif d.GetClass().startswith("PCB_DIM") and hasattr(pcbnew, "VECTOR_SHAPEPTR"):
+        elif (d.GetClass().startswith("PCB_DIM")
+              and hasattr(pcbnew, "VECTOR_SHAPEPTR")):
             result.append(self.parse_dimension(d))
             s = self.parse_text(d.Text())
         else:
