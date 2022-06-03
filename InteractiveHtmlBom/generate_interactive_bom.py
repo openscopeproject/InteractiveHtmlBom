@@ -4,6 +4,13 @@ from __future__ import absolute_import
 import argparse
 import os
 import sys
+# Add ../ to the path
+# Works if this script is executed without installing the module
+script_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+sys.path.insert(0, os.path.dirname(script_dir))
+# Pretend we are part of a module
+# Avoids: ImportError: attempted relative import with no known parent package
+__package__ = os.path.basename(script_dir)
 
 
 # python 2 and 3 compatibility hack
@@ -14,19 +21,12 @@ def to_utf(s):
         return s
 
 
-if __name__ == "__main__":
-    # Add ../ to the path
-    # Works if this script is executed without installing the module
-    script_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-    sys.path.insert(0, os.path.dirname(script_dir))
-    os.environ['INTERACTIVE_HTML_BOM_CLI_MODE'] = 'True'
-
-    from InteractiveHtmlBom.core import ibom
-    from InteractiveHtmlBom.core.config import Config
-    from InteractiveHtmlBom.ecad import get_parser_by_extension
-    from InteractiveHtmlBom.version import version
-    from InteractiveHtmlBom.errors import (ExitCodes, ParsingException,
-                                           exit_error)
+def main():
+    from .core import ibom
+    from .core.config import Config
+    from .ecad import get_parser_by_extension
+    from .version import version
+    from .errors import (ExitCodes, ParsingException, exit_error)
 
     create_wx_app = 'INTERACTIVE_HTML_BOM_NO_DISPLAY' not in os.environ
     if create_wx_app:
@@ -71,3 +71,8 @@ if __name__ == "__main__":
             ibom.main(parser, config, logger)
         except ParsingException as e:
             exit_error(logger, ExitCodes.ERROR_PARSE, str(e))
+    return 0
+
+
+if __name__ == "__main__":
+    main()
