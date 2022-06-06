@@ -232,10 +232,10 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         self.fileNameFormatTextControl = wx.TextCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer20.Add( self.fileNameFormatTextControl, 1, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.LEFT|wx.TOP, 5 )
 
-        self.m_btnNameHint = wx.Button( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
-        self.m_btnNameHint.SetMinSize( wx.Size( 30,30 ) )
+        self.m_bpButton5 = wx.BitmapButton( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
+        self.m_bpButton5.SetMinSize( wx.Size( 30,30 ) )
 
-        bSizer20.Add( self.m_btnNameHint, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        bSizer20.Add( self.m_bpButton5, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
 
         fgSizer1.Add( bSizer20, 1, wx.EXPAND, 5 )
@@ -272,22 +272,26 @@ class GeneralSettingsPanelBase ( wx.Panel ):
 
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_btnSortUp = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        self.m_btnSortUp = wx.BitmapButton( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
+
+        self.m_btnSortUp.SetBitmap( wx.NullBitmap )
         self.m_btnSortUp.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer5.Add( self.m_btnSortUp, 0, wx.ALL, 5 )
 
-        self.m_btnSortDown = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        self.m_btnSortDown = wx.BitmapButton( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
+
+        self.m_btnSortDown.SetBitmap( wx.NullBitmap )
         self.m_btnSortDown.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer5.Add( self.m_btnSortDown, 0, wx.ALL, 5 )
 
-        self.m_btnSortAdd = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        self.m_btnSortAdd = wx.BitmapButton( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
         self.m_btnSortAdd.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer5.Add( self.m_btnSortAdd, 0, wx.ALL, 5 )
 
-        self.m_btnSortRemove = wx.Button( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        self.m_btnSortRemove = wx.BitmapButton( sortingSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
         self.m_btnSortRemove.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer5.Add( self.m_btnSortRemove, 0, wx.ALL, 5 )
@@ -316,12 +320,12 @@ class GeneralSettingsPanelBase ( wx.Panel ):
 
         bSizer512 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_btnBlacklistAdd = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        self.m_btnBlacklistAdd = wx.BitmapButton( blacklistSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
         self.m_btnBlacklistAdd.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer512.Add( self.m_btnBlacklistAdd, 0, wx.ALL, 5 )
 
-        self.m_btnBlacklistRemove = wx.Button( blacklistSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        self.m_btnBlacklistRemove = wx.BitmapButton( blacklistSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
         self.m_btnBlacklistRemove.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer512.Add( self.m_btnBlacklistRemove, 0, wx.ALL, 5 )
@@ -354,7 +358,7 @@ class GeneralSettingsPanelBase ( wx.Panel ):
 
         # Connect Events
         self.Bind( wx.EVT_SIZE, self.OnSize )
-        self.m_btnNameHint.Bind( wx.EVT_BUTTON, self.OnNameFormatHintClick )
+        self.m_bpButton5.Bind( wx.EVT_BUTTON, self.OnNameFormatHintClick )
         self.m_btnSortUp.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderUp )
         self.m_btnSortDown.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderDown )
         self.m_btnSortAdd.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderAdd )
@@ -447,12 +451,12 @@ class FieldsPanelBase ( wx.Panel ):
 
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_btnUp = wx.Button( fieldsSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        self.m_btnUp = wx.BitmapButton( fieldsSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
         self.m_btnUp.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer5.Add( self.m_btnUp, 0, wx.ALL, 5 )
 
-        self.m_btnDown = wx.Button( fieldsSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        self.m_btnDown = wx.BitmapButton( fieldsSizer.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
         self.m_btnDown.SetMinSize( wx.Size( 30,30 ) )
 
         bSizer5.Add( self.m_btnDown, 0, wx.ALL, 5 )

@@ -15,6 +15,7 @@ class Config:
         '\n'
         '    %f : original pcb file name without extension.\n'
         '    %p : pcb/project title from pcb metadata.\n'
+        '    %o : pcb/project output folder.\n'
         '    %c : company from pcb metadata.\n'
         '    %r : revision from pcb metadata.\n'
         '    %d : pcb date from metadata if available, '
@@ -304,12 +305,11 @@ class Config:
         dlg.finish_init()
 
     @classmethod
-    def add_options(cls, parser, version):
-        # type: (argparse.ArgumentParser, str) -> None
+    def add_options(cls, parser):
+        # type: (argparse.ArgumentParser) -> None
         parser.add_argument('--show-dialog', action='store_true',
                             help='Shows config dialog. All other flags '
                                  'will be ignored.')
-        parser.add_argument('--version', action='version', version=version)
         # Html
         parser.add_argument('--dark-mode', help='Default to dark mode.',
                             action='store_true')

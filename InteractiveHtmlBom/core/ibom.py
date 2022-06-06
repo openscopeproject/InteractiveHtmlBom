@@ -211,6 +211,7 @@ def process_substitutions(bom_name_format, pcb_file_name, metadata):
     name = name.replace('%c', metadata['company'])
     name = name.replace('%r', metadata['revision'])
     name = name.replace('%d', metadata['date'].replace(':', '-'))
+    name = name.replace('%o', metadata['outputfolder'])
     now = datetime.now()
     name = name.replace('%D', now.strftime('%Y-%m-%d'))
     name = name.replace('%T', now.strftime('%H-%M-%S'))
@@ -307,6 +308,7 @@ def main(parser, config, logger):
 
     pcbdata["bom"] = generate_bom(components, config)
     pcbdata["ibom_version"] = config.version
+    pcbdata["metadata"]["outputfolder"] = parser.board.GetPlotOptions().GetOutputDirectory()
 
     # build BOM
     bom_file = generate_file(pcb_file_dir, pcb_file_name, pcbdata, config)
