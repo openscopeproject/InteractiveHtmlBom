@@ -1099,6 +1099,10 @@ function updateCheckboxStats(checkbox) {
   td.lastChild.innerHTML = checked + "/" + total + " (" + Math.round(percent) + "%)";
 }
 
+function constrain(number, min, max){
+  return Math.min(Math.max(parseInt(number), min), max);
+}
+
 document.onkeydown = function (e) {
   switch (e.key) {
     case "n":
@@ -1119,6 +1123,23 @@ document.onkeydown = function (e) {
       highlightNextRow();
       e.preventDefault();
       break;
+    case "ArrowLeft":
+    case "ArrowRight":
+      if (document.activeElement.type != "text"){
+        e.preventDefault();
+        let boardRotationElement = document.getElementById("boardRotation")
+        settings.boardRotation = parseInt(boardRotationElement.value);  // degrees / 5
+        if (e.key == "ArrowLeft"){
+            settings.boardRotation += 3;  // 15 degrees
+        }
+        else{
+            settings.boardRotation -= 3;
+        }
+        settings.boardRotation = constrain(settings.boardRotation, boardRotationElement.min, boardRotationElement.max);
+        boardRotationElement.value = settings.boardRotation
+        setBoardRotation(settings.boardRotation);
+      }
+      break;      
     default:
       break;
   }
