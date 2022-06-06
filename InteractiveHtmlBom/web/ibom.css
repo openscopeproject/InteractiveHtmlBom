@@ -792,3 +792,14 @@ a {
 .column-width-handle:hover {
   background-color: #4f99bd;
 }
+
+.help-link {
+  border: 1px solid #0278a4;
+  padding-inline: 0.3rem;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.dark .help-link {
+  border: 1px solid #00b9fd;
+}
