@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.dirname(script_dir))
 # Pretend we are part of a module
 # Avoids: ImportError: attempted relative import with no known parent package
 __package__ = os.path.basename(script_dir)
+__import__(__package__)
 
 
 # python 2 and 3 compatibility hack
