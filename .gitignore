@@ -1,7 +1,10 @@
 *.pyc
 .idea
+.vscode
 *.iml
+*.bak
 test
 releases
 demo
-config.ini
+*config.ini
+InteractiveHtmlBom/web/user*

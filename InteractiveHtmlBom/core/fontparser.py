@@ -12,7 +12,10 @@ class FontParser:
         lines = []
         line = []
         glyph_x = 0
-        glyph_str = NEWSTROKE_FONT[ord(chr) - ord(' ')]
+        index = ord(chr) - ord(' ')
+        if index >= len(NEWSTROKE_FONT):
+            index = ord('?') - ord(' ')
+        glyph_str = NEWSTROKE_FONT[index]
         for i in range(0, len(glyph_str), 2):
             coord = glyph_str[i:i + 2]
 
@@ -39,6 +42,9 @@ class FontParser:
 
     def parse_font_for_string(self, s):
         for c in s:
+            if c == '\t' and ' ' not in self.parsed_font:
+                # tabs rely on space char to calculate offset
+                self.parsed_font[' '] = self.parse_font_char(' ')
             if c not in self.parsed_font and ord(c) >= ord(' '):
                 self.parsed_font[c] = self.parse_font_char(c)
 

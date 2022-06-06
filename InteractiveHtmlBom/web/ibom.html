@@ -7,10 +7,19 @@
   <title>Interactive BOM for KiCAD</title>
   <style type="text/css">
 ///CSS///
+///USERCSS///
   </style>
   <script type="text/javascript" >
 ///////////////////////////////////////////////
 ///SPLITJS///
+///////////////////////////////////////////////
+
+///////////////////////////////////////////////
+///LZ-STRING///
+///////////////////////////////////////////////
+
+///////////////////////////////////////////////
+///POINTER_EVENTS_POLYFILL///
 ///////////////////////////////////////////////
 
 ///////////////////////////////////////////////
@@ -30,26 +39,68 @@
 ///////////////////////////////////////////////
 
 ///////////////////////////////////////////////
+///TABLEUTILJS///
+///////////////////////////////////////////////
+
+///////////////////////////////////////////////
 ///IBOMJS///
 ///////////////////////////////////////////////
 
+///////////////////////////////////////////////
+///USERJS///
+///////////////////////////////////////////////
   </script>
 </head>
 
 <body>
-<div id="topmostdiv" style="width: 100%; height: 100%">
+///USERHEADER///
+<div id="topmostdiv" class="topmostdiv">
   <div id="top">
-    <div style="float: right;">
-      <div class="hideonprint menu" style="float: right; margin: 10px; top: 8px;">
+    <div style="float: right; height: 100%;">
+      <div class="hideonprint menu" style="float: right; top: 8px;">
         <button class="menubtn"></button>
         <div class="menu-content">
-          <label class="menu-label menu-label-top">
+          <label class="menu-label menu-label-top" style="width: calc(50% - 18px)">
             <input id="darkmodeCheckbox" type="checkbox" onchange="setDarkMode(this.checked)">
             Dark mode
+          </label><!-- This comment eats space! All of it!
+          --><label class="menu-label menu-label-top" style="width: calc(50% - 17px); border-left: 0;">
+            <input id="fullscreenCheckbox" type="checkbox" onchange="setFullscreen(this.checked)">
+            Full Screen
           </label>
-          <label class="menu-label">
+          <label class="menu-label" style="width: calc(50% - 18px)">
+            <input id="fabricationCheckbox" type="checkbox" checked onchange="fabricationVisible(this.checked)">
+            Fab layer
+          </label><!-- This comment eats space! All of it!
+          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
             <input id="silkscreenCheckbox" type="checkbox" checked onchange="silkscreenVisible(this.checked)">
-            Show silkscreen
+            Silkscreen
+          </label>
+          <label class="menu-label" style="width: calc(50% - 18px)">
+            <input id="referencesCheckbox" type="checkbox" checked onchange="referencesVisible(this.checked)">
+            References
+          </label><!-- This comment eats space! All of it!
+          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+            <input id="valuesCheckbox" type="checkbox" checked onchange="valuesVisible(this.checked)">
+            Values
+          </label>
+          <div id="tracksAndZonesCheckboxes">
+            <label class="menu-label" style="width: calc(50% - 18px)">
+              <input id="tracksCheckbox" type="checkbox" checked onchange="tracksVisible(this.checked)">
+              Tracks
+            </label><!-- This comment eats space! All of it!
+            --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+              <input id="zonesCheckbox" type="checkbox" checked onchange="zonesVisible(this.checked)">
+              Zones
+            </label>
+          </div>
+          <label class="menu-label" style="width: calc(50% - 18px)">
+            <input id="padsCheckbox" type="checkbox" checked onchange="padsVisible(this.checked)">
+            Pads
+          </label><!-- This comment eats space! All of it!
+          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+            <input id="dnpOutlineCheckbox" type="checkbox" checked onchange="dnpOutline(this.checked)">
+            DNP outlined
           </label>
           <label class="menu-label">
             <input id="highlightpin1Checkbox" type="checkbox" onchange="setHighlightPin1(this.checked)">
@@ -70,15 +121,19 @@
                    oninput="setBomCheckboxes(this.value)">
           </label>
           <label class="menu-label">
+            <div style="margin-left: 5px">Mark when checked</div>
+            <div id="markWhenCheckedContainer"></div>
+          </label>
+          <label class="menu-label">
             <span class="shameless-plug">
               <span>Created using</span>
-              <a target="blank" href="https://github.com/openscopeproject/InteractiveHtmlBom">InteractiveHtmlBom</a>
+              <a id="github-link" target="blank" href="https://github.com/openscopeproject/InteractiveHtmlBom">InteractiveHtmlBom</a>
             </span>
           </label>
         </div>
       </div>
       <div class="button-container hideonprint"
-           style="float: right; margin: 10px; position: relative; top: 8px">
+           style="float: right; position: relative; top: 8px">
         <button id="fl-btn" class="left-most-button" onclick="changeCanvasLayout('F')"
                 title="Front only">F
         </button>
@@ -90,13 +145,104 @@
         </button>
       </div>
       <div class="button-container hideonprint"
-           style="float: right; margin: 10px; position: relative; top: 8px">
+           style="float: right; position: relative; top: 8px">
         <button id="bom-btn" class="left-most-button" onclick="changeBomLayout('bom-only')"
                 title="BOM only"></button>
         <button id="lr-btn" class="middle-button" onclick="changeBomLayout('left-right')"
                 title="BOM left, drawings right"></button>
         <button id="tb-btn" class="right-most-button" onclick="changeBomLayout('top-bottom')"
                 title="BOM top, drawings bot"></button>
+      </div>
+      <div class="button-container hideonprint"
+           style="float: right; position: relative; top: 8px">
+        <button id="bom-grouped-btn" class="left-most-button" onclick="changeBomMode('grouped')"
+                title="Grouped BOM"></button>
+        <button id="bom-ungrouped-btn" class="middle-button" onclick="changeBomMode('ungrouped')"
+                title="Ungrouped BOM"></button>
+        <button id="bom-netlist-btn" class="right-most-button" onclick="changeBomMode('netlist')"
+                title="Netlist"></button>
+      </div>
+      <div class="hideonprint menu" style="float: right; top: 8px;">
+        <button class="statsbtn"></button>
+        <div class="menu-content">
+          <table class="stats">
+            <tbody>
+              <tr>
+                <td width="40%">Board stats</td>
+                <td>Front</td>
+                <td>Back</td>
+                <td>Total</td>
+              </tr>
+              <tr>
+                <td>Components</td>
+                <td id="stats-components-front">~</td>
+                <td id="stats-components-back">~</td>
+                <td id="stats-components-total">~</td>
+              </tr>
+              <tr>
+                <td>Groups</td>
+                <td id="stats-groups-front">~</td>
+                <td id="stats-groups-back">~</td>
+                <td id="stats-groups-total">~</td>
+              </tr>
+              <tr>
+                <td>SMD pads</td>
+                <td id="stats-smd-pads-front">~</td>
+                <td id="stats-smd-pads-back">~</td>
+                <td id="stats-smd-pads-total">~</td>
+              </tr>
+              <tr>
+                <td>TH pads</td>
+                <td colspan=3 id="stats-th-pads">~</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="stats">
+            <col width="40%"/><col />
+            <tbody id="checkbox-stats">
+              <tr>
+                <td colspan=2 style="border-top: 0">Checkboxes</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="hideonprint menu" style="float: right; top: 8px;">
+        <button class="iobtn"></button>
+        <div class="menu-content">
+          <div class="menu-label menu-label-top">
+            <div style="margin-left: 5px;">Save board image</div>
+            <div class="flexbox">
+              <input id="render-save-width" class="menu-textbox" type="text" value="1000" placeholder="Width"
+                  style="flex-grow: 1; width: 50px;" oninput="validateSaveImgDimension(this)">
+              <span>X</span>
+              <input id="render-save-height" class="menu-textbox" type="text" value="1000" placeholder="Height"
+                  style="flex-grow: 1; width: 50px;" oninput="validateSaveImgDimension(this)">
+            </div>
+            <label>
+              <input id="render-save-transparent" type="checkbox">
+              Transparent background
+            </label>
+            <div class="flexbox">
+              <button class="savebtn" onclick="saveImage('F')">Front</button>
+              <button class="savebtn" onclick="saveImage('B')">Back</button>
+            </div>
+          </div>
+          <div class="menu-label">
+            <span style="margin-left: 5px;">Config and checkbox state</span>
+            <div class="flexbox">
+              <button class="savebtn" onclick="saveSettings()">Export</button>
+              <button class="savebtn" onclick="loadSettings()">Import</button>
+            </div>
+          </div>
+          <div class="menu-label">
+            <span style="margin-left: 5px;">Save bom table as</span>
+            <div class="flexbox">
+              <button class="savebtn" onclick="saveBomTable('csv')">csv</button>
+              <button class="savebtn" onclick="saveBomTable('txt')">txt</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div id="fileinfodiv" style="overflow: auto;">
@@ -112,7 +258,7 @@
           </tr>
           <tr>
             <td id="company">
-              Kicad version
+              Company
             </td>
             <td id="filedate">
               Date
@@ -125,17 +271,17 @@
   <div id="bot" class="split" style="height: calc(100% - 80px)">
     <div id="bomdiv" class="split split-horizontal">
       <div style="width: 100%">
-        <input id="reflookup" class="searchbox reflookup hideonprint" type="text" placeholder="Ref lookup"
+        <input id="reflookup" class="textbox searchbox reflookup hideonprint" type="text" placeholder="Ref lookup"
                oninput="updateRefLookup(this.value)">
-        <input id="filter" class="searchbox filter hideonprint" type="text" placeholder="Filter"
+        <input id="filter" class="textbox searchbox filter hideonprint" type="text" placeholder="Filter"
                oninput="updateFilter(this.value)">
-        <div class="button-container hideonprint" style="float: left">
+        <div class="button-container hideonprint" style="float: left; margin: 0;">
           <button id="copy" title="Copy bom table to clipboard"
-               onclick="copyToClipboard()"></button>
+               onclick="saveBomTable('clipboard')"></button>
         </div>
       </div>
       <div id="dbg"></div>
-      <table class="bom">
+      <table class="bom" id="bomtable">
         <thead id="bomhead">
         </thead>
         <tbody id="bombody">
@@ -143,23 +289,26 @@
       </table>
     </div>
     <div id="canvasdiv" class="split split-horizontal">
-      <div id="frontcanvas" class="split" style="overflow: hidden">
+      <div id="frontcanvas" class="split" touch-action="none" style="overflow: hidden">
         <div style="position: relative; width: 100%; height: 100%;">
           <canvas id="F_bg" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
-          <canvas id="F_slk" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
-          <canvas id="F_hl" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+          <canvas id="F_fab" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+          <canvas id="F_slk" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+          <canvas id="F_hl" style="position: absolute; left: 0; top: 0; z-index: 3;"></canvas>
         </div>
       </div>
-      <div id="backcanvas" class="split" style="overflow: hidden">
+      <div id="backcanvas" class="split" touch-action="none" style="overflow: hidden">
         <div style="position: relative; width: 100%; height: 100%;">
           <canvas id="B_bg" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
-          <canvas id="B_slk" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
-          <canvas id="B_hl" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+          <canvas id="B_fab" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+          <canvas id="B_slk" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+          <canvas id="B_hl" style="position: absolute; left: 0; top: 0; z-index: 3;"></canvas>
         </div>
       </div>
     </div>
   </div>
 </div>
+///USERFOOTER///
 </body>
 
 </html>

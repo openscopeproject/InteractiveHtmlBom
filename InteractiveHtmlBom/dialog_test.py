@@ -1,11 +1,12 @@
-from dialog.settings_dialog import *
+import wx
+from dialog.settings_dialog import SettingsDialog
 
 
 class MyApp(wx.App):
     def OnInit(self):
-        frame = SettingsDialog(None, lambda x: None)
+        frame = SettingsDialog(lambda: None, None, lambda x: None, "Hi", 'test')
         if frame.ShowModal() == wx.ID_OK:
-            print "Should generate bom"
+            print("Should generate bom")
         frame.Destroy()
         return True
 

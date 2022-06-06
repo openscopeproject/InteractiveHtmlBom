@@ -1,6 +1,7 @@
 # _*_ coding:utf-8 _*_
 
-# Stolen from https://github.com/SchrodingersGat/KiBoM/blob/master/KiBOM/units.py
+# Stolen from
+# https://github.com/SchrodingersGat/KiBoM/blob/master/KiBOM/units.py
 
 """
 
@@ -12,8 +13,18 @@ in different formats e.g.
 """
 
 import re
+import locale
 
-PREFIX_MICRO = [u"μ", "u", "micro"]
+current_locale = locale.setlocale(locale.LC_NUMERIC)
+try:
+    locale.setlocale(locale.LC_NUMERIC, '')
+except Exception:
+    # sometimes setlocale with empty string doesn't work on OSX
+    pass
+decimal_separator = locale.localeconv()['decimal_point']
+locale.setlocale(locale.LC_NUMERIC, current_locale)
+
+PREFIX_MICRO = [u"μ", u"µ", "u", "micro"]  # first is \u03BC second is \u00B5
 PREFIX_MILLI = ["milli", "m"]
 PREFIX_NANO = ["nano", "n"]
 PREFIX_PICO = ["pico", "p"]
@@ -23,21 +34,26 @@ PREFIX_GIGA = ["giga", "g"]
 
 # All prefices
 PREFIX_ALL = PREFIX_PICO + PREFIX_NANO + PREFIX_MICRO + \
-             PREFIX_MILLI + PREFIX_KILO + PREFIX_MEGA + PREFIX_GIGA
+    PREFIX_MILLI + PREFIX_KILO + PREFIX_MEGA + PREFIX_GIGA
 
 # Common methods of expressing component units
-UNIT_R = ["r", "ohms", "ohm", u"Ω"]
+UNIT_R = ["r", "ohms", "ohm", u"Ω", u"ω"]
 UNIT_C = ["farad", "f"]
 UNIT_L = ["henry", "h"]
 
 UNIT_ALL = UNIT_R + UNIT_C + UNIT_L
 
-"""
-Return a simplified version of a units string, for comparison purposes
-"""
+VALUE_REGEX = re.compile(
+    "^([0-9\\.]+)(" + "|".join(PREFIX_ALL) + ")*(" + "|".join(
+        UNIT_ALL) + ")*(\\d*)$")
+
+REFERENCE_REGEX = re.compile("^(r|rv|c|l)(\\d+)$")
 
 
 def getUnit(unit):
+    """
+    Return a simplified version of a units string, for comparison purposes
+    """
     if not unit:
         return None
 
@@ -53,12 +69,10 @@ def getUnit(unit):
     return None
 
 
-"""
-Return the (numerical) value of a given prefix
-"""
-
-
 def getPrefix(prefix):
+    """
+    Return the (numerical) value of a given prefix
+    """
     if not prefix:
         return 1
 
@@ -82,27 +96,21 @@ def getPrefix(prefix):
     return 1
 
 
-def groupString(group):  # return a reg-ex string for a list of values
-    return "|".join(group)
-
-
-def matchString():
-    return "^([0-9\.]+)(" + groupString(PREFIX_ALL) + ")*(" + groupString(
-            UNIT_ALL) + ")*(\d*)$"
-
-
-"""
-Return a normalized value and units for a given component value string
-e.g. compMatch("10R2") returns (10, R)
-e.g. compMatch("3.3mOhm") returns (0.0033, R)
-"""
-
-
 def compMatch(component):
-    # remove any commas
-    component = component.strip().replace(",", "").lower()
-    match = matchString()
-    result = re.search(match, component)
+    """
+    Return a normalized value and units for a given component value string
+    e.g. compMatch("10R2") returns (1000, R)
+    e.g. compMatch("3.3mOhm") returns (0.0033, R)
+    """
+    component = component.strip().lower()
+    if decimal_separator == ',':
+        # replace separator with dot
+        component = component.replace(",", ".")
+    else:
+        # remove thousands separator
+        component = component.replace(",", "")
+
+    result = VALUE_REGEX.match(component)
 
     if not result:
         return None
@@ -122,12 +130,12 @@ def compMatch(component):
             value = float(int(value))
             postValue = float(int(post)) / (10 ** len(post))
             value = value * 1.0 + postValue
-        except:
+        except ValueError:
             return None
 
     try:
         val = float(value)
-    except:
+    except ValueError:
         return None
 
     val = "{0:.15f}".format(val * 1.0 * getPrefix(prefix))
@@ -135,21 +143,31 @@ def compMatch(component):
     return (val, getUnit(units))
 
 
-def componentValue(valString):
+def componentValue(valString, reference):
+    # type: (str, str) -> tuple
     result = compMatch(valString)
 
     if not result:
-        return valString  # return the same string back
+        return valString, None  # return the same string back with `None` unit
 
     if not len(result) == 2:  # result length is incorrect
-        return valString
+        return valString, None  # return the same string back with `None` unit
 
-    (val, unit) = result
+    if result[1] is None:
+        # try to infer unit from reference
+        match = REFERENCE_REGEX.match(reference.lower())
+        if match and len(match.groups()) == 2:
+            prefix, _ = match.groups()
+            unit = None
+            if prefix in ['r', 'rv']:
+                unit = 'R'
+            if prefix == 'c':
+                unit = 'F'
+            if prefix == 'l':
+                unit = 'H'
+            result = (result[0], unit)
 
-    return val
-
-
-# compare two values
+    return result  # (val,unit)
 
 
 def compareValues(c1, c2):
