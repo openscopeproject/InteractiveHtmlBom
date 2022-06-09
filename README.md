@@ -22,7 +22,7 @@ full description of functionality see [wiki](https://github.com/openscopeproject
 Generated html page is fully self contained, doesn't need internet connection to work
 and can be packaged with documentation of your project or hosted anywhere on the web.
 
-[Demo is worth a thousand words.](https://openscopeproject.org/InteractiveHtmlBomDemo/)
+[A demo is worth a thousand words.](https://openscopeproject.org/InteractiveHtmlBomDemo/)
 
 ## Installation and Usage
 
