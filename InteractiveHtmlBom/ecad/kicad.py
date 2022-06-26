@@ -648,12 +648,18 @@ class PcbnewParser(EcadParser):
             pcbnew.B_Cu: 'B',
         }.get(footprint.GetLayer())
 
+        if hasattr(footprint, "GetProperties"):
+            merged_extra_fields = footprint.GetProperties()
+            merged_extra_fields.update(extra_fields)
+        else:
+            merged_extra_fields = extra_fields
+
         return Component(footprint.GetReference(),
                          footprint.GetValue(),
                          footprint_name,
                          layer,
                          attr,
-                         extra_fields)
+                         merged_extra_fields)
 
     def parse(self):
         from ..errors import ParsingException
@@ -668,7 +674,7 @@ class PcbnewParser(EcadParser):
                              self.config.dnp_field)
 
         if not self.config.extra_data_file and need_extra_fields:
-            self.logger.warn('Ignoring extra fields related config parameters '
+            self.logger.warn('May ignore extra fields related config parameters '
                              'since no netlist/xml file was specified.')
             need_extra_fields = False
 
@@ -678,7 +684,7 @@ class PcbnewParser(EcadParser):
             extra_field_data = self.parse_extra_data(
                 self.config.extra_data_file, self.config.normalize_field_case)
 
-        if extra_field_data is None and need_extra_fields:
+        if extra_field_data is None and self.config.extra_data_file:
             raise ParsingException(
                 'Failed parsing %s' % self.config.extra_data_file)
 
