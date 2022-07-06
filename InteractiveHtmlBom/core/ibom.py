@@ -148,6 +148,21 @@ def generate_bom(pcb_footprints, config):
 
     bom_table = []
 
+    # If some extra fields are just integers then convert the whole column
+    # so that sorting will work naturally
+    for i, field in enumerate(config.show_fields):
+        if field in ["Value", "Footprint"]:
+            continue
+        all_num = True
+        for f in index_to_fields.values():
+            if not f[i].isdigit() and len(f[i].strip()) > 0:
+                all_num = False
+                break
+        if all_num:
+            for f in index_to_fields.values():
+                if f[i].isdigit():
+                    f[i] = int(f[i])
+
     for _, refs in part_groups.items():
         # Fixup values to normalized string
         if "Value" in group_by and "Value" in config.show_fields:
