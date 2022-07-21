@@ -101,6 +101,8 @@ class GenericJsonParser(EcadParser):
         extra_fields.discard("Value")
         if self.config.dnp_field:
             extra_fields.add(self.config.dnp_field)
+        if self.config.board_variant_field:
+            extra_fields.add(self.config.board_variant_field)
         if extra_fields:
             for c in components:
                 c.extra_fields = {
