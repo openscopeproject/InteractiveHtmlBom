@@ -23,17 +23,19 @@ def to_utf(s):
 
 
 def main():
+    create_wx_app = 'INTERACTIVE_HTML_BOM_NO_DISPLAY' not in os.environ
+
+    if create_wx_app:
+        import wx
+
+        app = wx.App()
+        app.SetAssertMode(wx.APP_ASSERT_SUPPRESS)
+
     from .core import ibom
     from .core.config import Config
     from .ecad import get_parser_by_extension
     from .version import version
     from .errors import (ExitCodes, ParsingException, exit_error)
-
-    create_wx_app = 'INTERACTIVE_HTML_BOM_NO_DISPLAY' not in os.environ
-    if create_wx_app:
-        import wx
-
-        app = wx.App()
 
     parser = argparse.ArgumentParser(
             description='KiCad InteractiveHtmlBom plugin CLI.',
