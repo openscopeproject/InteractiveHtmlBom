@@ -16,10 +16,12 @@ def _get_git_version():
             return git_version.decode('utf-8').rstrip()
         else:
             return git_version.rstrip()
-    except subprocess.CalledProcessError as e:
-        print('Git version check failed: ' + str(e))
-    except Exception as e:
-        print('Git process cannot be launched: ' + str(e))
+    except subprocess.CalledProcessError:
+        # print('Git version check failed: ' + str(e))
+        pass
+    except Exception:
+        # print('Git process cannot be launched: ' + str(e))
+        pass
     return None
 
 
