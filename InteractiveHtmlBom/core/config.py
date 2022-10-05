@@ -66,6 +66,7 @@ class Config:
     blacklist_empty_val = False
     include_tracks = False
     include_nets = False
+    also_export_as_csv = True
 
     # Extra fields section
     extra_data_file = None
@@ -135,6 +136,7 @@ class Config:
             'blacklist_empty_val', self.blacklist_empty_val)
         self.include_tracks = f.ReadBool('include_tracks', self.include_tracks)
         self.include_nets = f.ReadBool('include_nets', self.include_nets)
+        self.also_export_as_csv = f.ReadBool('also_export_as_csv', self.also_export_as_csv)
 
         f.SetPath('/fields')
         self.show_fields = self._split(f.Read(
@@ -187,6 +189,7 @@ class Config:
         f.WriteBool('blacklist_empty_val', self.blacklist_empty_val)
         f.WriteBool('include_tracks', self.include_tracks)
         f.WriteBool('include_nets', self.include_nets)
+        f.WriteBool('also_export_as_csv', self.also_export_as_csv)
 
         f.SetPath('/fields')
         f.Write('show_fields', self._join(self.show_fields))
@@ -228,6 +231,7 @@ class Config:
             dlg.general.blacklistEmptyValCheckbox.IsChecked()
         self.include_tracks = dlg.general.includeTracksCheckbox.IsChecked()
         self.include_nets = dlg.general.includeNetsCheckbox.IsChecked()
+        self.also_export_as_csv = dlg.general.alsoExportAsCSV.IsChecked()
 
         # Fields
         self.extra_data_file = dlg.fields.extraDataFilePicker.Path
@@ -277,6 +281,7 @@ class Config:
         dlg.general.blacklistEmptyValCheckbox.Value = self.blacklist_empty_val
         dlg.general.includeTracksCheckbox.Value = self.include_tracks
         dlg.general.includeNetsCheckbox.Value = self.include_nets
+        dlg.general.alsoExportAsCSV.Value = self.also_export_as_csv
 
         # Fields
         dlg.fields.extraDataFilePicker.SetInitialDirectory(
@@ -353,6 +358,8 @@ class Config:
                                  'relative to pcb file directory.')
         parser.add_argument('--name-format', default=cls.bom_name_format,
                             help=cls.FILE_NAME_FORMAT_HINT.replace('%', '%%'))
+        parser.add_argument('--also-export-as-csv', action='store_true',
+                            help='Also export the BOM as CSV file.')
         parser.add_argument('--include-tracks', action='store_true',
                             help='Include track/zone information in output. '
                                  'F.Cu and B.Cu layers only.')
@@ -432,6 +439,7 @@ class Config:
         self.blacklist_empty_val = args.blacklist_empty_val
         self.include_tracks = args.include_tracks
         self.include_nets = args.include_nets
+        self.also_export_as_csv = args.also_export_as_csv
 
         # Fields
         self.extra_data_file = args.extra_data_file or args.netlist_file

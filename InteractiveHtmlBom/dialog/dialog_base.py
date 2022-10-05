@@ -240,6 +240,9 @@ class GeneralSettingsPanelBase ( wx.Panel ):
 
         fgSizer1.Add( bSizer20, 1, wx.EXPAND, 5 )
 
+        self.alsoExportAsCSV = wx.CheckBox( sbSizer6.GetStaticBox(), wx.ID_ANY, u"Also export as CSV", wx.DefaultPosition, wx.DefaultSize, 0 )
+        fgSizer1.Add( self.alsoExportAsCSV, 1, wx.ALL, 5 )
+
 
         sbSizer6.Add( fgSizer1, 1, wx.EXPAND, 5 )
 

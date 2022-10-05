@@ -16,6 +16,7 @@ from ..dialog import SettingsDialog
 from ..ecad.common import EcadParser, Component
 from ..errors import ParsingException
 
+import csv
 
 class Logger(object):
 
@@ -308,6 +309,60 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     log.info("Created file %s", bom_file_name)
     return bom_file_name
 
+def generate_csv_file(pcb_file_dir, pcb_file_name, pcbdata, config):
+    def get_file_content(file_name):
+        path = os.path.join(os.path.dirname(__file__), "..", "web", file_name)
+        if not os.path.exists(path):
+            return ""
+        with io.open(path, 'r', encoding='utf-8') as f:
+            return f.read()
+
+    if os.path.isabs(config.bom_dest_dir):
+        bom_file_dir = config.bom_dest_dir
+    else:
+        bom_file_dir = os.path.join(pcb_file_dir, config.bom_dest_dir)
+    bom_file_name = process_substitutions(
+        config.bom_name_format, pcb_file_name, pcbdata['metadata'])
+    bom_file_name = os.path.join(bom_file_dir, bom_file_name)
+    bom_file_dir = os.path.dirname(bom_file_name)
+    if not os.path.isdir(bom_file_dir):
+        os.makedirs(bom_file_dir)
+    pcbdata_js = get_pcbdata_javascript(pcbdata, config.compression)
+
+    pcb_metadata = pcbdata['metadata']
+    comp_groups = pcbdata['bom']['both']
+    comp_fields = pcbdata['bom']['fields']
+    comp_field_names = ['idx', 'References', 'Count']
+    comp_field_names.extend(config.show_fields)
+
+    bom_file_name_csv = os.path.splitext(bom_file_name)[0] + os.path.extsep + 'csv'
+
+    with open(bom_file_name_csv, 'w', encoding='utf-8') as f:
+        csv_writer = csv.writer(f)
+        [csv_writer.writerow([k, v]) for k, v in pcb_metadata.items()]
+        csv_writer.writerow([])
+        csv_writer.writerow(comp_field_names)
+
+        for idx, comp_group in enumerate(comp_groups):
+            refs = ' '.join([v[0] for v in comp_group])
+            fields = comp_fields[comp_group[0][1]]
+            row = [idx, refs, len(comp_group)]
+            row.extend(fields)
+            csv_writer.writerow(row)
+
+    log.info("Dumping bom data into yaml")
+    import yaml
+    yaml.dump(pcbdata, open(bom_file_name + '.yaml', 'w'))
+    yaml.dump(config.show_fields, open(bom_file_name + '-fields.yaml', 'w'))
+
+
+
+    # with io.open(bom_file_name, 'wt', encoding='utf-8') as bom:
+    #     bom.write(html)
+
+    log.info("Created file %s", bom_file_name)
+    return bom_file_name
+
 
 def main(parser, config, logger):
     # type: (EcadParser, Config, Logger) -> None
@@ -325,6 +380,9 @@ def main(parser, config, logger):
 
     # build BOM
     bom_file = generate_file(pcb_file_dir, pcb_file_name, pcbdata, config)
+
+    if config.also_export_as_csv:
+        generate_csv_file(pcb_file_dir, pcb_file_name, pcbdata, config)
 
     if config.open_browser:
         logger.info("Opening file in browser")
