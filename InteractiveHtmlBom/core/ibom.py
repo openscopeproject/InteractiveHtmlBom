@@ -351,7 +351,7 @@ def generate_csv_file(pcb_file_dir, pcb_file_name, pcbdata, config):
             csv_writer.writerow(row)
 
     log.info("Created file %s", bom_file_name_csv)
-    return bom_file_name
+    return bom_file_name_csv
 
 
 def main(parser, config, logger):
