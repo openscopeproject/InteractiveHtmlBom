@@ -350,17 +350,7 @@ def generate_csv_file(pcb_file_dir, pcb_file_name, pcbdata, config):
             row.extend(fields)
             csv_writer.writerow(row)
 
-    log.info("Dumping bom data into yaml")
-    import yaml
-    yaml.dump(pcbdata, open(bom_file_name + '.yaml', 'w'))
-    yaml.dump(config.show_fields, open(bom_file_name + '-fields.yaml', 'w'))
-
-
-
-    # with io.open(bom_file_name, 'wt', encoding='utf-8') as bom:
-    #     bom.write(html)
-
-    log.info("Created file %s", bom_file_name)
+    log.info("Created file %s", bom_file_name_csv)
     return bom_file_name
 
 
