@@ -36,8 +36,8 @@ class Config:
     default_checkboxes = ['Sourced', 'Placed']
     html_config_fields = [
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
-        'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'checkboxes',
-        'bom_view', 'layer_view'
+        'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'flip_back',
+        'checkboxes', 'bom_view', 'layer_view',
     ]
     default_show_group_fields = ["Value", "Footprint"]
 
@@ -51,6 +51,7 @@ class Config:
     highlight_pin1 = False
     redraw_on_drag = True
     board_rotation = 0
+    flip_back = False
     checkboxes = ','.join(default_checkboxes)
     bom_view = bom_view_choices[1]
     layer_view = layer_view_choices[1]
@@ -114,6 +115,7 @@ class Config:
         self.highlight_pin1 = f.ReadBool('highlight_pin1', self.highlight_pin1)
         self.redraw_on_drag = f.ReadBool('redraw_on_drag', self.redraw_on_drag)
         self.board_rotation = f.ReadInt('board_rotation', self.board_rotation)
+        self.flip_back = f.ReadBool('flip_back', self.flip_back)
         self.checkboxes = f.Read('checkboxes', self.checkboxes)
         self.bom_view = f.Read('bom_view', self.bom_view)
         self.layer_view = f.Read('layer_view', self.layer_view)
@@ -166,6 +168,7 @@ class Config:
         f.WriteBool('highlight_pin1', self.highlight_pin1)
         f.WriteBool('redraw_on_drag', self.redraw_on_drag)
         f.WriteInt('board_rotation', self.board_rotation)
+        f.WriteBool('flip_back', self.flip_back)
         f.Write('checkboxes', self.checkboxes)
         f.Write('bom_view', self.bom_view)
         f.Write('layer_view', self.layer_view)
@@ -210,6 +213,7 @@ class Config:
         self.highlight_pin1 = dlg.html.highlightPin1Checkbox.IsChecked()
         self.redraw_on_drag = dlg.html.continuousRedrawCheckbox.IsChecked()
         self.board_rotation = dlg.html.boardRotationSlider.Value
+        self.flip_back = dlg.html.flipBackCheckbox.IsChecked()
         self.checkboxes = dlg.html.bomCheckboxesCtrl.Value
         self.bom_view = self.bom_view_choices[dlg.html.bomDefaultView.Selection]
         self.layer_view = self.layer_view_choices[
@@ -255,6 +259,7 @@ class Config:
         dlg.html.highlightPin1Checkbox.Value = self.highlight_pin1
         dlg.html.continuousRedrawCheckbox.value = self.redraw_on_drag
         dlg.html.boardRotationSlider.Value = self.board_rotation
+        dlg.html.flipBackCheckbox.Value = self.flip_back
         dlg.html.bomCheckboxesCtrl.Value = self.checkboxes
         dlg.html.bomDefaultView.Selection = self.bom_view_choices.index(
             self.bom_view)
@@ -332,6 +337,9 @@ class Config:
                             default=cls.board_rotation * 5,
                             help='Board rotation in degrees (-180 to 180). '
                                  'Will be rounded to multiple of 5.')
+        parser.add_argument('--flip-back',
+                            help='Flip the back view of the pcb.',
+                            action='store_true')
         parser.add_argument('--checkboxes',
                             default=cls.checkboxes,
                             help='Comma separated list of checkbox columns.')
@@ -417,6 +425,7 @@ class Config:
         self.highlight_pin1 = args.highlight_pin1
         self.redraw_on_drag = not args.no_redraw_on_drag
         self.board_rotation = math.fmod(args.board_rotation // 5, 37)
+        self.flip_back = args.flip_back
         self.checkboxes = args.checkboxes
         self.bom_view = args.bom_view
         self.layer_view = args.layer_view

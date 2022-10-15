@@ -440,6 +440,8 @@ function overwriteSettings(newSettings) {
   writeStorage("boardRotation", settings.boardRotation);
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
+  setFlipBack(settings.flipBack);
+  document.getElementById("flipBackCheckbox").checked = settings.flipBack;
   initDone = true;
   prepCheckboxes();
   changeBomLayout(settings.bomlayout);
@@ -477,6 +479,7 @@ var settings = {
   highlightpin1: false,
   redrawOnDrag: true,
   boardRotation: 0,
+  flipBack: false,
   renderPads: true,
   renderReferences: true,
   renderValues: true,
@@ -572,6 +575,7 @@ function initDefaults() {
   }
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
+  initBooleanSetting("flipBack", config.flip_back, "flipBackCheckbox", setFlipBack);
 }
 
 // Helper classes for user js callbacks.
