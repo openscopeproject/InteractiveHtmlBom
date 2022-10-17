@@ -110,14 +110,14 @@
             <input id="dragCheckbox" type="checkbox" checked onchange="setRedrawOnDrag(this.checked)">
             Continuous redraw on drag
           </label>
-          <label class="menu-label" style="width: calc(75% - 18px)">
+          <label class="menu-label">
             <span>Board rotation</span>
             <span style="float: right"><span id="rotationDegree">0</span>&#176;</span>
             <input id="boardRotation" type="range" min="-36" max="36" value="0" class="slider" oninput="setBoardRotation(this.value)">
-          </label><!-- This comment eats space! All of it!
-          --><label class="menu-label" style="width: calc(25% - 17px); border-left: 0;">
-            <input id="flipBackCheckbox" type="checkbox" onchange="setFlipBack(this.checked)">
-            Flip Back
+          </label>
+          <label class="menu-label">
+            <input id="offsetBackRotationCheckbox" type="checkbox" onchange="setOffsetBackRotation(this.checked)">
+            Offset back rotation
           </label>
           <label class="menu-label">
             <div style="margin-left: 5px">Bom checkboxes</div>

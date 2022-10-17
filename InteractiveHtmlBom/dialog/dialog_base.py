@@ -148,8 +148,8 @@ class HtmlSettingsPanelBase ( wx.Panel ):
 
         b_sizer.Add( bSizer18, 0, wx.EXPAND, 5 )
 
-        self.flipBackCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Flip back view", wx.DefaultPosition, wx.DefaultSize, 0 )
-        b_sizer.Add( self.flipBackCheckbox, 0, wx.ALL, 5 )
+        self.offsetBackRotationCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Offset back rotation", wx.DefaultPosition, wx.DefaultSize, 0 )
+        b_sizer.Add( self.offsetBackRotationCheckbox, 0, wx.ALL, 5 )
 
         sbSizer31 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Checkboxes" ), wx.HORIZONTAL )
 

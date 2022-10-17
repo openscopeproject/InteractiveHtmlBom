@@ -557,7 +557,7 @@ function prepareCanvas(canvas, flip, transform) {
     ctx.scale(-1, 1);
   }
   ctx.translate(transform.x, transform.y);
-  ctx.rotate(deg2rad(settings.boardRotation + (flip && settings.flipBack ? - 180 : 0)));
+  ctx.rotate(deg2rad(settings.boardRotation + (flip && settings.offsetBackRotation ? - 180 : 0)));
   ctx.scale(transform.s, transform.s);
 }
 
@@ -583,7 +583,7 @@ function applyRotation(bbox, flip) {
     [bbox.maxx, bbox.miny],
     [bbox.maxx, bbox.maxy],
   ];
-  corners = corners.map((v) => rotateVector(v, settings.boardRotation + (flip && settings.flipBack ? - 180 : 0)));
+  corners = corners.map((v) => rotateVector(v, settings.boardRotation + (flip && settings.offsetBackRotation ? - 180 : 0)));
   return {
     minx: corners.reduce((a, v) => Math.min(a, v[0]), Infinity),
     miny: corners.reduce((a, v) => Math.min(a, v[1]), Infinity),
@@ -801,7 +801,7 @@ function handleMouseClick(e, layerdict) {
     x = (devicePixelRatio * x / t.zoom - t.panx - t.x) / t.s;
   }
   y = (devicePixelRatio * y / t.zoom - t.y - t.pany) / t.s;
-  var v = rotateVector([x, y], -settings.boardRotation + (flip && settings.flipBack ? - 180 : 0));
+  var v = rotateVector([x, y], -settings.boardRotation + (flip && settings.offsetBackRotation ? - 180 : 0));
   if ("nets" in pcbdata) {
     var net = netHitScan(layerdict.layer, ...v);
     if (net !== highlightedNet) {
@@ -993,9 +993,9 @@ function setBoardRotation(value) {
   resizeAll();
 }
 
-function setFlipBack(value) {
-  settings.flipBack = value;
-  writeStorage("flipBack", value);
+function setOffsetBackRotation(value) {
+  settings.offsetBackRotation = value;
+  writeStorage("offsetBackRotation", value);
   resizeAll();
 }
 
