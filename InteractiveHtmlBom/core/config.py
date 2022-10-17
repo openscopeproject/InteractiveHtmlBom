@@ -339,8 +339,8 @@ class Config:
                             default=cls.board_rotation * 5,
                             help='Board rotation in degrees (-180 to 180). '
                                  'Will be rounded to multiple of 5.')
-        parser.add_argument('--flip-back',
-                            help='Flip the back view of the pcb.',
+        parser.add_argument('--offset-back-rotation',
+                            help='Offset the back of the pcb by 180 degrees',
                             action='store_true')
         parser.add_argument('--checkboxes',
                             default=cls.checkboxes,
