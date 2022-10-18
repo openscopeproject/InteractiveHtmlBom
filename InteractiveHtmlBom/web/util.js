@@ -440,6 +440,8 @@ function overwriteSettings(newSettings) {
   writeStorage("boardRotation", settings.boardRotation);
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
+  setOffsetBackRotation(settings.offsetBackRotation);
+  document.getElementById("offsetBackRotationCheckbox").checked = settings.offsetBackRotation;
   initDone = true;
   prepCheckboxes();
   changeBomLayout(settings.bomlayout);
@@ -477,6 +479,7 @@ var settings = {
   highlightpin1: false,
   redrawOnDrag: true,
   boardRotation: 0,
+  offsetBackRotation: false,
   renderPads: true,
   renderReferences: true,
   renderValues: true,
@@ -572,6 +575,7 @@ function initDefaults() {
   }
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
+  initBooleanSetting("offsetBackRotation", config.offset_back_rotation, "offsetBackRotationCheckbox", setOffsetBackRotation);
 }
 
 // Helper classes for user js callbacks.
