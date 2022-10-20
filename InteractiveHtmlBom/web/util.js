@@ -436,7 +436,6 @@ function overwriteSettings(newSettings) {
   document.getElementById("darkmodeCheckbox").checked = settings.darkMode;
   setHighlightPin1(settings.highlightpin1);
   document.getElementById("highlightpin1Checkbox").checked = settings.highlightpin1;
-  showFootprints(settings.show_footprints);
   writeStorage("boardRotation", settings.boardRotation);
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
