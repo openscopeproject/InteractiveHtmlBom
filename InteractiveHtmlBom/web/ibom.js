@@ -659,7 +659,16 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           var valueSet = new Set();
           references.map(r => r[1]).forEach((id) => valueSet.add(pcbdata.bom.fields[id][field_index]));
           td = document.createElement("TD");
-          td.innerHTML = highlightFilter(Array.from(valueSet).join(", "));
+          var output = new Array();
+          for (let e of Array.from(valueSet)) {
+            var visible = highlightFilter(e);
+            if (e.startsWith("http://") || e.startsWith("https://") || e.startsWith("file://")) {
+              output.push('<a href="' + e + '" target="_blank">' + visible + '</a>');
+            } else {
+              output.push(visible);
+            }
+          }
+          td.innerHTML = output.join(", ");
           tr.appendChild(td);
         }
       });
