@@ -660,10 +660,11 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           references.map(r => r[1]).forEach((id) => valueSet.add(pcbdata.bom.fields[id][field_index]));
           td = document.createElement("TD");
           var output = new Array();
-          for (let e of Array.from(valueSet)) {
-            var visible = highlightFilter(e);
-            if (e.startsWith("http://") || e.startsWith("https://") || e.startsWith("file://")) {
-              output.push('<a href="' + e + '" target="_blank">' + visible + '</a>');
+          const urlRegex = /^((file|https?):\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))$/g;
+          for (let item of Array.from(valueSet)) {
+            const visible = highlightFilter(item);
+            if (item.match(urlRegex)) {
+              output.push('<a href="' + item + '" target="_blank">' + visible + '</a>');
             } else {
               output.push(visible);
             }
