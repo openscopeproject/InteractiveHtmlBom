@@ -85,8 +85,11 @@ function saveBomTable(output) {
           if (node.checked) {
             val += '✓';
           }
-        } else if ((node.nodeName == "MARK") || (node.nodeName == "A")) {
+        } else if (node.nodeName == "MARK") {
           val += node.firstChild.nodeValue;
+        } else if (node.nodeName == "A") {
+          val += (output == 'csv' ? '=HYPERLINK("' + node.firstChild.nodeValue + '")'
+                                  : node.firstChild.nodeValue);
         } else {
           val += node.nodeValue;
         }
