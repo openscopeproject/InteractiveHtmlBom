@@ -552,6 +552,7 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
 }
 
 function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
+  const urlRegex = /^(https?:\/\/[^\s\/$.?#][^\s]*|file:\/\/([a-zA-Z]:|\/)[^\x00]+)$/;
   while (bom.firstChild) {
     bom.removeChild(bom.firstChild);
   }
@@ -661,7 +662,6 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           td = document.createElement("TD");
           var output = new Array();
           for (let item of Array.from(valueSet)) {
-          const urlRegex = /^(https?:\/\/[^\s\/$.?#][^\s]*|file:\/\/([a-zA-Z]:|\/)[^\x00]+)$/;
             const visible = highlightFilter(item);
             if (item.match(urlRegex)) {
               output.push('<a href="' + item + '" target="_blank">' + visible + '</a>');
