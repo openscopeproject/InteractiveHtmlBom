@@ -661,7 +661,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           references.map(r => r[1]).forEach((id) => valueSet.add(pcbdata.bom.fields[id][field_index]));
           td = document.createElement("TD");
           var output = new Array();
-          for (let item of Array.from(valueSet)) {
+          for (let item of valueSet) {
             const visible = highlightFilter(item);
             if (item.match(urlRegex)) {
               output.push('<a href="' + item + '" target="_blank">' + visible + '</a>');
