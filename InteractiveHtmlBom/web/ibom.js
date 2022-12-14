@@ -664,7 +664,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           for (let item of valueSet) {
             const visible = highlightFilter(item);
             if (item.match(urlRegex)) {
-              output.push('<a href="' + item + '" target="_blank">' + visible + '</a>');
+              output.push(`<a href="${item}" target="_blank">${visible}</a>`);
             } else {
               output.push(visible);
             }
