@@ -552,6 +552,7 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
 }
 
 function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
+  const urlRegex = /^(https?:\/\/[^\s\/$.?#][^\s]*|file:\/\/([a-zA-Z]:|\/)[^\x00]+)$/;
   while (bom.firstChild) {
     bom.removeChild(bom.firstChild);
   }
@@ -659,7 +660,16 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           var valueSet = new Set();
           references.map(r => r[1]).forEach((id) => valueSet.add(pcbdata.bom.fields[id][field_index]));
           td = document.createElement("TD");
-          td.innerHTML = highlightFilter(Array.from(valueSet).join(", "));
+          var output = new Array();
+          for (let item of valueSet) {
+            const visible = highlightFilter(item);
+            if (item.match(urlRegex)) {
+              output.push(`<a href="${item}" target="_blank">${visible}</a>`);
+            } else {
+              output.push(visible);
+            }
+          }
+          td.innerHTML = output.join(", ");
           tr.appendChild(td);
         }
       });
