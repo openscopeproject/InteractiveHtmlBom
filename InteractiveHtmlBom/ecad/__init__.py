@@ -15,6 +15,8 @@ def get_parser_by_extension(file_name, config, logger):
             return get_generic_json_parser(file_name, config, logger)
         else:
             return get_easyeda_parser(file_name, config, logger)
+    elif ext in ['.fbrd', '.brd']:
+        return get_fusion_eagle_parser(file_name, config, logger)
     else:
         return None
 
@@ -32,3 +34,8 @@ def get_easyeda_parser(file_name, config, logger):
 def get_generic_json_parser(file_name, config, logger):
     from .genericjson import GenericJsonParser
     return GenericJsonParser(file_name, config, logger)
+
+
+def get_fusion_eagle_parser(file_name, config, logger):
+    from .fusion_eagle import FusionEagleParser
+    return FusionEagleParser(file_name, config, logger)
