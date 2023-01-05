@@ -663,7 +663,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           var output = new Array();
           for (let item of valueSet) {
             const visible = highlightFilter(item);
-            if (item.match(urlRegex)) {
+            if (typeof item === 'string' && item.match(urlRegex)) {
               output.push(`<a href="${item}" target="_blank">${visible}</a>`);
             } else {
               output.push(visible);
@@ -1149,7 +1149,7 @@ document.onkeydown = function (e) {
         boardRotationElement.value = settings.boardRotation
         setBoardRotation(settings.boardRotation);
       }
-      break;      
+      break;
     default:
       break;
   }
