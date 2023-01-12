@@ -440,7 +440,7 @@ function drawZones(canvas, layer, color, highlight) {
       zone.path2d = getPolygonsPath(zone);
     }
     if (highlight && highlightedNet != zone.net) continue;
-    ctx.fill(zone.path2d);
+    ctx.fill(zone.path2d, zone.fillrule || "nonzero");
     if (zone.width > 0) {
       ctx.lineWidth = zone.width;
       ctx.stroke(zone.path2d);

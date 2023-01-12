@@ -73,6 +73,8 @@ pcbdata = {
         // SVG path of the polygon given as 'd' attribute of svg spec.
         // If "svgpath" is present "polygons" is ignored.
         "svgpath": svgpath,
+        // optional fillrule flag, defaults to nonzero
+        "fillrule": "nonzero" | "evenodd",
         "polygons": [
           // Set of polylines same as in polygon drawing.
           [[point1x, point1y], [point2x, point2y], ...],

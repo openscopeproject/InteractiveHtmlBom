@@ -568,7 +568,14 @@
                 "polygons": {
                     "$ref": "#/definitions/Polygons"
                 },
-                "net": { "type": "string" }
+                "net": { "type": "string" },
+                "fillrule": {
+                    "type": "string",
+                    "enum": [
+                        "nonzero",
+                        "evenodd"
+                    ]
+                }
             },
             "anyOf": [
                 { "required": [ "svgpath" ] },
