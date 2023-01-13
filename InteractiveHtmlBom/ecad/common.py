@@ -111,11 +111,29 @@ class EcadParser(object):
             for point in polygon:
                 bbox.add_point(point[0], point[1])
 
+        def add_arc():
+            if 'svgpath' in drawing:
+                add_svgpath()
+            else:
+                width = drawing.get('width', 0)
+                xc, yc = drawing['start'][:2]
+                a1 = drawing['startangle']
+                a2 = drawing['endangle']
+                r = drawing['radius']
+                x1 = xc + math.cos(math.radians(a1))
+                y1 = xc + math.sin(math.radians(a1))
+                x2 = xc + math.cos(math.radians(a2))
+                y2 = xc + math.sin(math.radians(a2))
+                da = a2 - a1 if a2 > a1 else a2 + 360 - a1
+                la = 1 if da > 180 else 0
+                svgpath = f'M {x1} {y1} A {r} {r} 0 {la} 1 {x2} {y2}'
+                bbox.add_svgpath(svgpath, width, self.logger)
+
         {
             'segment': add_segment,
             'rect': add_segment,  # bbox of a rect and segment are the same
             'circle': add_circle,
-            'arc': add_svgpath,
+            'arc': add_arc,
             'polygon': add_polygon,
             'text': lambda: None,  # text is not really needed for bounding box
         }.get(drawing['type'])()

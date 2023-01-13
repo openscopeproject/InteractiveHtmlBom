@@ -4,6 +4,8 @@ import os.path
 from jsonschema import validate, ValidationError
 
 from .common import EcadParser, Component, BoundingBox
+from ..core.fontparser import FontParser
+from ..errors import ParsingException
 
 
 class GenericJsonParser(EcadParser):
@@ -65,6 +67,45 @@ class GenericJsonParser(EcadParser):
 
         return True
 
+    @staticmethod
+    def _texts(pcbdata):
+        for layer in pcbdata['drawings'].values():
+            for side in layer.values():
+                for dwg in side:
+                    if 'text' in dwg:
+                        yield dwg
+
+    @staticmethod
+    def _remove_control_codes(s):
+        import unicodedata
+        return ''.join(c for c in s if unicodedata.category(c)[0] != "C")
+
+    def _parse_font_data(self, pcbdata):
+        font_parser = FontParser()
+        for dwg in self._texts(pcbdata):
+            if 'svgpath' not in dwg:
+                dwg['text'] = self._remove_control_codes(dwg['text'])
+                font_parser.parse_font_for_string(dwg['text'])
+
+        if font_parser.get_parsed_font():
+            pcbdata['font_data'] = font_parser.get_parsed_font()
+
+    def _check_font_data(self, pcbdata):
+        mc = set()
+        for dwg in self._texts(pcbdata):
+            dwg['text'] = self._remove_control_codes(dwg['text'])
+            mc.update({c for c in dwg['text'] if 'svgpath' not in dwg and
+                      c not in pcbdata['font_data']})
+
+        if mc:
+            s = ''.join(mc)
+            self.logger.error('Provided font_data is missing character(s)'
+                              f' "{s}" that are present in text drawing'
+                              ' objects')
+            return False
+        else:
+            return True
+
     def _parse(self):
         try:
             pcb = self.get_generic_json_pcb()
@@ -81,6 +122,15 @@ class GenericJsonParser(EcadParser):
 
         pcbdata = pcb['pcbdata']
         components = [Component(**c) for c in pcb['components']]
+
+        if 'font_data' in pcbdata:
+            if not self._check_font_data(pcbdata):
+                raise ParsingException(f'Failed parsing {self.file_name}')
+        else:
+            self._parse_font_data(pcbdata)
+            if 'font_data' in pcbdata:
+                self.logger.info('No font_data provided in JSON, using '
+                                 'newstroke font')
 
         self.logger.info('Successfully parsed {}'.format(self.file_name))
 
@@ -107,5 +157,7 @@ class GenericJsonParser(EcadParser):
             for c in components:
                 c.extra_fields = {
                     f: c.extra_fields.get(f, "") for f in extra_fields}
+
+        self.config.kicad_text_formatting = False
 
         return pcbdata, components
