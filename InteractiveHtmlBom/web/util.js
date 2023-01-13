@@ -488,7 +488,7 @@ var settings = {
   renderTracks: true,
   renderZones: true,
   columnOrder: [],
-  hiddenColumns: [],
+  hiddenColumns: []
 }
 
 function initDefaults() {

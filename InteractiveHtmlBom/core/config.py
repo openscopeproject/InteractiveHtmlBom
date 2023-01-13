@@ -37,7 +37,8 @@ class Config:
     html_config_fields = [
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
         'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'checkboxes',
-        'bom_view', 'layer_view', 'offset_back_rotation'
+        'bom_view', 'layer_view', 'offset_back_rotation',
+        'kicad_text_formatting'
     ]
     default_show_group_fields = ["Value", "Footprint"]
 
@@ -67,6 +68,7 @@ class Config:
     blacklist_empty_val = False
     include_tracks = False
     include_nets = False
+    kicad_text_formatting = True
 
     # Extra fields section
     extra_data_file = None
