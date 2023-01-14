@@ -1,5 +1,5 @@
 # Interactive HTML BOM plugin for KiCad
-## Supports EasyEDA, Eagle and Fusion360
+## Supports EasyEDA, Eagle, Fusion360 and Allegro PCB designer
 
 ![icon](https://i.imgur.com/js4kDOn.png)
 
