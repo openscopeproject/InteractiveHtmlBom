@@ -329,6 +329,7 @@ function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, ou
       ctx.fillRect(0, 0, ...footprint.bbox.size);
       ctx.globalAlpha = 1;
       ctx.strokeStyle = colors.pad;
+      ctx.lineWidth = 3 / scalefactor;
       ctx.strokeRect(0, 0, ...footprint.bbox.size);
       ctx.restore();
     }
@@ -339,6 +340,7 @@ function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, ou
       drawDrawing(ctx, scalefactor, drawing.drawing, colors.pad);
     }
   }
+  ctx.lineWidth = 3 / scalefactor;
   // draw pads
   if (settings.renderPads) {
     for (var pad of footprint.pads) {
