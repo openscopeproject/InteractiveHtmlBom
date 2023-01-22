@@ -126,7 +126,8 @@ class EcadParser(object):
                 y2 = xc + math.sin(math.radians(a2))
                 da = a2 - a1 if a2 > a1 else a2 + 360 - a1
                 la = 1 if da > 180 else 0
-                svgpath = f'M {x1} {y1} A {r} {r} 0 {la} 1 {x2} {y2}'
+                svgpath = 'M %s %s A %s %s 0 %s 1 %s %s' % \
+                          (x1, y1, r, r, la, x2, y2)
                 bbox.add_svgpath(svgpath, width, self.logger)
 
         {
@@ -152,7 +153,7 @@ class Component(object):
 
 
 class BoundingBox(object):
-    """Geometry util to calculate and compound bounding box of simple shapes."""
+    """Geometry util to calculate and combine bounding box of simple shapes."""
 
     def __init__(self):
         self._x0 = None
