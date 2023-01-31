@@ -782,11 +782,26 @@ class FusionEagleParser(EcadParser):
                              extra_fields=extra_fields)
 
             # For component, get footprint data
-            library = [lib for lib in board.find('libraries').findall('library')
-                       if lib.attrib['name'] == el.attrib['library']][0]
-            package = \
-                [pac for pac in library.find('packages').findall('package')
-                 if pac.attrib['name'] == el.attrib['package']][0]
+            libs = [lib for lib in board.find('libraries').findall('library')
+                       if lib.attrib['name'] == el.attrib['library']]
+            packages = []
+            for lib in libs:
+                p = [pac for pac in lib.find('packages').findall('package')
+                     if pac.attrib['name'] == el.attrib['package']]
+                packages.extend(p)
+            if not packages:
+                self.logger.error(f"Package {el.attrib['package']} in library "
+                                  f"{el.attrib['library']} not found in "
+                                  f"source file {brdfile.name} for "
+                                  f"element {el.attrib['name']}")
+                return None, None
+            else:
+                package = packages[0]
+                if len(packages) > 1:
+                    self.logger.warn(f"Multiple packages found for package "
+                                     f"{el.attrib['package']} in "
+                                     f"library {el.attrib['library']}, "
+                                     f"using first instance found")
 
             elx = float(el.attrib['x'])
             ely = float(el.attrib['y'])
