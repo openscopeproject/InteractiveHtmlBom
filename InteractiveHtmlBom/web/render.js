@@ -378,7 +378,7 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
 
   for (var i = 0; i < pcbdata.footprints.length; i++) {
     var mod = pcbdata.footprints[i];
-    var outline = settings.renderDnpOutline && pcbdata.bom.skipped.includes(i);
+    var outline = settings.renderDnpOutline && (pcbdata.bom.skipped.includes(i) || pcbdata.bom.dnp.includes(i));
     var h = highlightedFootprints.includes(i);
     var d = markedFootprints.has(i);
     if (highlight) {

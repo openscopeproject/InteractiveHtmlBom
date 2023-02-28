@@ -430,6 +430,10 @@ function overwriteSettings(newSettings) {
   document.getElementById("zonesCheckbox").checked = settings.renderZones;
   dnpOutline(settings.renderDnpOutline);
   document.getElementById("dnpOutlineCheckbox").checked = settings.renderDnpOutline;
+  setCountDNP(settings.countDNP);
+  document.getElementById("countDNPCheckbox").checked = settings.countDNP;
+  setShowDNP(settings.showDNP);
+  document.getElementById("showDNPCheckbox").checked = settings.showDNP;
   setRedrawOnDrag(settings.redrawOnDrag);
   document.getElementById("dragCheckbox").checked = settings.redrawOnDrag;
   setDarkMode(settings.darkMode);
@@ -545,6 +549,8 @@ function initDefaults() {
     zonesVisible(false);
   }
   initBooleanSetting("dnpOutline", false, "dnpOutlineCheckbox", dnpOutline);
+  initBooleanSetting("showDNP", false, "showDNPCheckbox", setShowDNP);
+  initBooleanSetting("countDNP", false, "countDNPCheckbox", setCountDNP);
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);

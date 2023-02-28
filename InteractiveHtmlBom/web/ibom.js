@@ -62,6 +62,31 @@ function dnpOutline(value) {
   redrawIfInitDone();
 }
 
+function setCountDNP(value) {
+  writeStorage("countDNP", value);
+  settings.countDNP = value;
+  if (initDone) {
+    populateMetadata();
+    populateBomBody();
+    for (var checkbox of settings.checkboxes) {
+      updateCheckboxStats(checkbox);
+    }
+  }
+}
+
+function setShowDNP(value) {
+  writeStorage("showDNP", value);
+  settings.showDNP = value;
+  if (initDone) {
+    populateMetadata();
+    populateBomBody();
+    for (var checkbox of settings.checkboxes) {
+      updateCheckboxStats(checkbox);
+    }
+  }
+  setShowBOMColumn("dnp", value);
+}
+
 function setDarkMode(value) {
   if (value) {
     topmostdiv.classList.add("dark");
@@ -575,6 +600,18 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
         bomtable = pcbdata.bom.B.slice();
         break;
     }
+    if (!settings.showDNP) {
+      // remove DNP from bom table
+      cleanedTable = []
+      for (var bomentry of bomtable) {
+        cleanedEntry = []
+        for (var ref of bomentry) {
+          if (!pcbdata.bom.dnp.includes(ref[1])) cleanedEntry.push(ref);
+        }
+        if (cleanedEntry.length) cleanedTable.push(cleanedEntry);
+      }
+      bomtable = cleanedTable;
+    }
     if (settings.bommode == "ungrouped") {
       // expand bom table
       expandedTable = []
@@ -650,7 +687,14 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
         } else if (column === "Quantity" && settings.bommode == "grouped") {
           // Quantity
           td = document.createElement("TD");
-          td.textContent = references.length;
+          var count = 0;
+          for (var i = 0; i < references.length; i++) {
+            if (!pcbdata.bom.skipped.includes(references[i][1]) &&
+                ((settings.countDNP && settings.showDNP) || !pcbdata.bom.dnp.includes(references[i][1]))) {
+              count++;
+            }
+          }
+          td.textContent = count;
           tr.appendChild(td);
         } else {
           // All the other fields
@@ -826,7 +870,9 @@ function populateMetadata() {
     pads_b = 0,
     pads_th = 0;
   for (var i = 0; i < pcbdata.footprints.length; i++) {
-    if (pcbdata.bom.skipped.includes(i)) continue;
+    if ((pcbdata.bom.dnp.includes(i) && (!settings.countDNP || !settings.showDNP))
+        || pcbdata.bom.skipped.includes(i))
+      continue;
     var mod = pcbdata.footprints[i];
     if (mod.layer == "F") {
       fp_f++;
@@ -1103,6 +1149,9 @@ function populateMarkWhenCheckedOptions() {
 function updateCheckboxStats(checkbox) {
   var checked = getStoredCheckboxRefs(checkbox).size;
   var total = pcbdata.footprints.length - pcbdata.bom.skipped.length;
+  if (!settings.countDNP || !settings.showDNP) {
+    total -= pcbdata.bom.dnp.length;
+  }
   var percent = checked * 100.0 / total;
   var td = document.getElementById("checkbox-stats-" + checkbox);
   td.firstChild.style.width = percent + "%";

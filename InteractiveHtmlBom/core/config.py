@@ -38,9 +38,9 @@ class Config:
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
         'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'checkboxes',
         'bom_view', 'layer_view', 'offset_back_rotation',
-        'kicad_text_formatting'
+        'kicad_text_formatting', 'show_dnp', 'count_dnp',
     ]
-    default_show_group_fields = ["Value", "Footprint"]
+    default_show_group_fields = ["Value", "Footprint", "dnp"]
 
     # Defaults
 
@@ -58,6 +58,8 @@ class Config:
     layer_view = layer_view_choices[1]
     compression = True
     open_browser = True
+    show_dnp = False
+    count_dnp = False
 
     # General section
     bom_dest_dir = 'bom/'  # This is relative to pcb file directory
@@ -124,6 +126,8 @@ class Config:
         self.layer_view = f.Read('layer_view', self.layer_view)
         self.compression = f.ReadBool('compression', self.compression)
         self.open_browser = f.ReadBool('open_browser', self.open_browser)
+        self.show_dnp = f.ReadBool('show_dnp', self.show_dnp)
+        self.count_dnp = f.ReadBool('count_dnp', self.count_dnp)
 
         f.SetPath('/general')
         self.bom_dest_dir = f.Read('bom_dest_dir', self.bom_dest_dir)
@@ -177,6 +181,8 @@ class Config:
         f.Write('layer_view', self.layer_view)
         f.WriteBool('compression', self.compression)
         f.WriteBool('open_browser', self.open_browser)
+        f.WriteBool('show_dnp', self.show_dnp)
+        f.WriteBool('count_dnp', self.count_dnp)
 
         f.SetPath('/general')
         bom_dest_dir = self.bom_dest_dir
@@ -224,6 +230,8 @@ class Config:
             dlg.html.layerDefaultView.Selection]
         self.compression = dlg.html.compressionCheckbox.IsChecked()
         self.open_browser = dlg.html.openBrowserCheckbox.IsChecked()
+        # TODO: self.show_dnp
+        # TODO: self.count_dnp
 
         # General
         self.bom_dest_dir = dlg.general.bomDirPicker.Path
@@ -271,6 +279,8 @@ class Config:
             self.layer_view)
         dlg.html.compressionCheckbox.Value = self.compression
         dlg.html.openBrowserCheckbox.Value = self.open_browser
+        # TODO: show_dnp
+        # TODO: count_dnp
 
         # General
         import os.path
@@ -331,6 +341,9 @@ class Config:
         parser.add_argument('--hide-silkscreen',
                             help='Hide silkscreen by default.',
                             action='store_true')
+        parser.add_argument('--count-dnp-components', action='store_true',
+                            help='Count components with DNP attribute set '
+                                 'by default.')
         parser.add_argument('--highlight-pin1',
                             help='Highlight pin1 by default.',
                             action='store_true')
@@ -344,6 +357,10 @@ class Config:
         parser.add_argument('--offset-back-rotation',
                             help='Offset the back of the pcb by 180 degrees',
                             action='store_true')
+        parser.add_argument('--show-dnp', action='store_true',
+                            help='Show DNP components in the bom table.')
+        parser.add_argument('--count-dnp', action='store_true',
+                            help='Count DNP components (if shown).')
         parser.add_argument('--checkboxes',
                             default=cls.checkboxes,
                             help='Comma separated list of checkbox columns.')
@@ -435,6 +452,8 @@ class Config:
         self.layer_view = args.layer_view
         self.compression = not args.no_compression
         self.open_browser = not args.no_browser
+        self.show_dnp = args.show_dnp
+        self.count_dnp = args.count_dnp
 
         # General
         self.bom_dest_dir = args.dest_dir

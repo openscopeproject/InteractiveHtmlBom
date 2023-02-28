@@ -25,7 +25,7 @@ class PcbnewParser(EcadParser):
         self.font_parser = FontParser()
 
     def get_extra_field_data(self, file_name):
-        if os.path.abspath(file_name) == os.path.abspath(self.file_name):
+        if os.path.samefile(file_name, self.file_name):
             return self.parse_extra_data_from_pcb()
         if os.path.splitext(file_name)[1] == '.kicad_pcb':
             return None
@@ -42,7 +42,10 @@ class PcbnewParser(EcadParser):
 
             for k, v in props.items():
                 field_set.add(k)
-                ref_fields[k] = v
+                if k == 'dnp':
+                    ref_fields[k] = '' if v is None else 'DNP'
+                else:
+                    ref_fields[k] = v
 
         return list(field_set), comp_dict
 

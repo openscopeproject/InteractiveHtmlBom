@@ -66,18 +66,27 @@ def skip_component(m, config):
     if config.blacklist_virtual and m.attr == 'Virtual':
         return True
 
-    # skip components with dnp field not empty
-    if config.dnp_field \
-            and config.dnp_field in m.extra_fields \
-            and m.extra_fields[config.dnp_field]:
+    # skip components with dnp field not empty iff blacklisted
+    if config.show_dnp and is_dnp_component(m, config):
         return True
 
-    # skip components with wrong variant field
+    return False
+
+def is_dnp_component(m, config):
+    # type: (Component, Config) -> bool
+    # check if a component has the dnp filed/attribute set
+    if config.dnp_field \
+            and config.dnp_field in m.extra_fields \
+            and m.extra_fields[config.dnp_field] is not None:
+        return True
+
+    # mark components with wrong variant field as DNP
     if config.board_variant_field and config.board_variant_whitelist:
         ref_variant = m.extra_fields.get(config.board_variant_field, '')
         if ref_variant not in config.board_variant_whitelist:
             return True
 
+    # blacklisted components in board variants are DNP
     if config.board_variant_field and config.board_variant_blacklist:
         ref_variant = m.extra_fields.get(config.board_variant_field, '')
         if ref_variant and ref_variant in config.board_variant_blacklist:
@@ -112,6 +121,7 @@ def generate_bom(pcb_footprints, config):
 
     # build grouped part list
     skipped_components = []
+    dnp_components = []
     part_groups = {}
     group_by = set(config.group_fields)
     index_to_fields = {}
@@ -120,6 +130,10 @@ def generate_bom(pcb_footprints, config):
         if skip_component(f, config):
             skipped_components.append(i)
             continue
+
+        is_dnp = is_dnp_component(f, config)
+        if is_dnp:
+            dnp_components.append(i)
 
         # group part refs by value and footprint
         fields = []
@@ -137,6 +151,10 @@ def generate_bom(pcb_footprints, config):
                 if "Footprint" in group_by:
                     group_key.append(f.footprint)
                     group_key.append(f.attr)
+            elif field == config.dnp_field:
+                fields.append("DNP" if is_dnp else '')
+                if config.dnp_field in group_by:
+                    group_key.append(is_dnp)
             else:
                 fields.append(f.extra_fields.get(field, ''))
                 if field in group_by:
@@ -190,6 +208,7 @@ def generate_bom(pcb_footprints, config):
     result = {
         'both': bom_table,
         'skipped': skipped_components,
+        'dnp': dnp_components,
         'fields': index_to_fields
     }
 

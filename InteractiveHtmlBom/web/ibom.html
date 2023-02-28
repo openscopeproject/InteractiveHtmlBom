@@ -120,6 +120,17 @@
             Offset back rotation
           </label>
           <label class="menu-label">
+            <div style="margin-bottom: 5px;">Bom table</div>
+            <label style="width: calc(50% - 18px);">
+              <input id="showDNPCheckbox" type="checkbox" onchange="setShowDNP(this.checked)">
+              <span title="If checked, DNP devices are shown in the bom table">Show DNP</span>
+            </label>
+            <label style="width: calc(50%); float: right">
+              <input id="countDNPCheckbox" type="checkbox" onchange="setCountDNP(this.checked)">
+              <span title="If checked, DNP devices are counted in the bom table and statistics">Count DNP</span>
+            </label>
+          </label>
+          <label class="menu-label">
             <div style="margin-left: 5px">Bom checkboxes</div>
             <input id="bomCheckboxes" class="menu-textbox" type=text
                    oninput="setBomCheckboxes(this.value)">

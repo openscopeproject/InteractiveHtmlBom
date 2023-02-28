@@ -19,6 +19,7 @@ class XmlParser(ParserBase):
         comp_dict = {}
         for c in components:
             ref_fields = comp_dict.setdefault(c.attributes['ref'].value, {})
+            dnp = c.getElementsByTagName('dnp')
             datasheet = c.getElementsByTagName('datasheet')
             if datasheet:
                 datasheet = self.get_text(datasheet[0].childNodes)
@@ -30,9 +31,14 @@ class XmlParser(ParserBase):
                 field_set.add('Description')
                 attr = libsource[0].attributes['description']
                 ref_fields['Description'] = attr.value
+            for f in c.getElementsByTagName('property'):
+                if f.attributes['name'].value == 'dnp':
+                    dnp = 'DNP'
             for f in c.getElementsByTagName('field'):
                 name = f.attributes['name'].value
                 field_set.add(name)
                 ref_fields[name] = self.get_text(f.childNodes)
+            if (dnp not in [None, []]):
+                ref_fields['dnp'] = dnp
 
         return list(field_set), comp_dict

@@ -101,8 +101,10 @@ pcbdata = {
     "both": [bomrow1, bomrow2, ...],
     "F":  [bomrow1, bomrow2, ...],
     "B":  [bomrow1, bomrow2, ...],
-    // numeric IDs of DNP components that are not in BOM
+    // numeric IDs of virtual or exclude_from_bom components
     "skipped": [id1, id2, ...]
+    // numeric IDs of blacklisted components (DNPs)
+    "dnp": [id1, id2, ...]
     // Fields map is keyed on component ID with values being field data.
     // It's order corresponds to order of fields data in config struct.
     "fields" {
