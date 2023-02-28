@@ -549,8 +549,8 @@ function initDefaults() {
     zonesVisible(false);
   }
   initBooleanSetting("dnpOutline", false, "dnpOutlineCheckbox", dnpOutline);
-  initBooleanSetting("showDNP", false, "showDNPCheckbox", setShowDNP);
-  initBooleanSetting("countDNP", false, "countDNPCheckbox", setCountDNP);
+  initBooleanSetting("showDNP", config.show_dnp, "showDNPCheckbox", setShowDNP);
+  initBooleanSetting("countDNP", config.count_dnp, "countDNPCheckbox", setCountDNP);
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
   initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
