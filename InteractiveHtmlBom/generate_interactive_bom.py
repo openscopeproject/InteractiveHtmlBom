@@ -25,11 +25,14 @@ def to_utf(s):
 def main():
     create_wx_app = 'INTERACTIVE_HTML_BOM_NO_DISPLAY' not in os.environ
 
-    if create_wx_app:
-        import wx
+    import wx
 
+    if create_wx_app:
         app = wx.App()
-        app.SetAssertMode(wx.APP_ASSERT_SUPPRESS)
+        if hasattr(wx, "APP_ASSERT_SUPPRESS"):
+            app.SetAssertMode(wx.APP_ASSERT_SUPPRESS)
+    elif hasattr(wx, "DisableAsserts"):
+        wx.DisableAsserts()
 
     from .core import ibom
     from .core.config import Config
