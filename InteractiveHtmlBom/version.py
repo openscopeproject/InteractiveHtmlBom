@@ -11,6 +11,7 @@ def _get_git_version():
     try:
         git_version = subprocess.check_output(
             ['git', 'describe', '--tags', '--abbrev=4', '--dirty=-*'],
+            stderr=subprocess.DEVNULL,
             cwd=plugin_path)
         if isinstance(git_version, bytes):
             return git_version.decode('utf-8').rstrip()
