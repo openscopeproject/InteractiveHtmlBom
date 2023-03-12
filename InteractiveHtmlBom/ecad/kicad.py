@@ -336,7 +336,10 @@ class PcbnewParser(EcadParser):
         elif (d.GetClass().startswith("PCB_DIM")
               and hasattr(pcbnew, "VECTOR_SHAPEPTR")):
             result.append(self.parse_dimension(d))
-            s = self.parse_text(d.Text())
+            if hasattr(d, "Text"):
+                s = self.parse_text(d.Text())
+            else:
+                s = self.parse_text(d)
         else:
             self.logger.info("Unsupported drawing class %s, skipping",
                              d.GetClass())
