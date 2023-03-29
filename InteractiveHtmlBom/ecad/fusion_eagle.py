@@ -468,117 +468,122 @@ class FusionEagleParser(EcadParser):
         else:
             return xr, yr
 
-    def _add_silk_fab(self, el, x, y, angle, mirrored, populate):
-        if el.tag == 'hole':
-            dwg_layer = self.pcbdata['edges']
-        elif el.attrib['layer'] in [self.TOP_PLACE_LAYER, self.BOT_PLACE_LAYER]:
-            dwg_layer = self.pcbdata['drawings']['silkscreen']
-            top = el.attrib['layer'] == self.TOP_PLACE_LAYER
-        elif el.attrib['layer'] in [self.TOP_DOCU_LAYER, self.BOT_DOCU_LAYER]:
-            if not populate:
-                return
-            dwg_layer = self.pcbdata['drawings']['fabrication']
-            top = el.attrib['layer'] == self.TOP_DOCU_LAYER
-        else:
-            return
-
-        dwg = None
-
-        if el.tag == 'wire':
-            _dx1 = float(el.attrib['x1'])
-            _dx2 = float(el.attrib['x2'])
-            _dy1 = -float(el.attrib['y1'])
-            _dy2 = -float(el.attrib['y2'])
-
-            dx1, dy1 = self._rotate(_dx1, _dy1, -angle, mirrored)
-            dx2, dy2 = self._rotate(_dx2, _dy2, -angle, mirrored)
-
-            x1, y1 = x + dx1, -y + dy1
-            x2, y2 = x + dx2, -y + dy2
-
-            if el.get('curve'):
-                dwg = {
-                    'type': 'arc',
-                    'width': float(el.attrib['width']),
-                    'svgpath': self._curve_to_svgpath(el, x, y, angle)
-                }
-            else:
-                dwg = {
-                    'type': 'segment',
-                    'start': [x1, y1],
-                    'end': [x2, y2],
-                    'width': float(el.attrib['width'])
-                }
-
-        elif el.tag == 'rectangle':
-            _dv = self._rectangle_vertices(el)
-
-            # Rotate rectangle about component origin based on component angle
-            dv = [self._rotate(_x, _y, -angle, mirrored) for (_x, _y) in _dv]
-
-            # Map vertices back to absolute coordinates
-            v = [(x + _x, -y + _y) for (_x, _y) in dv]
-
-            dwg = {
-                'type': 'polygon',
-                'filled': 1,
-                'pos': [0, 0],
-                'polygons': [v]
-            }
-
-        elif el.tag in ['circle', 'hole']:
-            _x = float(el.attrib['x'])
-            _y = -float(el.attrib['y'])
-            dxc, dyc = self._rotate(_x, _y, -angle, mirrored)
-            xc, yc = x + dxc, -y + dyc
-
-            if el.tag == 'circle':
-                radius = float(el.attrib['radius'])
-                width = float(el.attrib['width'])
-            else:
-                radius = float(el.attrib['drill']) / 2
-                width = 0
-
-            dwg = {
-                'type': 'circle',
-                'start': [xc, yc],
-                'radius': radius,
-                'width': width
-            }
-
-        elif el.tag in ['polygonshape', 'polygon']:
-            segs = el if el.tag == 'polygon' \
-                else el.find('polygonoutlinesegments')
-
-            dv = self._segments_to_polygon(segs, angle, mirrored)
-
-            polygon = [[x + v[0], -y + v[1]] for v in dv]
-
-            dwg = {
-                'type': 'polygon',
-                'filled': 1,
-                'pos': [0, 0],
-                'polygons': [polygon]
-            }
-
-        if dwg is not None:
-            if el.tag == 'hole':
-                dwg_layer.append(dwg)
-            else:
-                bot = not top
-
-                # Note that in Eagle terminology, 'mirrored' essentially means
-                # 'flipped' (i.e. to the opposite side of the board)
-                if (mirrored and bot) or (not mirrored and top):
-                    dwg_layer['F'].append(dwg)
-                elif (mirrored and top) or (not mirrored and bot):
-                    dwg_layer['B'].append(dwg)
-
     def _process_footprint(self, package, x, y, angle, mirrored, populate):
         for el in package.iter():
             if el.tag in ['wire', 'rectangle', 'circle', 'hole',
                           'polygonshape', 'polygon', 'hole']:
-                self._add_silk_fab(el, x, y, angle, mirrored, populate)
+                if el.tag == 'hole':
+                    dwg_layer = self.pcbdata['edges']
+                elif el.attrib['layer'] in [self.TOP_PLACE_LAYER,
+                                            self.BOT_PLACE_LAYER]:
+                    dwg_layer = self.pcbdata['drawings']['silkscreen']
+                    top = el.attrib['layer'] == self.TOP_PLACE_LAYER
+                elif el.attrib['layer'] in [self.TOP_DOCU_LAYER,
+                                            self.BOT_DOCU_LAYER]:
+                    if not populate:
+                        return
+                    dwg_layer = self.pcbdata['drawings']['fabrication']
+                    top = el.attrib['layer'] == self.TOP_DOCU_LAYER
+                elif el.tag == 'wire' and \
+                        el.attrib['layer'] == self.DIMENSION_LAYER:
+                    dwg_layer = self.pcbdata['edges']
+                    top = True
+                else:
+                    return
+
+                dwg = None
+
+                if el.tag == 'wire':
+                    _dx1 = float(el.attrib['x1'])
+                    _dx2 = float(el.attrib['x2'])
+                    _dy1 = -float(el.attrib['y1'])
+                    _dy2 = -float(el.attrib['y2'])
+
+                    dx1, dy1 = self._rotate(_dx1, _dy1, -angle, mirrored)
+                    dx2, dy2 = self._rotate(_dx2, _dy2, -angle, mirrored)
+
+                    x1, y1 = x + dx1, -y + dy1
+                    x2, y2 = x + dx2, -y + dy2
+
+                    if el.get('curve'):
+                        dwg = {
+                            'type': 'arc',
+                            'width': float(el.attrib['width']),
+                            'svgpath': self._curve_to_svgpath(el, x, y, angle)
+                        }
+                    else:
+                        dwg = {
+                            'type': 'segment',
+                            'start': [x1, y1],
+                            'end': [x2, y2],
+                            'width': float(el.attrib['width'])
+                        }
+
+                elif el.tag == 'rectangle':
+                    _dv = self._rectangle_vertices(el)
+
+                    # Rotate rectangle about component origin based on component angle
+                    dv = [self._rotate(_x, _y, -angle, mirrored) for (_x, _y) in
+                          _dv]
+
+                    # Map vertices back to absolute coordinates
+                    v = [(x + _x, -y + _y) for (_x, _y) in dv]
+
+                    dwg = {
+                        'type': 'polygon',
+                        'filled': 1,
+                        'pos': [0, 0],
+                        'polygons': [v]
+                    }
+
+                elif el.tag in ['circle', 'hole']:
+                    _x = float(el.attrib['x'])
+                    _y = -float(el.attrib['y'])
+                    dxc, dyc = self._rotate(_x, _y, -angle, mirrored)
+                    xc, yc = x + dxc, -y + dyc
+
+                    if el.tag == 'circle':
+                        radius = float(el.attrib['radius'])
+                        width = float(el.attrib['width'])
+                    else:
+                        radius = float(el.attrib['drill']) / 2
+                        width = 0
+
+                    dwg = {
+                        'type': 'circle',
+                        'start': [xc, yc],
+                        'radius': radius,
+                        'width': width
+                    }
+
+                elif el.tag in ['polygonshape', 'polygon']:
+                    segs = el if el.tag == 'polygon' \
+                        else el.find('polygonoutlinesegments')
+
+                    dv = self._segments_to_polygon(segs, angle, mirrored)
+
+                    polygon = [[x + v[0], -y + v[1]] for v in dv]
+
+                    dwg = {
+                        'type': 'polygon',
+                        'filled': 1,
+                        'pos': [0, 0],
+                        'polygons': [polygon]
+                    }
+
+                if dwg is not None:
+                    if el.tag == 'hole' or \
+                            el.attrib['layer'] == self.DIMENSION_LAYER:
+                        dwg_layer.append(dwg)
+                    else:
+                        bot = not top
+
+                        # Note that in Eagle terminology, 'mirrored' essentially means
+                        # 'flipped' (i.e. to the opposite side of the board)
+                        if (mirrored and bot) or (not mirrored and top):
+                            dwg_layer['F'].append(dwg)
+                        elif (mirrored and top) or (not mirrored and bot):
+                            dwg_layer['B'].append(dwg)
 
     def _element_refdes_to_silk(self, el):
         for attr in el.iter('attribute'):
@@ -731,17 +736,6 @@ class FusionEagleParser(EcadParser):
                 self.logger.error("Unsupported units %s on rlMinViaOuter",
                                   mv_units)
 
-        # Edges & silkscreen (partial)
-        for el in plain.iter():
-            self._add_drawing(el)
-        # identify board bounding box based on edges
-        board_outline_bbox = BoundingBox()
-
-        for drawing in self.pcbdata['edges']:
-            self.add_drawing_bounding_box(drawing, board_outline_bbox)
-        if board_outline_bbox.initialized():
-            self.pcbdata['edges_bbox'] = board_outline_bbox.to_dict()
-
         # Signals --> nets
         if self.config.include_nets:
             self.pcbdata['nets'] = []
@@ -762,7 +756,7 @@ class FusionEagleParser(EcadParser):
                 for poly in signal.iter('polygon'):
                     self._add_zone(poly, signal.attrib['name'])
 
-        # Elements --> components, footprints, silkscreen
+        # Elements --> components, footprints, silkscreen, edges
         for el in elements.iter('element'):
             populate = el.get('populate') != 'no'
             elr = self.Rot(el.get('rot'))
@@ -825,13 +819,24 @@ class FusionEagleParser(EcadParser):
                                                                elr.mirrored)
             self.pcbdata['footprints'].append(footprint)
 
-            # Add silkscreen for component footprint & refdes
+            # Add silkscreen, edges for component footprint & refdes
             self._process_footprint(package, elx, ely, elr.angle, elr.mirrored,
                                     populate)
             self._element_refdes_to_silk(el)
 
             if populate:
                 self.components.append(comp)
+
+        # Edges & silkscreen (independent of elements)
+        for el in plain.iter():
+            self._add_drawing(el)
+        # identify board bounding box based on edges
+        board_outline_bbox = BoundingBox()
+
+        for drawing in self.pcbdata['edges']:
+            self.add_drawing_bounding_box(drawing, board_outline_bbox)
+        if board_outline_bbox.initialized():
+            self.pcbdata['edges_bbox'] = board_outline_bbox.to_dict()
 
         self._add_parsed_font_data()
 
