@@ -489,7 +489,7 @@ class FusionEagleParser(EcadParser):
                     dwg_layer = self.pcbdata['edges']
                     top = True
                 else:
-                    return
+                    continue
 
                 dwg = None
 
