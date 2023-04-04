@@ -66,6 +66,10 @@ def skip_component(m, config):
     if config.blacklist_virtual and m.attr == 'Virtual':
         return True
 
+    # skip components if dedicated kicad dnp flag is set
+    if m.extra_fields and m.extra_fields.get('kicad_dnp'):
+        return True
+
     # skip components with dnp field not empty
     if config.dnp_field \
             and config.dnp_field in m.extra_fields \
