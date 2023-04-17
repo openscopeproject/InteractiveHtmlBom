@@ -272,7 +272,7 @@ function entryMatches(entry) {
     var f = config.fields[i];
     if (!settings.hiddenColumns.includes(f)) {
       for (var ref of entry) {
-        if (pcbdata.bom.fields[ref[1]][i].toLowerCase().indexOf(filter) >= 0) {
+        if (String(pcbdata.bom.fields[ref[1]][i]).toLowerCase().indexOf(filter) >= 0) {
           return true;
         }
       }
@@ -662,7 +662,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           td = document.createElement("TD");
           var output = new Array();
           for (let item of valueSet) {
-            const visible = highlightFilter(item);
+            const visible = highlightFilter(String(item));
             if (typeof item === 'string' && item.match(urlRegex)) {
               output.push(`<a href="${item}" target="_blank">${visible}</a>`);
             } else {
