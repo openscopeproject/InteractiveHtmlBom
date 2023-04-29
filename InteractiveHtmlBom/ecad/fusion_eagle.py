@@ -110,6 +110,9 @@ class FusionEagleParser(EcadParser):
             self.angle = float(''.join(d for d in rot_string
                                        if d in string.digits + '.'))
 
+        def __repr__(self):
+            return self.__str__()
+
         def __str__(self):
             return "Mirrored: {0}, Spin: {1}, Angle: {2}".format(self.mirrored,
                                                                  self.spin,
@@ -585,61 +588,83 @@ class FusionEagleParser(EcadParser):
                         elif (mirrored and top) or (not mirrored and bot):
                             dwg_layer['B'].append(dwg)
 
-    def _element_refdes_to_silk(self, el):
+    def _name_to_silk(self, name, x, y, elr, tr, align, size, ratio):
+        angle = tr.angle
+        mirrored = tr.mirrored
+        spin = elr.spin ^ tr.spin
+        if mirrored:
+            angle = -angle
+
+        if align is None:
+            justify = [-1, 1]
+        elif align == 'center':
+            justify = [0, 0]
+        else:
+            j = align.split('-')
+            alignments = {
+                'bottom': 1,
+                'center': 0,
+                'top': -1,
+                'left': -1,
+                'right': 1
+            }
+            justify = [alignments[ss] for ss in j[::-1]]
+        if (90 < angle <= 270 and not spin) or \
+                (-90 >= angle >= -270 and not spin):
+            angle += 180
+            justify = [-j for j in justify]
+
+        dwg = {
+            'type': 'text',
+            'text': name,
+            'pos': [x, y],
+            'height': size,
+            'width': size,
+            'justify': justify,
+            'thickness': size * ratio,
+            'attr': [] if not mirrored else ['mirrored'],
+            'angle': angle
+        }
+
+        self.font_parser.parse_font_for_string(name)
+        if mirrored:
+            self.pcbdata['drawings']['silkscreen']['B'].append(dwg)
+        else:
+            self.pcbdata['drawings']['silkscreen']['F'].append(dwg)
+
+    def _element_refdes_to_silk(self, el, package):
+        if 'smashed' not in el.attrib:
+            elx = float(el.attrib['x'])
+            ely = -float(el.attrib['y'])
+            for p_el in package.iter('text'):
+                if p_el.text == '>NAME':
+                    dx = float(p_el.attrib['x'])
+                    dy = float(p_el.attrib['y'])
+                    elr = self.Rot(el.get('rot'))
+                    dx, dy = self._rotate(dx, dy, elr.angle, elr.mirrored)
+                    tr = self.Rot(p_el.get('rot'))
+                    tr.angle += elr.angle
+                    tr.mirrored ^= elr.mirrored
+                    self._name_to_silk(name=el.attrib['name'],
+                                       x=elx+dx,
+                                       y=ely-dy,
+                                       elr=elr,
+                                       tr=tr,
+                                       align=p_el.get('align'),
+                                       size=float(p_el.attrib['size']),
+                                       ratio=float(p_el.get('ratio', '8'))/100)
+
+
         for attr in el.iter('attribute'):
             if attr.attrib['name'] == 'NAME':
-                attrx = float(attr.attrib['x'])
-                attry = -float(attr.attrib['y'])
-                xpos = attrx
-                ypos = attry
-                elr = self.Rot(el.get('rot'))
-                tr = self.Rot(attr.get('rot'))
-                text = el.attrib['name']
-
-                angle = tr.angle
-                mirrored = tr.mirrored
-                spin = elr.spin ^ tr.spin
-                if mirrored:
-                    angle = -angle
-
-                if 'align' not in attr.attrib:
-                    justify = [-1, 1]
-                elif attr.attrib['align'] == 'center':
-                    justify = [0, 0]
-                else:
-                    j = attr.attrib['align'].split('-')
-                    alignments = {
-                        'bottom': 1,
-                        'center': 0,
-                        'top': -1,
-                        'left': -1,
-                        'right': 1
-                    }
-                    justify = [alignments[ss] for ss in j[::-1]]
-                if (90 < angle < 270 and not spin) or \
-                        (-90 >= angle >= -270 and not spin):
-                    angle += 180
-                    justify = [-j for j in justify]
-
-                size = float(attr.attrib['size'])
-                ratio = float(attr.get('ratio', '8')) / 100
-                dwg = {
-                    'type': 'text',
-                    'text': text,
-                    'pos': [xpos, ypos],
-                    'height': size,
-                    'width': size,
-                    'justify': justify,
-                    'thickness': size * ratio,
-                    'attr': [] if not mirrored else ['mirrored'],
-                    'angle': angle
-                }
-
-                self.font_parser.parse_font_for_string(text)
-                if mirrored:
-                    self.pcbdata['drawings']['silkscreen']['B'].append(dwg)
-                else:
-                    self.pcbdata['drawings']['silkscreen']['F'].append(dwg)
+                self._name_to_silk(name=el.attrib['name'],
+                                   x=float(attr.attrib['x']),
+                                   y=-float(attr.attrib['y']),
+                                   elr=self.Rot(el.get('rot')),
+                                   tr=self.Rot(attr.get('rot')),
+                                   align=attr.attrib.get('align'),
+                                   size=float(attr.attrib['size']),
+                                   ratio=float(attr.get('ratio', '8')) / 100)
 
     @staticmethod
     def _segments_to_polygon(segs, angle=0, mirrored=False):
@@ -822,7 +847,7 @@ class FusionEagleParser(EcadParser):
             # Add silkscreen, edges for component footprint & refdes
             self._process_footprint(package, elx, ely, elr.angle, elr.mirrored,
                                     populate)
-            self._element_refdes_to_silk(el)
+            self._element_refdes_to_silk(el, package)
 
             if populate:
                 self.components.append(comp)
