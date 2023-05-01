@@ -446,6 +446,8 @@ class FieldsPanelBase ( wx.Panel ):
 
         # Cell Defaults
         self.fieldsGrid.SetDefaultCellAlignment( wx.ALIGN_CENTER, wx.ALIGN_TOP )
+        self.fieldsGrid.SetMaxSize( wx.Size( -1,200 ) )
+
         bSizer4.Add( self.fieldsGrid, 1, wx.ALL|wx.EXPAND, 5 )
 
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
@@ -572,3 +574,5 @@ class FieldsPanelBase ( wx.Panel ):
 
     def OnBoardVariantFieldChange( self, event ):
         event.Skip()
+
+
