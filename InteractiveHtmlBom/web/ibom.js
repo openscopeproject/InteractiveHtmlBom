@@ -71,6 +71,9 @@ function setDarkMode(value) {
   writeStorage("darkmode", value);
   settings.darkMode = value;
   redrawIfInitDone();
+  if (initDone) {
+    populateBomTable();
+  }
 }
 
 function setShowBOMColumn(field, value) {
@@ -251,6 +254,33 @@ function createRowHighlightHandler(rowid, refs, net) {
       refs: refs,
       net: net
     });
+  }
+}
+
+function updateNetColors() {
+  writeStorage("netColors", JSON.stringify(settings.netColors));
+  redrawIfInitDone();
+}
+
+function netColorChangeHandler(net) {
+  return (event) => {
+    settings.netColors[net] = event.target.value;
+    updateNetColors();
+  }
+}
+
+function netColorRightClick(net) {
+  return (event) => {
+    if(event.button == 2) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      var style = getComputedStyle(topmostdiv);
+      var defaultNetColor = style.getPropertyValue('--track-color').trim();
+      event.target.value = defaultNetColor;
+      delete settings.netColors[net];
+      updateNetColors();
+    }
   }
 }
 
@@ -487,12 +517,14 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
     }
   }
   if (settings.bommode == "netlist") {
-    th = createColumnHeader("Net name", "bom-netname", (a, b) => {
+    tr.appendChild(createColumnHeader("Net name", "bom-netname", (a, b) => {
       if (a > b) return -1;
       if (a < b) return 1;
       return 0;
-    });
-    tr.appendChild(th);
+    }));
+    tr.appendChild(createColumnHeader("Color", "bom-color", (a, b) => {
+      return 0;
+    }));
   } else {
     // Filter hidden columns
     var columns = settings.columnOrder.filter(e => !settings.hiddenColumns.includes(e));
@@ -561,6 +593,8 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
   netsToHandler = {};
   currentHighlightedRowId = null;
   var first = true;
+  var style = getComputedStyle(topmostdiv);
+  var defaultNetColor = style.getPropertyValue('--track-color').trim();
   if (settings.bommode == "netlist") {
     bomtable = pcbdata.nets.slice();
   } else {
@@ -606,6 +640,17 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
       netname = bomentry;
       td = document.createElement("TD");
       td.innerHTML = highlightFilter(netname ? netname : "&lt;no net&gt;");
+      tr.appendChild(td);
+      var color = settings.netColors[netname] || defaultNetColor;
+      td = document.createElement("TD");
+      var colorBox = document.createElement("INPUT");
+      colorBox.type = "color";
+      colorBox.value = color;
+      colorBox.onchange = netColorChangeHandler(netname);
+      colorBox.onmouseup = netColorRightClick(netname);
+      colorBox.oncontextmenu = (e) => e.preventDefault();
+      td.appendChild(colorBox);
+      td.classList.add("color-column");
       tr.appendChild(td);
     } else {
       if (reflookup) {

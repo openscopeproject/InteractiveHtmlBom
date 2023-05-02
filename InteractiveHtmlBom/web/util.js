@@ -469,8 +469,8 @@ function dataURLtoBlob(dataurl) {
 }
 
 var settings = {
-  canvaslayout: "default",
-  bomlayout: "default",
+  canvaslayout: "FB",
+  bomlayout: "left-right",
   bommode: "grouped",
   checkboxes: [],
   checkboxStoredRefs: {},
@@ -488,7 +488,8 @@ var settings = {
   renderTracks: true,
   renderZones: true,
   columnOrder: [],
-  hiddenColumns: []
+  hiddenColumns: [],
+  netColors: {},
 }
 
 function initDefaults() {
@@ -501,6 +502,9 @@ function initDefaults() {
   }
   settings.bommode = readStorage("bommode");
   if (settings.bommode === null) {
+    settings.bommode = "grouped";
+  }
+  if (settings.bommode == "netlist" && !pcbdata.nets) {
     settings.bommode = "grouped";
   }
   if (!["grouped", "ungrouped", "netlist"].includes(settings.bommode)) {
@@ -575,6 +579,8 @@ function initDefaults() {
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
   initBooleanSetting("offsetBackRotation", config.offset_back_rotation, "offsetBackRotationCheckbox", setOffsetBackRotation);
+
+  settings.netColors = JSON.parse(readStorage("netColors")) || {};
 }
 
 // Helper classes for user js callbacks.
