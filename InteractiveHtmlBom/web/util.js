@@ -36,10 +36,10 @@ function writeStorage(key, value) {
 }
 
 function fancyDblClickHandler(el, onsingle, ondouble) {
-  return function() {
+  return function () {
     if (el.getAttribute("data-dblclick") == null) {
       el.setAttribute("data-dblclick", 1);
-      setTimeout(function() {
+      setTimeout(function () {
         if (el.getAttribute("data-dblclick") == 1) {
           onsingle();
         }
@@ -171,7 +171,7 @@ var units = {
     "FARAD", "Farad", "farad",
     "HENRY", "Henry", "henry"
   ],
-  getMultiplier: function(s) {
+  getMultiplier: function (s) {
     if (this.prefixes.giga.includes(s)) return 1e9;
     if (this.prefixes.mega.includes(s)) return 1e6;
     if (this.prefixes.kilo.includes(s)) return 1e3;
@@ -360,7 +360,7 @@ function loadSettings() {
   var input = document.createElement("input");
   input.type = "file";
   input.accept = ".settings.json";
-  input.onchange = function(e) {
+  input.onchange = function (e) {
     var file = e.target.files[0];
     var reader = new FileReader();
     reader.onload = readerEvent => {
@@ -388,10 +388,10 @@ function loadSettings() {
         var currentMetadata = JSON.stringify(pcbdata.metadata, null, 4);
         var fileMetadata = JSON.stringify(newSettings.pcbmetadata, null, 4);
         if (!confirm(
-            `Settins file metadata does not match current metadata.\n\n` +
-            `Page metadata:\n${currentMetadata}\n\n` +
-            `Settings file metadata:\n${fileMetadata}\n\n` +
-            `Press OK if you would like to import settings anyway.`)) {
+          `Settins file metadata does not match current metadata.\n\n` +
+          `Page metadata:\n${currentMetadata}\n\n` +
+          `Settings file metadata:\n${fileMetadata}\n\n` +
+          `Press OK if you would like to import settings anyway.`)) {
           return;
         }
       }
@@ -400,6 +400,23 @@ function loadSettings() {
     reader.readAsText(file, 'UTF-8');
   }
   input.click();
+}
+
+function resetSettings() {
+  if (!confirm(
+    `This will reset all checkbox states and other settings.\n\n` +
+    `Press OK if you want to continue.`)) {
+    return;
+  }
+  if (storage) {
+    var keys = [];
+    for (var i = 0; i < storage.length; i++) {
+      var key = storage.key(i);
+      if (key.startsWith(storagePrefix)) keys.push(key);
+    }
+    for (var key of keys) storage.removeItem(key);
+  }
+  location.reload();
 }
 
 function overwriteSettings(newSettings) {
@@ -594,14 +611,14 @@ const IBOM_EVENT_TYPES = {
 
 const EventHandler = {
   callbacks: {},
-  init: function() {
+  init: function () {
     for (eventType of Object.values(IBOM_EVENT_TYPES))
       this.callbacks[eventType] = [];
   },
-  registerCallback: function(eventType, callback) {
+  registerCallback: function (eventType, callback) {
     this.callbacks[eventType].push(callback);
   },
-  emitEvent: function(eventType, eventArgs) {
+  emitEvent: function (eventType, eventArgs) {
     event = {
       eventType: eventType,
       args: eventArgs,
