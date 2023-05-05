@@ -138,9 +138,12 @@ def generate_bom(pcb_footprints, config):
                     group_key.append(f.footprint)
                     group_key.append(f.attr)
             else:
-                fields.append(f.extra_fields.get(field, ''))
+                field_key = field
+                if config.normalize_field_case:
+                    field_key = field.lower()
+                fields.append(f.extra_fields.get(field_key, ''))
                 if field in group_by:
-                    group_key.append(f.extra_fields.get(field, ''))
+                    group_key.append(f.extra_fields.get(field_key, ''))
 
         index_to_fields[i] = fields
         refs = part_groups.setdefault(tuple(group_key), [])

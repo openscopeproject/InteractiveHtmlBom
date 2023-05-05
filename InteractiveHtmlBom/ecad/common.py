@@ -3,6 +3,13 @@ import math
 from .svgpath import parse_path
 
 
+class ExtraFieldData(object):
+    def __init__(self, fields, fields_by_ref, fields_by_index=None):
+        self.fields = fields
+        self.fields_by_ref = fields_by_ref
+        self.fields_by_index = fields_by_index
+
+
 class EcadParser(object):
 
     def __init__(self, file_name, config, logger):
@@ -28,33 +35,28 @@ class EcadParser(object):
 
     @staticmethod
     def normalize_field_names(data):
-        field_map = {f.lower(): f for f in reversed(data[0])}
-
+        # type: (ExtraFieldData) -> ExtraFieldData
         def remap(ref_fields):
-            return {field_map[f.lower()]: v for (f, v) in
-                    sorted(ref_fields.items(), reverse=True)}
+            return {f.lower(): v for (f, v) in
+                    sorted(ref_fields.items(), reverse=True) if v}
 
-        field_data = {r: remap(d) for (r, d) in data[1].items()}
-        return field_map.values(), field_data
+        by_ref = {r: remap(d) for (r, d) in data.fields_by_ref.items()}
+        if data.fields_by_index:
+            by_index = {i: remap(d) for (i, d) in data.fields_by_index.items()}
+            print([a.get("blah", "") for a in by_index.values()])
+        else:
+            by_index = None
+
+        field_map = {f.lower(): f for f in sorted(data.fields, reverse=True)}
+        return ExtraFieldData(field_map.values(), by_ref, by_index)
 
     def get_extra_field_data(self, file_name):
         """
         Abstract method that may be overridden in implementations that support
         extra field data.
-        :return: tuple of the format
-            (
-                [field_name1, field_name2,... ],
-                {
-                    ref1: {
-                        field_name1: field_value1,
-                        field_name2: field_value2,
-                        ...
-                    ],
-                    ref2: ...
-                }
-            )
+        :return: ExtraFieldData
         """
-        return [], {}
+        return ExtraFieldData([], {})
 
     def parse_extra_data(self, file_name, normalize_case):
         """
@@ -67,7 +69,8 @@ class EcadParser(object):
         data = self.get_extra_field_data(file_name)
         if normalize_case:
             data = self.normalize_field_names(data)
-        return sorted(data[0]), data[1]
+        return ExtraFieldData(
+            sorted(data.fields), data.fields_by_ref, data.fields_by_index)
 
     def latest_extra_data(self, extra_dirs=None):
         """

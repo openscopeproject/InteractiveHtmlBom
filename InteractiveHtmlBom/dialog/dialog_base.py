@@ -546,7 +546,7 @@ class FieldsPanelBase ( wx.Panel ):
         self.fieldsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnGridCellClicked )
         self.m_btnUp.Bind( wx.EVT_BUTTON, self.OnFieldsUp )
         self.m_btnDown.Bind( wx.EVT_BUTTON, self.OnFieldsDown )
-        self.normalizeCaseCheckbox.Bind( wx.EVT_CHECKBOX, self.OnNetlistFileChanged )
+        self.normalizeCaseCheckbox.Bind( wx.EVT_CHECKBOX, self.OnExtraDataFileChanged )
         self.boardVariantFieldBox.Bind( wx.EVT_COMBOBOX, self.OnBoardVariantFieldChange )
 
     def __del__( self ):
@@ -569,8 +569,6 @@ class FieldsPanelBase ( wx.Panel ):
     def OnFieldsDown( self, event ):
         event.Skip()
 
-    def OnNetlistFileChanged( self, event ):
-        event.Skip()
 
     def OnBoardVariantFieldChange( self, event ):
         event.Skip()
