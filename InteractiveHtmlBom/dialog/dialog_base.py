@@ -119,7 +119,7 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         highlightPin1Choices = [ u"None", u"All", u"Selected" ]
         self.highlightPin1 = wx.RadioBox( self, wx.ID_ANY, u"Highlight first pin", wx.DefaultPosition, wx.DefaultSize, highlightPin1Choices, 3, wx.RA_SPECIFY_COLS )
         self.highlightPin1.SetSelection( 0 )
-        b_sizer.Add( self.highlightPin1, 0, wx.ALL, 5 )
+        b_sizer.Add( self.highlightPin1, 0, wx.ALL|wx.EXPAND, 5 )
 
         bSizer18 = wx.BoxSizer( wx.VERTICAL )
 
@@ -182,7 +182,7 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         sbSizer10.Add( self.openBrowserCheckbox, 0, wx.ALL, 5 )
 
 
-        b_sizer.Add( sbSizer10, 1, wx.EXPAND, 5 )
+        b_sizer.Add( sbSizer10, 1, wx.EXPAND|wx.ALL, 5 )
 
 
         self.SetSizer( b_sizer )
