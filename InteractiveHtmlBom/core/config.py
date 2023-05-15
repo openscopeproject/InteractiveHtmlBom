@@ -33,6 +33,7 @@ class Config:
         '~',
         'HS', 'CNN', 'J', 'P', 'NT', 'MH',
     ]
+    highlight_pin1_choices = ['none', 'all', 'selected']
     default_checkboxes = ['Sourced', 'Placed']
     html_config_fields = [
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
@@ -49,8 +50,8 @@ class Config:
     show_pads = True
     show_fabrication = False
     show_silkscreen = True
-    highlight_pin1 = False
     redraw_on_drag = True
+    highlight_pin1 = highlight_pin1_choices[0]
     board_rotation = 0
     offset_back_rotation = False
     checkboxes = ','.join(default_checkboxes)
@@ -114,8 +115,8 @@ class Config:
             'show_fabrication', self.show_fabrication)
         self.show_silkscreen = f.ReadBool(
             'show_silkscreen', self.show_silkscreen)
-        self.highlight_pin1 = f.ReadBool('highlight_pin1', self.highlight_pin1)
         self.redraw_on_drag = f.ReadBool('redraw_on_drag', self.redraw_on_drag)
+        self.highlight_pin1 = f.Read('highlight_pin1', self.highlight_pin1)
         self.board_rotation = f.ReadInt('board_rotation', self.board_rotation)
         self.offset_back_rotation = f.ReadBool(
             'offset_back_rotation', self.offset_back_rotation)
@@ -158,6 +159,12 @@ class Config:
             self._join(self.board_variant_blacklist)))
         self.dnp_field = f.Read('dnp_field', self.dnp_field)
 
+        # migration from previous settings
+        if self.highlight_pin1 == '0':
+            self.highlight_pin1 = 'none'
+        if self.highlight_pin1 == '1':
+            self.highlight_pin1 == 'all'
+
     def save(self, locally):
         file = self.local_config_file if locally else self.global_config_file
         print('Saving to', file)
@@ -168,8 +175,8 @@ class Config:
         f.WriteBool('show_pads', self.show_pads)
         f.WriteBool('show_fabrication', self.show_fabrication)
         f.WriteBool('show_silkscreen', self.show_silkscreen)
-        f.WriteBool('highlight_pin1', self.highlight_pin1)
         f.WriteBool('redraw_on_drag', self.redraw_on_drag)
+        f.Write('highlight_pin1', self.highlight_pin1)
         f.WriteInt('board_rotation', self.board_rotation)
         f.WriteBool('offset_back_rotation', self.offset_back_rotation)
         f.Write('checkboxes', self.checkboxes)
@@ -213,8 +220,8 @@ class Config:
         self.show_pads = dlg.html.showPadsCheckbox.IsChecked()
         self.show_fabrication = dlg.html.showFabricationCheckbox.IsChecked()
         self.show_silkscreen = dlg.html.showSilkscreenCheckbox.IsChecked()
-        self.highlight_pin1 = dlg.html.highlightPin1Checkbox.IsChecked()
         self.redraw_on_drag = dlg.html.continuousRedrawCheckbox.IsChecked()
+        self.highlight_pin1 = self.highlight_pin1_choices[dlg.html.highlightPin1.Selection]
         self.board_rotation = dlg.html.boardRotationSlider.Value
         self.offset_back_rotation = \
             dlg.html.offsetBackRotationCheckbox.IsChecked()
@@ -260,7 +267,10 @@ class Config:
         dlg.html.showPadsCheckbox.Value = self.show_pads
         dlg.html.showFabricationCheckbox.Value = self.show_fabrication
         dlg.html.showSilkscreenCheckbox.Value = self.show_silkscreen
-        dlg.html.highlightPin1Checkbox.Value = self.highlight_pin1
+        dlg.html.highlightPin1.Selection = 0
+        if self.highlight_pin1 in self.highlight_pin1_choices:
+            dlg.html.highlightPin1.Selection = \
+                self.highlight_pin1_choices.index(self.highlight_pin1)
         dlg.html.continuousRedrawCheckbox.value = self.redraw_on_drag
         dlg.html.boardRotationSlider.Value = self.board_rotation
         dlg.html.offsetBackRotationCheckbox.Value = self.offset_back_rotation
@@ -332,8 +342,9 @@ class Config:
                             help='Hide silkscreen by default.',
                             action='store_true')
         parser.add_argument('--highlight-pin1',
-                            help='Highlight pin1 by default.',
-                            action='store_true')
+                            default=cls.highlight_pin1_choices[0],
+                            choices=cls.highlight_pin1_choices,
+                            help='Highlight first pin.')
         parser.add_argument('--no-redraw-on-drag',
                             help='Do not redraw pcb on drag by default.',
                             action='store_true')

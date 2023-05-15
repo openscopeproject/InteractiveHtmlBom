@@ -103,12 +103,27 @@
             DNP outlined
           </label>
           <label class="menu-label">
-            <input id="highlightpin1Checkbox" type="checkbox" onchange="setHighlightPin1(this.checked)">
-            Highlight first pin
-          </label>
-          <label class="menu-label">
             <input id="dragCheckbox" type="checkbox" checked onchange="setRedrawOnDrag(this.checked)">
             Continuous redraw on drag
+          </label>
+          <label class="menu-label">
+            Highlight first pin
+            <form id="highlightpin1">
+              <div class="flexbox">
+                <label>
+                  <input type="radio" name="highlightpin1" value="none" onchange="setHighlightPin1('none')">
+                  None
+                </label>
+                <label>
+                  <input type="radio" name="highlightpin1" value="all" onchange="setHighlightPin1('all')">
+                  All
+                </label>
+                <label>
+                  <input type="radio" name="highlightpin1" value="selected" onchange="setHighlightPin1('selected')">
+                  Selected
+                </label>
+              </div>
+            </form>
           </label>
           <label class="menu-label">
             <span>Board rotation</span>

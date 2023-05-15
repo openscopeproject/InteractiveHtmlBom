@@ -346,7 +346,9 @@ function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, ou
     for (var pad of footprint.pads) {
       if (pad.layers.includes(layer)) {
         drawPad(ctx, pad, colors.pad, outline);
-        if (pad.pin1 && settings.highlightpin1) {
+        if (pad.pin1 &&
+          (settings.highlightpin1 == "all" ||
+            settings.highlightpin1 == "selected" && highlight)) {
           drawPad(ctx, pad, colors.outline, true);
         }
       }

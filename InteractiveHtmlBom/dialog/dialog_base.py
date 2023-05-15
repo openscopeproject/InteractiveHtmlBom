@@ -112,12 +112,14 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         self.showSilkscreenCheckbox.SetValue(True)
         b_sizer.Add( self.showSilkscreenCheckbox, 0, wx.ALL, 5 )
 
-        self.highlightPin1Checkbox = wx.CheckBox( self, wx.ID_ANY, u"Highlight first pin", wx.DefaultPosition, wx.DefaultSize, 0 )
-        b_sizer.Add( self.highlightPin1Checkbox, 0, wx.ALL, 5 )
-
         self.continuousRedrawCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Continuous redraw on drag", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.continuousRedrawCheckbox.SetValue(True)
         b_sizer.Add( self.continuousRedrawCheckbox, 0, wx.ALL, 5 )
+
+        highlightPin1Choices = [ u"None", u"All", u"Selected" ]
+        self.highlightPin1 = wx.RadioBox( self, wx.ID_ANY, u"Highlight first pin", wx.DefaultPosition, wx.DefaultSize, highlightPin1Choices, 3, wx.RA_SPECIFY_COLS )
+        self.highlightPin1.SetSelection( 0 )
+        b_sizer.Add( self.highlightPin1, 0, wx.ALL, 5 )
 
         bSizer18 = wx.BoxSizer( wx.VERTICAL )
 

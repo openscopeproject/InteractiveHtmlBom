@@ -452,7 +452,7 @@ function overwriteSettings(newSettings) {
   setDarkMode(settings.darkMode);
   document.getElementById("darkmodeCheckbox").checked = settings.darkMode;
   setHighlightPin1(settings.highlightpin1);
-  document.getElementById("highlightpin1Checkbox").checked = settings.highlightpin1;
+  document.forms.highlightpin1.highlightpin1.value = settings.highlightpin1;
   writeStorage("boardRotation", settings.boardRotation);
   document.getElementById("boardRotation").value = settings.boardRotation / 5;
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
@@ -492,7 +492,7 @@ var settings = {
   checkboxes: [],
   checkboxStoredRefs: {},
   darkMode: false,
-  highlightpin1: false,
+  highlightpin1: "none",
   redrawOnDrag: true,
   boardRotation: 0,
   offsetBackRotation: false,
@@ -538,6 +538,12 @@ function initDefaults() {
   settings.checkboxes = bomCheckboxes.split(",").filter((e) => e);
   document.getElementById("bomCheckboxes").value = bomCheckboxes;
 
+  var highlightpin1 = readStorage("highlightpin1") || config.highlight_pin1;
+  if (highlightpin1 === "false") highlightpin1 = "none";
+  if (highlightpin1 === "true") highlightpin1 = "all";
+  setHighlightPin1(highlightpin1);
+  document.forms.highlightpin1.highlightpin1.value = highlightpin1;
+
   settings.markWhenChecked = readStorage("markWhenChecked") || "";
   populateMarkWhenCheckedOptions();
 
@@ -568,7 +574,6 @@ function initDefaults() {
   initBooleanSetting("dnpOutline", false, "dnpOutlineCheckbox", dnpOutline);
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
-  initBooleanSetting("highlightpin1", config.highlight_pin1, "highlightpin1Checkbox", setHighlightPin1);
 
   var fields = ["checkboxes", "References"].concat(config.fields).concat(["Quantity"]);
   var hcols = JSON.parse(readStorage("hiddenColumns"));
