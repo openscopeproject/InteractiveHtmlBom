@@ -34,22 +34,29 @@ class PcbnewParser(EcadParser):
 
         return ExtraFieldData(data[0], data[1])
 
+    @staticmethod
+    def get_footprint_fields(f):
+        # type: (pcbnew.FOOTPRINT) -> dict
+        if hasattr(f, "GetProperties"):
+            return f.GetProperties()
+        if hasattr(f, "GetFields"):
+            return f.GetFieldsShownText()
+        return {}
+
     def parse_extra_data_from_pcb(self):
         field_set = set()
         by_ref = {}
+        by_index = {}
 
-        for f in self.footprints:  # type: pcbnew.FOOTPRINT
-            props = f.GetProperties()
+        for (i, f) in enumerate(self.footprints):
+            props = self.get_footprint_fields(f)
+            by_index[i] = props
             ref = f.GetReference()
             ref_fields = by_ref.setdefault(ref, {})
 
             for k, v in props.items():
                 field_set.add(k)
                 ref_fields[k] = v
-
-        by_index = {
-            i: f.GetProperties() for (i, f) in enumerate(self.footprints)
-        }
 
         return ExtraFieldData(list(field_set), by_ref, by_index)
 
