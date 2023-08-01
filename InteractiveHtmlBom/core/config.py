@@ -343,7 +343,9 @@ class Config:
                             action='store_true')
         parser.add_argument('--highlight-pin1',
                             default=cls.highlight_pin1_choices[0],
+                            const=cls.highlight_pin1_choices[1],
                             choices=cls.highlight_pin1_choices,
+                            nargs='?',
                             help='Highlight first pin.')
         parser.add_argument('--no-redraw-on-drag',
                             help='Do not redraw pcb on drag by default.',
