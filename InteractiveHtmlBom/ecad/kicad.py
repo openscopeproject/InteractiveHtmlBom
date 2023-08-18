@@ -37,11 +37,15 @@ class PcbnewParser(EcadParser):
     @staticmethod
     def get_footprint_fields(f):
         # type: (pcbnew.FOOTPRINT) -> dict
+        props = {}
         if hasattr(f, "GetProperties"):
-            return f.GetProperties()
+            props = f.GetProperties()
         if hasattr(f, "GetFields"):
-            return f.GetFieldsShownText()
-        return {}
+            props = f.GetFieldsShownText()
+        if "dnp" in props and props["dnp"] == "":
+            del props["dnp"]
+            props["kicad_dnp"] = True
+        return props
 
     def parse_extra_data_from_pcb(self):
         field_set = set()
