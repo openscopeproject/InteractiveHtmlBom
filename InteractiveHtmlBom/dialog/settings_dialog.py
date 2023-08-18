@@ -264,6 +264,8 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
                                 recursive=True)
         self.extraDataFilePicker.Destroy()
         self.extraDataFilePicker = new_picker
+        self.extraDataFilePicker.Bind(
+            wx.EVT_FILEPICKER_CHANGED, self.OnExtraDataFileChanged)
         self.Layout()
 
     def _swapRows(self, a, b):
