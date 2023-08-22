@@ -800,7 +800,7 @@ class FusionEagleParser(EcadParser):
                                  'value'],
                              footprint=el.attrib['package'],
                              layer=layer,
-                             attr=None,
+                             attr=None if populate else 'Virtual',
                              extra_fields=extra_fields)
 
             # For component, get footprint data
@@ -852,8 +852,7 @@ class FusionEagleParser(EcadParser):
                                     populate)
             self._element_refdes_to_silk(el, package)
 
-            if populate:
-                self.components.append(comp)
+            self.components.append(comp)
 
         # Edges & silkscreen (independent of elements)
         for el in plain.iter():
