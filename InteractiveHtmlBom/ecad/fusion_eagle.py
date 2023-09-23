@@ -688,16 +688,27 @@ class FusionEagleParser(EcadParser):
             return
 
         if poly.tag == 'polygonpour':
-            segs = poly.find('polygonfilldetails').find('polygonshape') \
-                .find('polygonoutlinesegments')
+            shapes = poly.find('polygonfilldetails').findall('polygonshape')
+            if shapes:
+                zone = {'polygons': [],
+                        'fillrule': 'evenodd'}
+                for shape in shapes:
+                    segs = shape.find('polygonoutlinesegments')
+                    zone['polygons'].append(self._segments_to_polygon(segs))
+                    holelist = shape.find('polygonholelist')
+                    if holelist:
+                        holes = holelist.findall('polygonholesegments')
+                        for hole in holes:
+                            zone['polygons'].append(self._segments_to_polygon(hole))
+                if self.config.include_nets:
+                    zone['net'] = net
+                dest.append(zone)
         else:
-            segs = poly
-
-        zone = {'polygons': []}
-        zone['polygons'].append(self._segments_to_polygon(segs))
-        if self.config.include_nets:
-            zone['net'] = net
-        dest.append(zone)
+            zone = {'polygons': []}
+            zone['polygons'].append(self._segments_to_polygon(poly))
+            if self.config.include_nets:
+                zone['net'] = net
+            dest.append(zone)
 
     def _add_parsed_font_data(self):
         for (c, wl) in self.font_parser.get_parsed_font().items():
@@ -780,8 +791,6 @@ class FusionEagleParser(EcadParser):
                 for via in signal.iter('via'):
                     self._add_track(via, signal.attrib['name'])
                 for poly in signal.iter('polygonpour'):
-                    self._add_zone(poly, signal.attrib['name'])
-                for poly in signal.iter('polygon'):
                     self._add_zone(poly, signal.attrib['name'])
 
         # Elements --> components, footprints, silkscreen, edges
