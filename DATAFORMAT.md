@@ -60,7 +60,9 @@ pcbdata = {
         // Common fields
         "width": w,
         // Optional net name
-        "net": netname
+        "net": netname,
+        // Optional drill diameter (un-tented vias only)
+        "drillsize": x
       },
       ...
     ],
