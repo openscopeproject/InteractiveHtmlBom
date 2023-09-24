@@ -266,6 +266,8 @@ class FusionEagleParser(EcadParser):
                 trk['width'] = float(el.attrib['drill']) + 2 * self.min_via_w \
                     if 'diameter' not in el.attrib else float(
                     el.attrib['diameter'])
+                if float(el.attrib['drill']) >= self.min_drill_via_untented:
+                    trk['drillsize'] = float(el.attrib['drill'])
                 self.pcbdata['tracks']['F'].append(trk)
                 self.pcbdata['tracks']['B'].append(trk)
 
@@ -704,6 +706,31 @@ class FusionEagleParser(EcadParser):
             if c not in self.pcbdata['font_data']:
                 self.pcbdata['font_data'][c] = wl
 
+    def _parse_param_length(self, name, root, default):
+        # parse named parameter (typically a design rule) assuming it is in
+        # length units (mil or mm)
+        p = [el.attrib['value'] for el in root.iter('param') if
+              el.attrib['name'] == name]
+        if len(p) == 0:
+            self.logger.warning("{0} not found, defaulting to {1}"
+                                .format(name, default))
+            return default
+        else:
+            if len(p) > 1:
+                self.logger.warning(
+                    "Multiple {0} found, using first occurrence".format(name))
+            p = p[0]
+            p_val = float(''.join(d for d in p if d in string.digits + '.'))
+            p_units = (''.join(d for d in p if d in string.ascii_lowercase))
+
+            if p_units == 'mm':
+                return p_val
+            elif p_units == 'mil':
+                return p_val * 0.0254
+            else:
+                self.logger.error("Unsupported units {0} on {1}"
+                                  .format(p_units, name))
+
     def parse(self):
         ext = os.path.splitext(self.file_name)[1]
 
@@ -741,28 +768,16 @@ class FusionEagleParser(EcadParser):
         # Build library mapping elements' pads to nets
         self._parse_pad_nets(signals)
 
-        # Determine minimum via annular ring from board design rules
-        # (Needed in order to calculate through-hole pad diameters correctly)
-        mv = [el.attrib['value'] for el in root.iter('param') if
-              el.attrib['name'] == 'rlMinViaOuter']
-        if len(mv) == 0:
-            self.logger.warning("rlMinViaOuter not found, defaulting to 0")
-            self.min_via_w = 0
-        else:
-            if len(mv) > 1:
-                self.logger.warning(
-                    "Multiple rlMinViaOuter found, using first occurrence")
-            mv = mv[0]
-            mv_val = float(''.join(d for d in mv if d in string.digits + '.'))
-            mv_units = (''.join(d for d in mv if d in string.ascii_lowercase))
+        # Parse needed design rules
 
-            if mv_units == 'mm':
-                self.min_via_w = mv_val
-            elif mv_units == 'mil':
-                self.min_via_w = mv_val * 0.0254
-            else:
-                self.logger.error("Unsupported units %s on rlMinViaOuter",
-                                  mv_units)
+        # Minimum via annular ring
+        # (Needed in order to calculate through-hole pad diameters correctly)
+        self.min_via_w = (
+            self._parse_param_length('rlMinViaOuter', root, default=0))
+
+        # Minimum drill diameter above which vias will be un-tented
+        self.min_drill_via_untented = (
+            self._parse_param_length('mlViaStopLimit', root, default=0))
 
         # Signals --> nets
         if self.config.include_nets:
