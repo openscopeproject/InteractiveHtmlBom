@@ -519,6 +519,7 @@
                         "start": { "$ref": "#/definitions/Coordinates" },
                         "end": { "$ref": "#/definitions/Coordinates" },
                         "width": { "type": "number" },
+                        "drillsize": { "type": "number" },
                         "net": { "type": "string" }
                     },
                     "required": [

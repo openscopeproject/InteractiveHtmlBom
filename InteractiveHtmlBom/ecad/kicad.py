@@ -573,6 +573,7 @@ class PcbnewParser(EcadParser):
         return footprints
 
     def parse_tracks(self, tracks):
+        tent_vias = self.board.GetTentVias()
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
         for track in tracks:
             if track.GetClass() in ["VIA", "PCB_VIA"]:
@@ -582,6 +583,8 @@ class PcbnewParser(EcadParser):
                     "width": track.GetWidth() * 1e-6,
                     "net": track.GetNetname(),
                 }
+                if not tent_vias:
+                    track_dict["drillsize"] = track.GetDrillValue() * 1e-6
                 for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     if track.IsOnLayer(layer):
                         result[layer].append(track_dict)
