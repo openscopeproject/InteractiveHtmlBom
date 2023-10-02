@@ -218,6 +218,7 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
 # Implementing FieldsPanelBase
 class FieldsPanel(dialog_base.FieldsPanelBase):
     NONE_STRING = '<none>'
+    EMPTY_STRING = '<empty>'
     FIELDS_GRID_COLUMNS = 3
 
     def __init__(self, parent, extra_data_func, extra_data_wildcard):
@@ -359,7 +360,10 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
         variant_set = set()
         for _, field_dict in self.extra_field_data.fields_by_ref.items():
             if selection in field_dict:
-                variant_set.add(field_dict[selection])
+                v = field_dict[selection]
+                if v == "":
+                    v = self.EMPTY_STRING
+                variant_set.add(v)
         self.boardVariantWhitelist.SetItems(list(variant_set))
         self.boardVariantBlacklist.SetItems(list(variant_set))
 

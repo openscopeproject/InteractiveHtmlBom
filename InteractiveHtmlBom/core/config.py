@@ -163,7 +163,7 @@ class Config:
         if self.highlight_pin1 == '0':
             self.highlight_pin1 = 'none'
         if self.highlight_pin1 == '1':
-            self.highlight_pin1 == 'all'
+            self.highlight_pin1 = 'all'
 
     def save(self, locally):
         file = self.local_config_file if locally else self.global_config_file
@@ -421,10 +421,12 @@ class Config:
                                  'variant for component.')
         parser.add_argument('--variants-whitelist', default='',
                             help='List of board variants to '
-                                 'include in the BOM.')
+                                 'include in the BOM. Use "<empty>" to denote '
+                                 'not set or empty value.')
         parser.add_argument('--variants-blacklist', default='',
                             help='List of board variants to '
-                                 'exclude from the BOM.')
+                                 'exclude from the BOM. Use "<empty>" to denote '
+                                 'not set or empty value.')
         parser.add_argument('--dnp-field', default=cls.dnp_field,
                             help='Name of the extra field that indicates '
                                  'do not populate status. Components with '
