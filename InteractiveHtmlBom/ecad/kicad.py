@@ -258,8 +258,7 @@ class PcbnewParser(EcadParser):
                 "svgpath": create_path(lines)
             }
         elif hasattr(d, 'GetEffectiveTextShape'):
-            shape = d.GetEffectiveTextShape(
-                aTriangulate=False)  # type: pcbnew.SHAPE_COMPOUND
+            shape = d.GetEffectiveTextShape(False)  # type: pcbnew.SHAPE_COMPOUND
             segments = []
             polygons = []
             for s in shape.GetSubshapes():
