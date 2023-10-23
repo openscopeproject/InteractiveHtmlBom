@@ -56,8 +56,30 @@
 ///USERHEADER///
 <div id="topmostdiv" class="topmostdiv">
   <div id="top">
-    <div style="float: right; height: 100%;">
-      <div class="hideonprint menu" style="float: right; top: 8px;">
+    <div id="fileinfodiv">
+      <table class="fileinfo">
+        <tbody>
+          <tr>
+            <td id="title" class="title" style="width: 70%">
+              Title
+            </td>
+            <td id="revision" class="title" style="width: 30%">
+              Revision
+            </td>
+          </tr>
+          <tr>
+            <td id="company">
+              Company
+            </td>
+            <td id="filedate">
+              Date
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="bomcontrols">
+      <div class="hideonprint menu">
         <button class="menubtn"></button>
         <div class="menu-content">
           <label class="menu-label menu-label-top" style="width: calc(50% - 18px)">
@@ -152,8 +174,7 @@
           </label>
         </div>
       </div>
-      <div class="button-container hideonprint"
-           style="float: right; position: relative; top: 8px">
+      <div class="button-container hideonprint">
         <button id="fl-btn" class="left-most-button" onclick="changeCanvasLayout('F')"
                 title="Front only">F
         </button>
@@ -164,8 +185,7 @@
                 title="Back only">B
         </button>
       </div>
-      <div class="button-container hideonprint"
-           style="float: right; position: relative; top: 8px">
+      <div class="button-container hideonprint">
         <button id="bom-btn" class="left-most-button" onclick="changeBomLayout('bom-only')"
                 title="BOM only"></button>
         <button id="lr-btn" class="middle-button" onclick="changeBomLayout('left-right')"
@@ -173,8 +193,7 @@
         <button id="tb-btn" class="right-most-button" onclick="changeBomLayout('top-bottom')"
                 title="BOM top, drawings bot"></button>
       </div>
-      <div class="button-container hideonprint"
-           style="float: right; position: relative; top: 8px">
+      <div class="button-container hideonprint">
         <button id="bom-grouped-btn" class="left-most-button" onclick="changeBomMode('grouped')"
                 title="Grouped BOM"></button>
         <button id="bom-ungrouped-btn" class="middle-button" onclick="changeBomMode('ungrouped')"
@@ -182,7 +201,7 @@
         <button id="bom-netlist-btn" class="right-most-button" onclick="changeBomMode('netlist')"
                 title="Netlist"></button>
       </div>
-      <div class="hideonprint menu" style="float: right; top: 8px;">
+      <div class="hideonprint menu">
         <button class="statsbtn"></button>
         <div class="menu-content">
           <table class="stats">
@@ -227,7 +246,7 @@
           </table>
         </div>
       </div>
-      <div class="hideonprint menu" style="float: right; top: 8px;">
+      <div class="hideonprint menu">
         <button class="iobtn"></button>
         <div class="menu-content">
           <div class="menu-label menu-label-top">
@@ -266,30 +285,8 @@
         </div>
       </div>
     </div>
-    <div id="fileinfodiv" style="overflow: auto;">
-      <table class="fileinfo">
-        <tbody>
-          <tr>
-            <td id="title" class="title" style="width: 70%">
-              Title
-            </td>
-            <td id="revision" class="title" style="width: 30%">
-              Revision
-            </td>
-          </tr>
-          <tr>
-            <td id="company">
-              Company
-            </td>
-            <td id="filedate">
-              Date
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </div>
-  <div id="bot" class="split" style="height: calc(100% - 80px)">
+  <div id="bot" class="split" style="flex: 1 1">
     <div id="bomdiv" class="split split-horizontal">
       <div style="width: 100%">
         <input id="reflookup" class="textbox searchbox reflookup hideonprint" type="text" placeholder="Ref lookup"

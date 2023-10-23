@@ -140,7 +140,7 @@ textarea.clipboard-temp {
 
 .button-container {
   font-size: 0;
-  margin: 10px 10px 10px 0px;
+  margin: 0.4rem 0.4rem 0.4rem 0;
 }
 
 .dark .button-container {
@@ -171,7 +171,7 @@ canvas:active {
   width: 100%;
   max-width: 1000px;
   border: none;
-  padding: 5px;
+  padding: 3px;
 }
 
 .fileinfo .title {
@@ -531,7 +531,7 @@ mark.highlight {
 .menu {
   position: relative;
   display: inline-block;
-  margin: 10px 10px 10px 0px;
+  margin: 0.4rem 0.4rem 0.4rem 0;
 }
 
 .menu-content {
@@ -605,15 +605,33 @@ mark.highlight {
 }
 
 .topmostdiv {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
   background-color: white;
   transition: background-color 0.3s;
 }
 
 #top {
-  height: 78px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
   border-bottom: 2px solid black;
+}
+
+#fileinfodiv {
+  flex: 20rem 1 0;
+  overflow: auto;
+}
+
+#bomcontrols {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+#bomcontrols>* {
+  flex-shrink: 0;
 }
 
 .dark #top {

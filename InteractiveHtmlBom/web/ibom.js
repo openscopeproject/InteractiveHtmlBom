@@ -921,13 +921,15 @@ function changeBomLayout(layout) {
       }
       document.getElementById("frontcanvas").style.display = "none";
       document.getElementById("backcanvas").style.display = "none";
-      document.getElementById("bot").style.height = "";
+      document.getElementById("topmostdiv").style.height = "";
+      document.getElementById("topmostdiv").style.display = "block";
       break;
     case 'top-bottom':
       document.getElementById("tb-btn").classList.add("depressed");
       document.getElementById("frontcanvas").style.display = "";
       document.getElementById("backcanvas").style.display = "";
-      document.getElementById("bot").style.height = "calc(100% - 80px)";
+      document.getElementById("topmostdiv").style.height = "100%";
+      document.getElementById("topmostdiv").style.display = "flex";
       document.getElementById("bomdiv").classList.remove("split-horizontal");
       document.getElementById("canvasdiv").classList.remove("split-horizontal");
       document.getElementById("frontcanvas").classList.add("split-horizontal");
@@ -954,7 +956,8 @@ function changeBomLayout(layout) {
       document.getElementById("lr-btn").classList.add("depressed");
       document.getElementById("frontcanvas").style.display = "";
       document.getElementById("backcanvas").style.display = "";
-      document.getElementById("bot").style.height = "calc(100% - 80px)";
+      document.getElementById("topmostdiv").style.height = "100%";
+      document.getElementById("topmostdiv").style.display = "flex";
       document.getElementById("bomdiv").classList.add("split-horizontal");
       document.getElementById("canvasdiv").classList.add("split-horizontal");
       document.getElementById("frontcanvas").classList.remove("split-horizontal");

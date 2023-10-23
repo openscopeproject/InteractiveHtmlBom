@@ -572,7 +572,9 @@ class PcbnewParser(EcadParser):
         return footprints
 
     def parse_tracks(self, tracks):
-        tent_vias = self.board.GetTentVias()
+        tent_vias = True
+        if hasattr(self.board, "GetTentVias"):
+            tent_vias = self.board.GetTentVias()
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
         for track in tracks:
             if track.GetClass() in ["VIA", "PCB_VIA"]:
