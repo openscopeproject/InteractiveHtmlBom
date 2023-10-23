@@ -1251,6 +1251,18 @@ function hideNetlistButton() {
   document.getElementById("bom-netlist-btn").style.display = "none";
 }
 
+function topToggle() {
+  var top = document.getElementById("top");
+  var toptoggle = document.getElementById("toptoggle");
+  if (top.style.display === "none") {
+    top.style.display = "flex";
+    toptoggle.classList.remove("flipped");
+  } else {
+    top.style.display = "none";
+    toptoggle.classList.add("flipped");
+  }
+}
+
 window.onload = function (e) {
   initUtils();
   initRender();

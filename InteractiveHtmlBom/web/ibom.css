@@ -617,7 +617,45 @@ mark.highlight {
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
+}
+
+#topdivider {
   border-bottom: 2px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dark #topdivider {
+  border-bottom: 2px solid #ccc;
+}
+
+#topdivider>div {
+  position: relative;
+}
+
+#toptoggle {
+  cursor: pointer;
+  user-select: none;
+  position: absolute;
+  padding: 0.1rem 0.3rem;
+  top: -0.4rem;
+  left: -1rem;
+  font-size: 1.4rem;
+  line-height: 60%;
+  border: 1px solid black;
+  border-radius: 1rem;
+  background-color: #fff;
+  z-index: 100;
+}
+
+.flipped {
+  transform: rotate(0.5turn);
+}
+
+.dark #toptoggle {
+  border: 1px solid #fff;
+  background-color: #222;
 }
 
 #fileinfodiv {
@@ -632,10 +670,6 @@ mark.highlight {
 
 #bomcontrols>* {
   flex-shrink: 0;
-}
-
-.dark #top {
-  border-bottom: 2px solid #ccc;
 }
 
 #dbg {
