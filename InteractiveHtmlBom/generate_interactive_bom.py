@@ -72,7 +72,11 @@ def main():
         except ParsingException as e:
             exit_error(logger, ExitCodes.ERROR_PARSE, e)
     else:
-        config.set_from_args(args)
+        if args.use_ini:
+            config.set_from_args_with_ini(args)
+        else:
+            config.set_from_args(args)
+
         try:
             ibom.main(parser, config, logger)
         except ParsingException as e:

@@ -81,6 +81,7 @@ class Config:
     board_variant_whitelist = []
     board_variant_blacklist = []
     dnp_field = ''
+    use_ini = False
 
     @staticmethod
     def _split(s):
@@ -371,6 +372,8 @@ class Config:
                             action='store_true')
         parser.add_argument('--no-browser', help='Do not launch browser.',
                             action='store_true')
+        parser.add_argument('--use-ini', help='Use all run options from ibom ini file.',
+                            action='store_true')
 
         # General
         parser.add_argument('--dest-dir', default=cls.bom_dest_dir,
@@ -431,6 +434,64 @@ class Config:
                             help='Name of the extra field that indicates '
                                  'do not populate status. Components with '
                                  'this field not empty will be excluded.')
+
+    def set_from_args_with_ini(self, args):
+        import configparser
+        import math
+
+        if os.path.isfile(self.local_config_file):
+            file = self.local_config_file
+        elif os.path.isfile(self.global_config_file):
+            file = self.global_config_file
+        else:
+            print("Error! No ini file in usual locations")
+            exit(0)
+
+        config = configparser.ConfigParser()
+        config.read(file)
+        
+        # Html
+        self.dark_mode = config.get('html_defaults', 'dark_mode')
+        self.show_pads = config.get('html_defaults', 'show_pads')
+        self.show_fabrication = config.get('html_defaults', 'show_fabrication')
+        self.show_silkscreen = config.get('html_defaults', 'show_silkscreen')
+        self.highlight_pin1 = config.get('html_defaults', 'highlight_pin1')
+        self.redraw_on_drag = config.get('html_defaults', 'redraw_on_drag')
+        self.board_rotation = config.get('html_defaults', 'board_rotation')
+        self.checkboxes = config.get('html_defaults', 'checkboxes')
+        self.bom_view = config.get('html_defaults', 'bom_view')
+        self.layer_view = config.get('html_defaults', 'layer_view')
+        self.compression = config.get('html_defaults', 'compression')
+
+        # Using the command-line arg here because people will forget to set this
+        #self.open_browser = int(config.get('html_defaults', 'open_browser'))
+        self.open_browser = not args.no_browser
+
+        # General
+        #self.bom_dest_dir = config.get('general', 'bom_dest_dir')
+        self.bom_dest_dir = args.dest_dir
+        self.bom_name_format = config.get('general', 'bom_name_format')
+        self.component_sort_order = self._split(config.get('general', 'component_sort_order'))
+        self.component_blacklist = self._split(config.get('general', 'component_blacklist'))
+        self.blacklist_virtual = config.get('general', 'blacklist_virtual')
+        self.blacklist_empty_val = config.get('general', 'blacklist_empty_val')
+        self.include_tracks = config.get('general', 'include_tracks')
+        self.include_nets = config.get('general', 'include_nets')
+
+        # Fields
+        self.extra_data_file = args.extra_data_file or args.netlist_file
+        if args.extra_fields is not None:
+            self.show_fields = self.default_show_group_fields + \
+                self._split(args.extra_fields)
+            self.group_fields = self.show_fields
+        else:
+            self.show_fields = self._split(config.get('fields', 'show_fields'))
+            self.group_fields = self._split(config.get('fields', 'group_fields'))
+        self.normalize_field_case = config.get('fields', 'normalize_field_case') 
+        self.board_variant_field = config.get('fields', 'board_variant_field')
+        self.board_variant_whitelist = self._split(config.get('fields', 'board_variant_whitelist'))
+        self.board_variant_blacklist = self._split(config.get('fields', 'board_variant_blacklist'))
+        self.dnp_field = config.get('fields', 'dnp_field')
 
     def set_from_args(self, args):
         # type: (argparse.Namespace) -> None
