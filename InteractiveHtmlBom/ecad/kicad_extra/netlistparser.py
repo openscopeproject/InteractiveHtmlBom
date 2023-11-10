@@ -47,7 +47,7 @@ class NetlistParser(ParserBase):
                         ref_fields['Description'] = lib_field[1]
             if dnp:
                 field_set.add('kicad_dnp')
-                ref_fields['kicad_dnp'] = True
+                ref_fields['kicad_dnp'] = "DNP"
             if fields is None:
                 continue
             for f in fields:
