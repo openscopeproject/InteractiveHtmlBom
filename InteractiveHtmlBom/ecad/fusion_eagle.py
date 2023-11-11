@@ -66,20 +66,21 @@ class FusionEagleParser(EcadParser):
             rad = -rad
         return rad
 
-    def _curve_to_svgparams(self, el, x=0, y=0, angle=0):
+    def _curve_to_svgparams(self, el, x=0, y=0, angle=0, mirrored=False):
         _x1 = float(el.attrib['x1'])
         _x2 = float(el.attrib['x2'])
         _y1 = -float(el.attrib['y1'])
         _y2 = -float(el.attrib['y2'])
 
-        dx1, dy1 = self._rotate(_x1, _y1, -angle)
-        dx2, dy2 = self._rotate(_x2, _y2, -angle)
+        dx1, dy1 = self._rotate(_x1, _y1, -angle, mirrored)
+        dx2, dy2 = self._rotate(_x2, _y2, -angle, mirrored)
 
         x1, y1 = x + dx1, -y + dy1
         x2, y2 = x + dx2, -y + dy2
 
         chord = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         theta = float(el.attrib['curve'])
+        theta = -theta if mirrored else theta
         r = abs(0.5 * chord / math.sin(math.radians(theta) / 2))
         la = 0 if abs(theta) < 180 else 1
         sw = 0 if theta > 0 else 1
@@ -93,8 +94,8 @@ class FusionEagleParser(EcadParser):
             'y2': y2
         }
 
-    def _curve_to_svgpath(self, el, x=0, y=0, angle=0):
-        p = self._curve_to_svgparams(el, x, y, angle)
+    def _curve_to_svgpath(self, el, x=0, y=0, angle=0, mirrored=False):
+        p = self._curve_to_svgparams(el, x, y, angle, mirrored)
         return 'M {x1} {y1} A {r} {r} 0 {la} {sw} {x2} {y2}'.format(**p)
 
     @staticmethod
@@ -514,7 +515,8 @@ class FusionEagleParser(EcadParser):
                         dwg = {
                             'type': 'arc',
                             'width': float(el.attrib['width']),
-                            'svgpath': self._curve_to_svgpath(el, x, y, angle)
+                            'svgpath': self._curve_to_svgpath(el, x, y, angle,
+                                                              mirrored)
                         }
                     else:
                         dwg = {
@@ -614,7 +616,7 @@ class FusionEagleParser(EcadParser):
             }
             justify = [alignments[ss] for ss in j[::-1]]
         if (90 < angle <= 270 and not spin) or \
-                (-90 >= angle >= -270 and not spin):
+                (-90 > angle >= -270 and not spin):
             angle += 180
             justify = [-j for j in justify]
 
