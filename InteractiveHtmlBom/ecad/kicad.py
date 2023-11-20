@@ -45,6 +45,9 @@ class PcbnewParser(EcadParser):
         if "dnp" in props and props["dnp"] == "":
             del props["dnp"]
             props["kicad_dnp"] = "DNP"
+        if hasattr(f, "IsDNP"):
+            if f.IsDNP():
+                props["kicad_dnp"] = "DNP"
         return props
 
     def parse_extra_data_from_pcb(self):
