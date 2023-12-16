@@ -8,3 +8,4 @@ releases
 demo
 *config.ini
 InteractiveHtmlBom/web/user*
+dist/

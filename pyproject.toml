@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "InteractiveHtmlBom"
+dynamic = ["version"]
+description = 'Generate Interactive Html BOM for your electronics projects'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = ["ibom", "KiCad", "Eagle", "EasyEDA"]
+authors = [{ name = "qu1ck", email = "anlutsenko@gmail.com" }]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+  "Topic :: Utilities",
+]
+dependencies = [
+  "wxpython>=4.0",
+  "jsonschema>=4.1",
+]
+
+[project.scripts]
+generate_interactive_bom = "InteractiveHtmlBom.generate_interactive_bom:main"
+
+[project.urls]
+Documentation = "https://github.com/openscopeproject/InteractiveHtmlBom/wiki"
+Issues = "https://github.com/openscopeproject/InteractiveHtmlBom/issues"
+Source = "https://github.com/openscopeproject/InteractiveHtmlBom"
+
+[tool.hatch.version]
+path = "InteractiveHtmlBom/version.py"
+pattern = "LAST_TAG = 'v(?P<version>[^']+)'"
+
+[tool.hatch.envs.default]
+dependencies = ["coverage[toml]>=6.5", "pytest"]
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = ["- coverage combine", "coverage report"]
+cov = ["test-cov", "cov-report"]
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.types]
+dependencies = ["mypy>=1.0.0"]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:InteractiveHtmlBom}"
+
+[tool.coverage.run]
+source_pkgs = ["InteractiveHtmlBom", "tests"]
+branch = true
+parallel = true
+omit = ["src/InteractiveHtmlBom/__about__.py"]
+
+[tool.coverage.paths]
+InteractiveHtmlBom = [
+  "InteractiveHtmlBom",
+]
+tests = ["tests", "*/InteractiveHtmlBom/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
