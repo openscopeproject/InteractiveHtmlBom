@@ -163,6 +163,9 @@ def generate_bom(pcb_footprints, config):
             continue
         all_num = True
         for f in index_to_fields.values():
+            if not hasattr(f[i], 'isdigit'):
+                all_num = False
+                break
             if not f[i].isdigit() and len(f[i].strip()) > 0:
                 all_num = False
                 break
