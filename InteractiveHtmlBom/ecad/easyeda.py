@@ -1,7 +1,8 @@
 import io
+import os
 import sys
 
-from .common import EcadParser, Component, BoundingBox
+from .common import EcadParser, Component, BoundingBox, ExtraFieldData
 
 
 if sys.version_info >= (3, 0):
@@ -19,6 +20,33 @@ class EasyEdaParser(EcadParser):
     TOP_ASSEMBLY_LAYER = 13
     BOT_ASSEMBLY_LAYER = 14
     ALL_LAYERS = 11
+
+    def extra_data_file_filter(self):
+        return "Json file ({f})|{f}".format(f=os.path.basename(self.file_name))
+
+    def latest_extra_data(self, extra_dirs=None):
+        return self.file_name
+
+    def get_extra_field_data(self, file_name):
+        if os.path.abspath(file_name) != os.path.abspath(self.file_name):
+            return None
+
+        _, components = self.parse()
+        field_set = set()
+        comp_dict = {}
+
+        for c in components:
+            ref_fields = comp_dict.setdefault(c.ref, {})
+
+            for k, v in c.extra_fields.items():
+                field_set.add(k)
+                ref_fields[k] = v
+
+        by_index = {
+            i: components[i].extra_fields for i in range(len(components))
+        }
+
+        return ExtraFieldData(list(field_set), comp_dict, by_index)
 
     def get_easyeda_pcb(self):
         import json
@@ -290,7 +318,10 @@ class EasyEdaParser(EcadParser):
         fp_layer = 'F' if fp_layer == self.TOP_COPPER_LAYER else 'B'
         val = '??'
         ref = '??'
-        footprint = attr.get('package', '??')
+        footprint = '??'
+        if 'package' in attr:
+            footprint = attr['package']
+            del attr['package']
 
         pads = []
         copper_drawings = []
@@ -343,7 +374,7 @@ class EasyEdaParser(EcadParser):
             "layer": fp_layer,
         }
 
-        component = Component(ref, val, footprint, fp_layer)
+        component = Component(ref, val, footprint, fp_layer, extra_fields=attr)
 
         return fp_layer, component, footprint_json, extra_drawings
 
