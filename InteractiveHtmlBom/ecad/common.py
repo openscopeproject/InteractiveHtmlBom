@@ -43,7 +43,6 @@ class EcadParser(object):
         by_ref = {r: remap(d) for (r, d) in data.fields_by_ref.items()}
         if data.fields_by_index:
             by_index = {i: remap(d) for (i, d) in data.fields_by_index.items()}
-            print([a.get("blah", "") for a in by_index.values()])
         else:
             by_index = None
 

@@ -19,9 +19,9 @@ class PcbnewParser(EcadParser):
         if self.board is None:
             self.board = pcbnew.LoadBoard(self.file_name)  # type: pcbnew.BOARD
         if hasattr(self.board, 'GetModules'):
-            self.footprints = list(self.board.GetModules())
+            self.footprints = list(self.board.GetModules())  # type: list[pcbnew.MODULE]
         else:
-            self.footprints = list(self.board.GetFootprints())
+            self.footprints = list(self.board.GetFootprints())  # type: list[pcbnew.FOOTPRINT]
         self.font_parser = FontParser()
 
     def get_extra_field_data(self, file_name):
@@ -109,7 +109,7 @@ class PcbnewParser(EcadParser):
         return round(a1, 2), round(a2, 2)
 
     def parse_shape(self, d):
-        # type: (pcbnew.PCB_SHAPE) -> dict or None
+        # type: (pcbnew.PCB_SHAPE) -> dict | None
         shape = {
             pcbnew.S_SEGMENT: "segment",
             pcbnew.S_CIRCLE: "circle",
@@ -413,10 +413,17 @@ class PcbnewParser(EcadParser):
             drawings.append(("val", f.Value()))
             for d in f.GraphicalItems():
                 drawings.append((d.GetClass(), d))
+            if hasattr(f, "GetFields"):
+                fields = f.GetFields() # type: list[pcbnew.PCB_FIELD]
+                for field in fields:
+                    if field.IsReference() or field.IsValue():
+                        continue
+                    drawings.append((field.GetClass(), field))
+
         return drawings
 
     def parse_pad(self, pad):
-        # type: (pcbnew.PAD) -> dict or None
+        # type: (pcbnew.PAD) -> dict | None
         layers_set = list(pad.GetLayerSet().Seq())
         layers = []
         if pcbnew.F_Cu in layers_set:
@@ -497,7 +504,7 @@ class PcbnewParser(EcadParser):
     def parse_footprints(self):
         # type: () -> list
         footprints = []
-        for f in self.footprints:  # type: pcbnew.FOOTPRINT
+        for f in self.footprints:
             ref = f.GetReference()
 
             # bounding box
@@ -619,8 +626,9 @@ class PcbnewParser(EcadParser):
         }
 
     def parse_zones(self, zones):
+        # type: (list[pcbnew.ZONE]) -> dict
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
-        for zone in zones:  # type: pcbnew.ZONE
+        for zone in zones:
             if (not zone.IsFilled() or
                     hasattr(zone, 'GetIsKeepout') and zone.GetIsKeepout() or
                     hasattr(zone, 'GetIsRuleArea') and zone.GetIsRuleArea()):
