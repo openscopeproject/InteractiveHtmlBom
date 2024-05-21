@@ -1,7 +1,7 @@
 /* Utility functions */
 
 var storagePrefix = 'KiCad_HTML_BOM__' + pcbdata.metadata.title + '__' +
-  pcbdata.metadata.revision + '__#';
+  pcbdata.metadata.revision + config.id + '__#';
 var storage;
 
 function initStorage(key) {

@@ -480,4 +480,9 @@ class Config:
         import json
         d = {f: getattr(self, f) for f in self.html_config_fields}
         d["fields"] = self.show_fields
+
+        # Generate a unique id for the config
+        from secrets import token_hex
+        d["id"] = token_hex(3)
+
         return json.dumps(d)
