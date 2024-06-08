@@ -11,6 +11,18 @@ from ..core.config import Config
 from ..core.fontparser import FontParser
 
 
+KICAD_VERSION = [5, 1, 0]
+
+if hasattr(pcbnew, 'Version'):
+    version = pcbnew.Version().split('.')
+    try:
+        for i in range(len(version)):
+            version[i] = int(version[i].split('-')[0])
+    except ValueError:
+        pass
+    KICAD_VERSION = version
+
+
 class PcbnewParser(EcadParser):
 
     def __init__(self, file_name, config, logger, board=None):
@@ -189,7 +201,7 @@ class PcbnewParser(EcadParser):
                 parent_footprint = d.GetParentModule()
             else:
                 parent_footprint = d.GetParentFootprint()
-            if parent_footprint is not None:
+            if parent_footprint is not None and KICAD_VERSION[0] < 8:
                 angle = self.normalize_angle(parent_footprint.GetOrientation())
             shape_dict = {
                 "type": shape,
