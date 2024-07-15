@@ -184,15 +184,15 @@ function setBomCheckboxState(checkbox, element, references) {
   element.indeterminate = (state == "indeterminate");
 }
 
-function createCheckboxChangeHandler(checkbox, references, row) {
-  return function () {
+function createCheckboxHandlers(input, checkbox, references, row) {
+  var clickHandler = () => {
     refsSet = getStoredCheckboxRefs(checkbox);
     var markWhenChecked = settings.markWhenChecked == checkbox;
     eventArgs = {
       checkbox: checkbox,
       refs: references,
     }
-    if (this.checked) {
+    if (input.checked) {
       // checkbox ticked
       for (var ref of references) {
         refsSet.add(ref[1]);
@@ -224,6 +224,22 @@ function createCheckboxChangeHandler(checkbox, references, row) {
     updateCheckboxStats(checkbox);
     EventHandler.emitEvent(IBOM_EVENT_TYPES.CHECKBOX_CHANGE_EVENT, eventArgs);
   }
+
+  return [
+    (e) => {
+      clickHandler();
+    },
+    (e) => {
+      e.preventDefault();
+      if (row.onmousemove) row.onmousemove();
+    },
+    (e) => {
+      e.preventDefault();
+      input.checked = !input.checked;
+      input.indeterminate = false;
+      clickHandler();
+    }
+  ];
 }
 
 function clearHighlightedFootprints() {
@@ -679,7 +695,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
               td = document.createElement("TD");
               var input = document.createElement("input");
               input.type = "checkbox";
-              input.onchange = createCheckboxChangeHandler(checkbox, references, tr);
+              [input.onchange, td.ontouchstart, td.ontouchend] = createCheckboxHandlers(input, checkbox, references, tr);
               setBomCheckboxState(checkbox, input, references);
               if (input.checked && settings.markWhenChecked == checkbox) {
                 tr.classList.add("checked");
@@ -1035,7 +1051,8 @@ function toggleBomCheckbox(bomrowid, checkboxnum) {
     return;
   }
   var bomrow = document.getElementById(bomrowid);
-  var checkbox = bomrow.childNodes[checkboxnum].childNodes[0];
+  var childNum = checkboxnum + settings.columnOrder.indexOf("checkboxes");
+  var checkbox = bomrow.childNodes[childNum].childNodes[0];
   checkbox.checked = !checkbox.checked;
   checkbox.indeterminate = false;
   checkbox.onchange();
@@ -1051,7 +1068,8 @@ function checkBomCheckbox(bomrowid, checkboxname) {
     return;
   }
   var bomrow = document.getElementById(bomrowid);
-  var checkbox = bomrow.childNodes[checkboxnum + 1].childNodes[0];
+  var childNum = checkboxnum + 1 + settings.columnOrder.indexOf("checkboxes");
+  var checkbox = bomrow.childNodes[childNum].childNodes[0];
   checkbox.checked = true;
   checkbox.indeterminate = false;
   checkbox.onchange();
