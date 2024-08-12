@@ -990,6 +990,16 @@ function setRedrawOnDrag(value) {
   writeStorage("redrawOnDrag", value);
 }
 
+/*
+    Tim (Palingenesis)
+    For choice of using select instead of mouse over
+*/
+function setSelectOnClick(value) {
+    settings.SelectOnClick = value;
+    writeStorage("SelectOnClick", value);
+}
+/*	End	*/
+
 function setBoardRotation(value) {
   settings.boardRotation = value * 5;
   writeStorage("boardRotation", settings.boardRotation);
