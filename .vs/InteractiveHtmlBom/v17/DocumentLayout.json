@@ -7,20 +7,20 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:InteractiveHtmlBom\\web\\ibom.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:InteractiveHtmlBom\\web\\ibom.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\util.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:InteractiveHtmlBom\\web\\util.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\render.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:InteractiveHtmlBom\\web\\render.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\util.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:InteractiveHtmlBom\\web\\util.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:InteractiveHtmlBom\\web\\ibom.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:InteractiveHtmlBom\\web\\ibom.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,7 +30,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -50,67 +50,67 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "render.js",
-              "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\render.js",
-              "RelativeDocumentMoniker": "InteractiveHtmlBom\\web\\render.js",
-              "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\render.js",
-              "RelativeToolTip": "InteractiveHtmlBom\\web\\render.js",
-              "ViewState": "AQIAAM4DAAAAAAAAAAD4v9kDAAABAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-08-12T20:19:31.393Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "util.js",
-              "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\util.js",
-              "RelativeDocumentMoniker": "InteractiveHtmlBom\\web\\util.js",
-              "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\util.js",
-              "RelativeToolTip": "InteractiveHtmlBom\\web\\util.js",
-              "ViewState": "AQIAABMCAAAAAAAAAAAAABQCAAATAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-08-12T20:17:46.645Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "ibom.html",
-              "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.html",
-              "RelativeDocumentMoniker": "InteractiveHtmlBom\\web\\ibom.html",
-              "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.html",
-              "RelativeToolTip": "InteractiveHtmlBom\\web\\ibom.html",
-              "ViewState": "AQIAAGYAAAAAAAAAAAAAAH0AAAAOAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2024-08-12T20:12:51.715Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ibom.js",
-              "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.js",
-              "RelativeDocumentMoniker": "InteractiveHtmlBom\\web\\ibom.js",
-              "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.js",
-              "RelativeToolTip": "InteractiveHtmlBom\\web\\ibom.js",
-              "ViewState": "AQIAAGcCAAAAAAAAAAAAAKQCAAAFAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-08-12T20:07:50.252Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
               "Title": ".gitignore",
               "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\.gitignore",
               "RelativeDocumentMoniker": ".gitignore",
               "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\.gitignore",
               "RelativeToolTip": ".gitignore",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2024-08-12T19:56:58.526Z",
+              "WhenOpened": "2024-08-13T08:59:18.785Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "util.js",
+              "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\util.js",
+              "RelativeDocumentMoniker": "InteractiveHtmlBom\\web\\util.js",
+              "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\util.js",
+              "RelativeToolTip": "InteractiveHtmlBom\\web\\util.js",
+              "ViewState": "AQIAADACAAAAAAAAAAAAAEwCAABUAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2024-08-13T08:31:17.131Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "render.js",
+              "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\render.js",
+              "RelativeDocumentMoniker": "InteractiveHtmlBom\\web\\render.js",
+              "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\render.js",
+              "RelativeToolTip": "InteractiveHtmlBom\\web\\render.js",
+              "ViewState": "AQIAAOoDAAAAAAAAAAAAAPYDAAADAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2024-08-13T08:29:05.582Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ibom.js",
+              "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.js",
+              "RelativeDocumentMoniker": "InteractiveHtmlBom\\web\\ibom.js",
+              "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.js",
+              "RelativeToolTip": "InteractiveHtmlBom\\web\\ibom.js",
+              "ViewState": "AQIAAM4CAAAAAAAAAAAAAO0CAAAPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2024-08-13T08:26:48.539Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ibom.html",
+              "DocumentMoniker": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.html",
+              "RelativeDocumentMoniker": "InteractiveHtmlBom\\web\\ibom.html",
+              "ToolTip": "E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom\\InteractiveHtmlBom\\web\\ibom.html",
+              "RelativeToolTip": "InteractiveHtmlBom\\web\\ibom.html",
+              "ViewState": "AQIAAHgAAAAAAAAAAAAAAJAAAAACAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2024-08-13T08:23:25.352Z",
               "EditorCaption": ""
             }
           ]

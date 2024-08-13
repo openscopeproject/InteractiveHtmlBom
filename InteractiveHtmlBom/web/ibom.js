@@ -737,7 +737,17 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
     }
     bom.appendChild(tr);
     var handler = createRowHighlightHandler(tr.id, references, netname);
-    tr.onmousemove = handler;
+	/*
+		Tim (Palingenesis)
+		For choice of using select instead of mouse over
+	*/
+	//tr.onmousemove = handler;   /*  Tim (Palingenesis)	*/
+	if (settings.selectOnClick) {
+		tr.onmousedown = handler;
+	} else {
+		tr.onmousemove = handler;
+	}
+	/*	Edit End	*/
     highlightHandlers.push({
       id: tr.id,
       handler: handler,

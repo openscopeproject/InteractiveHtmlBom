@@ -82,96 +82,110 @@
       <div class="hideonprint menu">
         <button class="menubtn"></button>
         <div class="menu-content">
-          <label class="menu-label menu-label-top" style="width: calc(50% - 18px)">
-            <input id="darkmodeCheckbox" type="checkbox" onchange="setDarkMode(this.checked)">
-            Dark mode
-          </label><!-- This comment eats space! All of it!
-          --><label class="menu-label menu-label-top" style="width: calc(50% - 17px); border-left: 0;">
-            <input id="fullscreenCheckbox" type="checkbox" onchange="setFullscreen(this.checked)">
-            Full Screen
-          </label>
-          <label class="menu-label" style="width: calc(50% - 18px)">
-            <input id="fabricationCheckbox" type="checkbox" checked onchange="fabricationVisible(this.checked)">
-            Fab layer
-          </label><!-- This comment eats space! All of it!
-          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
-            <input id="silkscreenCheckbox" type="checkbox" checked onchange="silkscreenVisible(this.checked)">
-            Silkscreen
-          </label>
-          <label class="menu-label" style="width: calc(50% - 18px)">
-            <input id="referencesCheckbox" type="checkbox" checked onchange="referencesVisible(this.checked)">
-            References
-          </label><!-- This comment eats space! All of it!
-          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
-            <input id="valuesCheckbox" type="checkbox" checked onchange="valuesVisible(this.checked)">
-            Values
-          </label>
-          <div id="tracksAndZonesCheckboxes">
-            <label class="menu-label" style="width: calc(50% - 18px)">
-              <input id="tracksCheckbox" type="checkbox" checked onchange="tracksVisible(this.checked)">
-              Tracks
-            </label><!-- This comment eats space! All of it!
-            --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
-              <input id="zonesCheckbox" type="checkbox" checked onchange="zonesVisible(this.checked)">
-              Zones
+            <label class="menu-label menu-label-top" style="width: calc(50% - 18px)">
+                <input id="darkmodeCheckbox" type="checkbox" onchange="setDarkMode(this.checked)">
+                Dark mode
             </label>
-          </div>
-          <label class="menu-label" style="width: calc(50% - 18px)">
-            <input id="padsCheckbox" type="checkbox" checked onchange="padsVisible(this.checked)">
-            Pads
-          </label><!-- This comment eats space! All of it!
-          --><label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
-            <input id="dnpOutlineCheckbox" type="checkbox" checked onchange="dnpOutline(this.checked)">
-            DNP outlined
-          </label>
-          <label class="menu-label">
-            <input id="dragCheckbox" type="checkbox" checked onchange="setRedrawOnDrag(this.checked)">
-            Continuous redraw on drag
-          </label>
-          <label class="menu-label">
-            Highlight first pin
-            <form id="highlightpin1">
-              <div class="flexbox">
-                <label>
-                  <input type="radio" name="highlightpin1" value="none" onchange="setHighlightPin1('none')">
-                  None
+            <!-- This comment eats space! All of it!
+    -->
+            <label class="menu-label menu-label-top" style="width: calc(50% - 17px); border-left: 0;">
+                <input id="fullscreenCheckbox" type="checkbox" onchange="setFullscreen(this.checked)">
+                Full Screen
+            </label>
+            <label class="menu-label" style="width: calc(50% - 18px)">
+                <input id="fabricationCheckbox" type="checkbox" checked onchange="fabricationVisible(this.checked)">
+                Fab layer
+            </label>
+            <!-- This comment eats space! All of it!
+    -->
+            <label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+                <input id="silkscreenCheckbox" type="checkbox" checked onchange="silkscreenVisible(this.checked)">
+                Silkscreen
+            </label>
+            <label class="menu-label" style="width: calc(50% - 18px)">
+                <input id="referencesCheckbox" type="checkbox" checked onchange="referencesVisible(this.checked)">
+                References
+            </label>
+            <!-- This comment eats space! All of it!
+    -->
+            <label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+                <input id="valuesCheckbox" type="checkbox" checked onchange="valuesVisible(this.checked)">
+                Values
+            </label>
+            <div id="tracksAndZonesCheckboxes">
+                <label class="menu-label" style="width: calc(50% - 18px)">
+                    <input id="tracksCheckbox" type="checkbox" checked onchange="tracksVisible(this.checked)">
+                    Tracks
                 </label>
-                <label>
-                  <input type="radio" name="highlightpin1" value="all" onchange="setHighlightPin1('all')">
-                  All
+                <!-- This comment eats space! All of it!
+        -->
+                <label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+                    <input id="zonesCheckbox" type="checkbox" checked onchange="zonesVisible(this.checked)">
+                    Zones
                 </label>
-                <label>
-                  <input type="radio" name="highlightpin1" value="selected" onchange="setHighlightPin1('selected')">
-                  Selected
-                </label>
-              </div>
-            </form>
-          </label>
-          <label class="menu-label">
-            <span>Board rotation</span>
-            <span style="float: right"><span id="rotationDegree">0</span>&#176;</span>
-            <input id="boardRotation" type="range" min="-36" max="36" value="0" class="slider" oninput="setBoardRotation(this.value)">
-          </label>
-          <label class="menu-label">
-            <input id="offsetBackRotationCheckbox" type="checkbox" onchange="setOffsetBackRotation(this.checked)">
-            Offset back rotation
-          </label>
-          <label class="menu-label">
-            <div style="margin-left: 5px">Bom checkboxes</div>
-            <input id="bomCheckboxes" class="menu-textbox" type=text
-                   oninput="setBomCheckboxes(this.value)">
-          </label>
-          <label class="menu-label">
-            <div style="margin-left: 5px">Mark when checked</div>
-            <div id="markWhenCheckedContainer"></div>
-          </label>
-          <label class="menu-label">
-            <span class="shameless-plug">
-              <span>Created using</span>
-              <a id="github-link" target="blank" href="https://github.com/openscopeproject/InteractiveHtmlBom">InteractiveHtmlBom</a>
-              <a target="blank" title="Mouse and keyboard help" href="https://github.com/openscopeproject/InteractiveHtmlBom/wiki/Usage#bom-page-mouse-actions" style="text-decoration: none;"><label class="help-link">?</label></a>
-            </span>
-          </label>
+            </div>
+            <label class="menu-label" style="width: calc(50% - 18px)">
+                <input id="padsCheckbox" type="checkbox" checked onchange="padsVisible(this.checked)">
+                Pads
+            </label>
+            <!-- This comment eats space! All of it!
+    -->
+            <label class="menu-label" style="width: calc(50% - 17px); border-left: 0;">
+                <input id="dnpOutlineCheckbox" type="checkbox" checked onchange="dnpOutline(this.checked)">
+                DNP outlined
+            </label>
+            <label class="menu-label">
+                <input id="dragCheckbox" type="checkbox" checked onchange="setRedrawOnDrag(this.checked)">
+                Continuous redraw on drag
+            </label>
+            <label class="menu-label">
+                <input id="checkbox_SelectOnClick" type="checkbox" checked onchange="setSelectOnClick(this.checked)">
+                Select On Click<br>(Effects On Create Only)
+            </label>
+            <label class="menu-label">
+                Highlight first pin
+                <form id="highlightpin1">
+                    <div class="flexbox">
+                        <label>
+                            <input type="radio" name="highlightpin1" value="none" onchange="setHighlightPin1('none')">
+                            None
+                        </label>
+                        <label>
+                            <input type="radio" name="highlightpin1" value="all" onchange="setHighlightPin1('all')">
+                            All
+                        </label>
+                        <label>
+                            <input type="radio" name="highlightpin1" value="selected" onchange="setHighlightPin1('selected')">
+                            Selected
+                        </label>
+                    </div>
+                </form>
+            </label>
+            <label class="menu-label">
+                <span>Board rotation</span>
+                <span style="float: right"><span id="rotationDegree">0</span>&#176;</span>
+                <input id="boardRotation" type="range" min="-36" max="36" value="0" class="slider" oninput="setBoardRotation(this.value)">
+            </label>
+            <label class="menu-label">
+                <input id="offsetBackRotationCheckbox" type="checkbox" onchange="setOffsetBackRotation(this.checked)">
+                Offset back rotation
+            </label>
+            <label class="menu-label">
+                <div style="margin-left: 5px">Bom checkboxes</div>
+                <input id="bomCheckboxes" class="menu-textbox" type=text
+                       oninput="setBomCheckboxes(this.value)">
+            </label>
+            <label class="menu-label">
+                <div style="margin-left: 5px">Mark when checked</div>
+                <div id="markWhenCheckedContainer"></div>
+            </label>
+            <label class="menu-label">
+                <span class="shameless-plug">
+                    <span>Created using</span>
+                    <a id="github-link" target="blank" href="https://github.com/openscopeproject/InteractiveHtmlBom">InteractiveHtmlBom</a>
+                    <a target="blank" title="Mouse and keyboard help" href="https://github.com/openscopeproject/InteractiveHtmlBom/wiki/Usage#bom-page-mouse-actions" style="text-decoration: none;"><label class="help-link">?</label></a>
+                </span>
+            </label>
         </div>
       </div>
       <div class="button-container hideonprint">
