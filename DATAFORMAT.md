@@ -60,7 +60,9 @@ pcbdata = {
         // Common fields
         "width": w,
         // Optional net name
-        "net": netname
+        "net": netname,
+        // Optional drill diameter (un-tented vias only)
+        "drillsize": x
       },
       ...
     ],
@@ -371,14 +373,12 @@ config = {
   "show_pads": bool,
   "show_fabrication": bool,
   "show_silkscreen": bool,
-  "highlight_pin1": bool,
+  "highlight_pin1": "none" | "all" | "selected",
   "redraw_on_drag": bool,
   "board_rotation": int,
   "checkboxes": "checkbox1,checkbox2,...",
-  // One of "bom-only", "left-right", "top-bottom".
-  "bom_view": bom_view,
-  // One of "F", "FB", "B".
-  "layer_view": layer_view,
+  "bom_view": "bom-only" | "left-right" | "top-bottom",
+  "layer_view": "F" | "FB" | "B",
   "extra_fields": ["field1_name", "field2_name", ...],
 }
 ```

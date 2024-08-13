@@ -44,7 +44,7 @@ def check_for_bom_button():
 
 
 if (not os.environ.get('INTERACTIVE_HTML_BOM_CLI_MODE', False) and
-    os.path.basename(sys.argv[0]) != 'generate_interactive_bom.py'):
+    not os.path.basename(sys.argv[0]).startswith('generate_interactive_bom')):
     from .ecad.kicad import InteractiveHtmlBomPlugin
 
     plugin = InteractiveHtmlBomPlugin()

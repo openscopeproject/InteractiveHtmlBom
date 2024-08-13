@@ -3,12 +3,24 @@ from datetime import datetime
 
 import pcbnew
 
-from .common import EcadParser, Component
+from .common import EcadParser, Component, ExtraFieldData
 from .kicad_extra import find_latest_schematic_data, parse_schematic_data
 from .svgpath import create_path
 from ..core import ibom
 from ..core.config import Config
 from ..core.fontparser import FontParser
+
+
+KICAD_VERSION = [5, 1, 0]
+
+if hasattr(pcbnew, 'Version'):
+    version = pcbnew.Version().split('.')
+    try:
+        for i in range(len(version)):
+            version[i] = int(version[i].split('-')[0])
+    except ValueError:
+        pass
+    KICAD_VERSION = version
 
 
 class PcbnewParser(EcadParser):
@@ -19,9 +31,9 @@ class PcbnewParser(EcadParser):
         if self.board is None:
             self.board = pcbnew.LoadBoard(self.file_name)  # type: pcbnew.BOARD
         if hasattr(self.board, 'GetModules'):
-            self.footprints = list(self.board.GetModules())
+            self.footprints = list(self.board.GetModules())  # type: list[pcbnew.MODULE]
         else:
-            self.footprints = list(self.board.GetFootprints())
+            self.footprints = list(self.board.GetFootprints())  # type: list[pcbnew.FOOTPRINT]
         self.font_parser = FontParser()
 
     def get_extra_field_data(self, file_name):
@@ -29,22 +41,43 @@ class PcbnewParser(EcadParser):
             return self.parse_extra_data_from_pcb()
         if os.path.splitext(file_name)[1] == '.kicad_pcb':
             return None
-        return parse_schematic_data(file_name)
+
+        data = parse_schematic_data(file_name)
+
+        return ExtraFieldData(data[0], data[1])
+
+    @staticmethod
+    def get_footprint_fields(f):
+        # type: (pcbnew.FOOTPRINT) -> dict
+        props = {}
+        if hasattr(f, "GetProperties"):
+            props = f.GetProperties()
+        if hasattr(f, "GetFields"):
+            props = f.GetFieldsShownText()
+        if "dnp" in props and props["dnp"] == "":
+            del props["dnp"]
+            props["kicad_dnp"] = "DNP"
+        if hasattr(f, "IsDNP"):
+            if f.IsDNP():
+                props["kicad_dnp"] = "DNP"
+        return props
 
     def parse_extra_data_from_pcb(self):
         field_set = set()
-        comp_dict = {}
+        by_ref = {}
+        by_index = {}
 
-        for f in self.footprints:  # type: pcbnew.FOOTPRINT
-            props = f.GetProperties()
+        for (i, f) in enumerate(self.footprints):
+            props = self.get_footprint_fields(f)
+            by_index[i] = props
             ref = f.GetReference()
-            ref_fields = comp_dict.setdefault(ref, {})
+            ref_fields = by_ref.setdefault(ref, {})
 
             for k, v in props.items():
                 field_set.add(k)
                 ref_fields[k] = v
 
-        return list(field_set), comp_dict
+        return ExtraFieldData(list(field_set), by_ref, by_index)
 
     def latest_extra_data(self, extra_dirs=None):
         base_name = os.path.splitext(os.path.basename(self.file_name))[0]
@@ -88,7 +121,7 @@ class PcbnewParser(EcadParser):
         return round(a1, 2), round(a2, 2)
 
     def parse_shape(self, d):
-        # type: (pcbnew.PCB_SHAPE) -> dict or None
+        # type: (pcbnew.PCB_SHAPE) -> dict | None
         shape = {
             pcbnew.S_SEGMENT: "segment",
             pcbnew.S_CIRCLE: "circle",
@@ -168,7 +201,7 @@ class PcbnewParser(EcadParser):
                 parent_footprint = d.GetParentModule()
             else:
                 parent_footprint = d.GetParentFootprint()
-            if parent_footprint is not None:
+            if parent_footprint is not None and KICAD_VERSION[0] < 8:
                 angle = self.normalize_angle(parent_footprint.GetOrientation())
             shape_dict = {
                 "type": shape,
@@ -240,8 +273,7 @@ class PcbnewParser(EcadParser):
                 "svgpath": create_path(lines)
             }
         elif hasattr(d, 'GetEffectiveTextShape'):
-            shape = d.GetEffectiveTextShape(
-                aTriangulate=False)  # type: pcbnew.SHAPE_COMPOUND
+            shape = d.GetEffectiveTextShape(False)  # type: pcbnew.SHAPE_COMPOUND
             segments = []
             polygons = []
             for s in shape.GetSubshapes():
@@ -331,7 +363,7 @@ class PcbnewParser(EcadParser):
         s = None
         if d.GetClass() in ["DRAWSEGMENT", "MGRAPHIC", "PCB_SHAPE"]:
             s = self.parse_shape(d)
-        elif d.GetClass() in ["PTEXT", "MTEXT", "FP_TEXT", "PCB_TEXT"]:
+        elif d.GetClass() in ["PTEXT", "MTEXT", "FP_TEXT", "PCB_TEXT", "PCB_FIELD"]:
             s = self.parse_text(d)
         elif (d.GetClass().startswith("PCB_DIM")
               and hasattr(pcbnew, "VECTOR_SHAPEPTR")):
@@ -393,10 +425,17 @@ class PcbnewParser(EcadParser):
             drawings.append(("val", f.Value()))
             for d in f.GraphicalItems():
                 drawings.append((d.GetClass(), d))
+            if hasattr(f, "GetFields"):
+                fields = f.GetFields() # type: list[pcbnew.PCB_FIELD]
+                for field in fields:
+                    if field.IsReference() or field.IsValue():
+                        continue
+                    drawings.append((field.GetClass(), field))
+
         return drawings
 
     def parse_pad(self, pad):
-        # type: (pcbnew.PAD) -> dict or None
+        # type: (pcbnew.PAD) -> dict | None
         layers_set = list(pad.GetLayerSet().Seq())
         layers = []
         if pcbnew.F_Cu in layers_set:
@@ -477,7 +516,7 @@ class PcbnewParser(EcadParser):
     def parse_footprints(self):
         # type: () -> list
         footprints = []
-        for f in self.footprints:  # type: pcbnew.FOOTPRINT
+        for f in self.footprints:
             ref = f.GetReference()
 
             # bounding box
@@ -555,6 +594,9 @@ class PcbnewParser(EcadParser):
         return footprints
 
     def parse_tracks(self, tracks):
+        tent_vias = True
+        if hasattr(self.board, "GetTentVias"):
+            tent_vias = self.board.GetTentVias()
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
         for track in tracks:
             if track.GetClass() in ["VIA", "PCB_VIA"]:
@@ -564,6 +606,8 @@ class PcbnewParser(EcadParser):
                     "width": track.GetWidth() * 1e-6,
                     "net": track.GetNetname(),
                 }
+                if not tent_vias:
+                    track_dict["drillsize"] = track.GetDrillValue() * 1e-6
                 for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     if track.IsOnLayer(layer):
                         result[layer].append(track_dict)
@@ -594,8 +638,9 @@ class PcbnewParser(EcadParser):
         }
 
     def parse_zones(self, zones):
+        # type: (list[pcbnew.ZONE]) -> dict
         result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
-        for zone in zones:  # type: pcbnew.ZONE
+        for zone in zones:
             if (not zone.IsFilled() or
                     hasattr(zone, 'GetIsKeepout') and zone.GetIsKeepout() or
                     hasattr(zone, 'GetIsRuleArea') and zone.GetIsRuleArea()):
@@ -685,8 +730,6 @@ class PcbnewParser(EcadParser):
             raise ParsingException(
                 'Failed parsing %s' % self.config.extra_data_file)
 
-        extra_field_data = extra_field_data[1] if extra_field_data else None
-
         title_block = self.board.GetTitleBlock()
         title = title_block.GetTitle()
         revision = title_block.GetRevision()
@@ -752,26 +795,33 @@ class PcbnewParser(EcadParser):
         if self.config.include_nets and hasattr(self.board, "GetNetInfo"):
             pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
 
-        warning_shown = False
         if extra_field_data and need_extra_fields:
-            e = []
-            for f in self.footprints:
-                e.append(extra_field_data.get(f.GetReference(), {}))
-                if f.GetReference() not in extra_field_data:
-                    # Some components are on pcb but not in schematic data.
-                    # Show a warning about possibly outdated netlist/xml file.
-                    self.logger.warn(
-                        'Component %s is missing from schematic data.'
-                        % f.GetReference())
-                    warning_shown = True
+            extra_fields = extra_field_data.fields_by_index
+            if extra_fields:
+                extra_fields = extra_fields.values()
+
+            if extra_fields is None:
+                extra_fields = []
+                field_map = extra_field_data.fields_by_ref
+                warning_shown = False
+
+                for f in self.footprints:
+                    extra_fields.append(field_map.get(f.GetReference(), {}))
+                    if f.GetReference() not in field_map:
+                        # Some components are on pcb but not in schematic data.
+                        # Show a warning about outdated extra data file.
+                        self.logger.warn(
+                            'Component %s is missing from schematic data.'
+                            % f.GetReference())
+                        warning_shown = True
+
+                if warning_shown:
+                    self.logger.warn('Netlist/xml file is likely out of date.')
         else:
-            e = [{}] * len(self.footprints)
+            extra_fields = [{}] * len(self.footprints)
 
-        if warning_shown:
-            self.logger.warn('Netlist/xml file is likely out of date.')
-
-        components = [self.footprint_to_component(f, ee)
-                      for (f, ee) in zip(self.footprints, e)]
+        components = [self.footprint_to_component(f, e)
+                      for (f, e) in zip(self.footprints, extra_fields)]
 
         return pcbdata, components
 

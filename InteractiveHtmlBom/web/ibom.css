@@ -140,7 +140,7 @@ textarea.clipboard-temp {
 
 .button-container {
   font-size: 0;
-  margin: 10px 10px 10px 0px;
+  margin: 0.4rem 0.4rem 0.4rem 0;
 }
 
 .dark .button-container {
@@ -171,7 +171,7 @@ canvas:active {
   width: 100%;
   max-width: 1000px;
   border: none;
-  padding: 5px;
+  padding: 3px;
 }
 
 .fileinfo .title {
@@ -531,7 +531,7 @@ mark.highlight {
 .menu {
   position: relative;
   display: inline-block;
-  margin: 10px 10px 10px 0px;
+  margin: 0.4rem 0.4rem 0.4rem 0;
 }
 
 .menu-content {
@@ -605,19 +605,72 @@ mark.highlight {
 }
 
 .topmostdiv {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
   background-color: white;
   transition: background-color 0.3s;
+  min-height: 100%;
 }
 
 #top {
-  height: 78px;
-  border-bottom: 2px solid black;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
 }
 
-.dark #top {
+#topdivider {
+  border-bottom: 2px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dark #topdivider {
   border-bottom: 2px solid #ccc;
+}
+
+#topdivider>div {
+  position: relative;
+}
+
+#toptoggle {
+  cursor: pointer;
+  user-select: none;
+  position: absolute;
+  padding: 0.1rem 0.3rem;
+  top: -0.4rem;
+  left: -1rem;
+  font-size: 1.4rem;
+  line-height: 60%;
+  border: 1px solid black;
+  border-radius: 1rem;
+  background-color: #fff;
+  z-index: 100;
+}
+
+.flipped {
+  transform: rotate(0.5turn);
+}
+
+.dark #toptoggle {
+  border: 1px solid #fff;
+  background-color: #222;
+}
+
+#fileinfodiv {
+  flex: 20rem 1 0;
+  overflow: auto;
+}
+
+#bomcontrols {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+#bomcontrols>* {
+  flex-shrink: 0;
 }
 
 #dbg {
@@ -802,4 +855,34 @@ a {
 
 .dark .help-link {
   border: 1px solid #00b9fd;
+}
+
+.bom-color {
+  width: 20%;
+}
+
+.color-column input {
+  width: 1.6rem;
+  height: 1rem;
+  border: 1px solid black;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* removes default styling from input color element */
+::-webkit-color-swatch {
+  border: none;
+}
+
+::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+::-moz-color-swatch,
+::-moz-focus-inner {
+  border: none;
+}
+
+::-moz-focus-inner {
+  padding: 0;
 }

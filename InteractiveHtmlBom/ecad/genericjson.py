@@ -3,7 +3,7 @@ import json
 import os.path
 from jsonschema import validate, ValidationError
 
-from .common import EcadParser, Component, BoundingBox
+from .common import EcadParser, Component, BoundingBox, ExtraFieldData
 from ..core.fontparser import FontParser
 from ..errors import ParsingException
 
@@ -32,7 +32,11 @@ class GenericJsonParser(EcadParser):
                 field_set.add(k)
                 ref_fields[k] = v
 
-        return list(field_set), comp_dict
+        by_index = {
+            i: components[i].extra_fields for i in range(len(components))
+        }
+
+        return ExtraFieldData(list(field_set), comp_dict, by_index)
 
     def get_generic_json_pcb(self):
         with io.open(self.file_name, 'r', encoding='utf-8') as f:

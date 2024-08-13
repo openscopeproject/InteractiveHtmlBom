@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\InteractiveHtmlBom",
+    "\\InteractiveHtmlBom\\web"
   ],
-  "SelectedNode": "\\E:\\Users\\timon\\Documents\\Visual Studio Projects\\_Repositorys\\InteractiveHtmlBom",
+  "SelectedNode": "\\InteractiveHtmlBom\\web\\ibom.js",
   "PreviewInSolutionExplorer": false
 }

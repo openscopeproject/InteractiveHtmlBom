@@ -21,6 +21,7 @@ class NetlistParser(ParserBase):
             fields = None
             datasheet = None
             libsource = None
+            dnp = False
             for f in c[1:]:
                 if f[0] == 'ref':
                     ref = f[1]
@@ -30,6 +31,9 @@ class NetlistParser(ParserBase):
                     datasheet = f[1]
                 if f[0] == 'libsource':
                     libsource = f[1:]
+                if f[0] == 'property' and isinstance(f[1], list) and \
+                        f[1][0] == 'name' and f[1][1] == 'dnp':
+                    dnp = True
             if ref is None:
                 return None
             ref_fields = comp_dict.setdefault(ref, {})
@@ -41,6 +45,9 @@ class NetlistParser(ParserBase):
                     if lib_field[0] == 'description':
                         field_set.add('Description')
                         ref_fields['Description'] = lib_field[1]
+            if dnp:
+                field_set.add('kicad_dnp')
+                ref_fields['kicad_dnp'] = "DNP"
             if fields is None:
                 continue
             for f in fields:

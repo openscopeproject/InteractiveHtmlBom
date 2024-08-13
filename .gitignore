@@ -1,3 +1,5 @@
+.git
+.vs
 *.pyc
 .idea
 .vscode
@@ -8,4 +10,4 @@ releases
 demo
 *config.ini
 InteractiveHtmlBom/web/user*
-.vs
+dist/

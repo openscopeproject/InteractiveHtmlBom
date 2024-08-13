@@ -218,10 +218,14 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
 # Implementing FieldsPanelBase
 class FieldsPanel(dialog_base.FieldsPanelBase):
     NONE_STRING = '<none>'
+    EMPTY_STRING = '<empty>'
     FIELDS_GRID_COLUMNS = 3
 
     def __init__(self, parent, extra_data_func, extra_data_wildcard):
         dialog_base.FieldsPanelBase.__init__(self, parent)
+        self.show_fields = []
+        self.group_fields = []
+
         self.extra_data_func = extra_data_func
         self.extra_field_data = None
 
@@ -261,6 +265,8 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
                                 recursive=True)
         self.extraDataFilePicker.Destroy()
         self.extraDataFilePicker = new_picker
+        self.extraDataFilePicker.Bind(
+            wx.EVT_FILEPICKER_CHANGED, self.OnExtraDataFileChanged)
         self.Layout()
 
     def _swapRows(self, a, b):
@@ -333,8 +339,9 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
             self.extraDataFilePicker.Path = ''
 
         if self.extra_field_data is not None:
-            field_list = list(self.extra_field_data[0])
+            field_list = list(self.extra_field_data.fields)
             self._setFieldsList(["Value", "Footprint"] + field_list)
+            self.SetCheckedFields()
             field_list.append(self.NONE_STRING)
             self.boardVariantFieldBox.SetItems(field_list)
             self.boardVariantFieldBox.SetStringSelection(self.NONE_STRING)
@@ -351,9 +358,12 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
             self.boardVariantBlacklist.Clear()
             return
         variant_set = set()
-        for _, field_dict in self.extra_field_data[1].items():
+        for _, field_dict in self.extra_field_data.fields_by_ref.items():
             if selection in field_dict:
-                variant_set.add(field_dict[selection])
+                v = field_dict[selection]
+                if v == "":
+                    v = self.EMPTY_STRING
+                variant_set.add(v)
         self.boardVariantWhitelist.SetItems(list(variant_set))
         self.boardVariantBlacklist.SetItems(list(variant_set))
 
@@ -377,14 +387,20 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
                 result.append(self.fieldsGrid.GetCellValue(row, 2))
         return result
 
-    def SetCheckedFields(self, show, group):
-        group = [s for s in group if s in show]
+    def SetCheckedFields(self, show=None, group=None):
+        self.show_fields = show or self.show_fields
+        self.group_fields = group or self.group_fields
+        self.group_fields = [
+            s for s in self.group_fields if s in self.show_fields
+        ]
         current = []
         for row in range(self.fieldsGrid.NumberRows):
             current.append(self.fieldsGrid.GetCellValue(row, 2))
-        new = [s for s in current if s not in show]
-        self._setFieldsList(show + new)
+        new = [s for s in current if s not in self.show_fields]
+        self._setFieldsList(self.show_fields + new)
         for row in range(self.fieldsGrid.NumberRows):
             field = self.fieldsGrid.GetCellValue(row, 2)
-            self.fieldsGrid.SetCellValue(row, 0, "1" if field in show else "")
-            self.fieldsGrid.SetCellValue(row, 1, "1" if field in group else "")
+            self.fieldsGrid.SetCellValue(
+                row, 0, "1" if field in self.show_fields else "")
+            self.fieldsGrid.SetCellValue(
+                row, 1, "1" if field in self.group_fields else "")

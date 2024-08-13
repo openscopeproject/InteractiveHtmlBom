@@ -73,14 +73,19 @@ def skip_component(m, config):
         return True
 
     # skip components with wrong variant field
+    empty_str = '<empty>'
     if config.board_variant_field and config.board_variant_whitelist:
         ref_variant = m.extra_fields.get(config.board_variant_field, '')
+        if ref_variant == '':
+            ref_variant = empty_str
         if ref_variant not in config.board_variant_whitelist:
             return True
 
     if config.board_variant_field and config.board_variant_blacklist:
         ref_variant = m.extra_fields.get(config.board_variant_field, '')
-        if ref_variant and ref_variant in config.board_variant_blacklist:
+        if ref_variant == '':
+            ref_variant = empty_str
+        if ref_variant != empty_str and ref_variant in config.board_variant_blacklist:
             return True
 
     return False
@@ -138,9 +143,12 @@ def generate_bom(pcb_footprints, config):
                     group_key.append(f.footprint)
                     group_key.append(f.attr)
             else:
-                fields.append(f.extra_fields.get(field, ''))
+                field_key = field
+                if config.normalize_field_case:
+                    field_key = field.lower()
+                fields.append(f.extra_fields.get(field_key, ''))
                 if field in group_by:
-                    group_key.append(f.extra_fields.get(field, ''))
+                    group_key.append(f.extra_fields.get(field_key, ''))
 
         index_to_fields[i] = fields
         refs = part_groups.setdefault(tuple(group_key), [])

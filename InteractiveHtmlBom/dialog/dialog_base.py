@@ -112,12 +112,14 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         self.showSilkscreenCheckbox.SetValue(True)
         b_sizer.Add( self.showSilkscreenCheckbox, 0, wx.ALL, 5 )
 
-        self.highlightPin1Checkbox = wx.CheckBox( self, wx.ID_ANY, u"Highlight first pin", wx.DefaultPosition, wx.DefaultSize, 0 )
-        b_sizer.Add( self.highlightPin1Checkbox, 0, wx.ALL, 5 )
-
         self.continuousRedrawCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Continuous redraw on drag", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.continuousRedrawCheckbox.SetValue(True)
         b_sizer.Add( self.continuousRedrawCheckbox, 0, wx.ALL, 5 )
+
+        highlightPin1Choices = [ u"None", u"All", u"Selected" ]
+        self.highlightPin1 = wx.RadioBox( self, wx.ID_ANY, u"Highlight first pin", wx.DefaultPosition, wx.DefaultSize, highlightPin1Choices, 3, wx.RA_SPECIFY_COLS )
+        self.highlightPin1.SetSelection( 0 )
+        b_sizer.Add( self.highlightPin1, 0, wx.ALL|wx.EXPAND, 5 )
 
         bSizer18 = wx.BoxSizer( wx.VERTICAL )
 
@@ -180,7 +182,7 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         sbSizer10.Add( self.openBrowserCheckbox, 0, wx.ALL, 5 )
 
 
-        b_sizer.Add( sbSizer10, 1, wx.EXPAND, 5 )
+        b_sizer.Add( sbSizer10, 1, wx.EXPAND|wx.ALL, 5 )
 
 
         self.SetSizer( b_sizer )
@@ -446,6 +448,8 @@ class FieldsPanelBase ( wx.Panel ):
 
         # Cell Defaults
         self.fieldsGrid.SetDefaultCellAlignment( wx.ALIGN_CENTER, wx.ALIGN_TOP )
+        self.fieldsGrid.SetMaxSize( wx.Size( -1,200 ) )
+
         bSizer4.Add( self.fieldsGrid, 1, wx.ALL|wx.EXPAND, 5 )
 
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
@@ -544,7 +548,7 @@ class FieldsPanelBase ( wx.Panel ):
         self.fieldsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnGridCellClicked )
         self.m_btnUp.Bind( wx.EVT_BUTTON, self.OnFieldsUp )
         self.m_btnDown.Bind( wx.EVT_BUTTON, self.OnFieldsDown )
-        self.normalizeCaseCheckbox.Bind( wx.EVT_CHECKBOX, self.OnNetlistFileChanged )
+        self.normalizeCaseCheckbox.Bind( wx.EVT_CHECKBOX, self.OnExtraDataFileChanged )
         self.boardVariantFieldBox.Bind( wx.EVT_COMBOBOX, self.OnBoardVariantFieldChange )
 
     def __del__( self ):
@@ -567,8 +571,8 @@ class FieldsPanelBase ( wx.Panel ):
     def OnFieldsDown( self, event ):
         event.Skip()
 
-    def OnNetlistFileChanged( self, event ):
-        event.Skip()
 
     def OnBoardVariantFieldChange( self, event ):
         event.Skip()
+
+
