@@ -133,6 +133,14 @@ function setHighlightPin1(value) {
   redrawIfInitDone();
 }
 
+function setHighlightRowOnClick(value) {
+  settings.highlightRowOnClick = value;
+  writeStorage("highlightRowOnClick", value);
+  if (initDone) {
+    populateBomTable();
+  }
+}
+
 function getStoredCheckboxRefs(checkbox) {
   function convert(ref) {
     var intref = parseInt(ref);
@@ -737,7 +745,12 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
     }
     bom.appendChild(tr);
     var handler = createRowHighlightHandler(tr.id, references, netname);
-    tr.onmousemove = handler;
+    //tr.onmousemove = handler;   /*  Made a choice in settings  */
+    if (settings.highlightRowOnClick) {
+      tr.onmousedown = handler;
+    } else {
+      tr.onmousemove = handler;
+    }
     highlightHandlers.push({
       id: tr.id,
       handler: handler,

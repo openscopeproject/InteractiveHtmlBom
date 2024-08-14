@@ -449,6 +449,8 @@ function overwriteSettings(newSettings) {
   document.getElementById("dnpOutlineCheckbox").checked = settings.renderDnpOutline;
   setRedrawOnDrag(settings.redrawOnDrag);
   document.getElementById("dragCheckbox").checked = settings.redrawOnDrag;
+  setHighlightRowOnClick(settings.highlightRowOnClick);
+	document.getElementById("highlightRowOnClickCheckbox").checked = settings.highlightRowOnClick;
   setDarkMode(settings.darkMode);
   document.getElementById("darkmodeCheckbox").checked = settings.darkMode;
   setHighlightPin1(settings.highlightpin1);
@@ -573,6 +575,7 @@ function initDefaults() {
   }
   initBooleanSetting("dnpOutline", false, "dnpOutlineCheckbox", dnpOutline);
   initBooleanSetting("redrawOnDrag", config.redraw_on_drag, "dragCheckbox", setRedrawOnDrag);
+  initBooleanSetting("highlightRowOnClick", false, "highlightRowOnClickCheckbox", setHighlightRowOnClick);
   initBooleanSetting("darkmode", config.dark_mode, "darkmodeCheckbox", setDarkMode);
 
   var fields = ["checkboxes", "References"].concat(config.fields).concat(["Quantity"]);
