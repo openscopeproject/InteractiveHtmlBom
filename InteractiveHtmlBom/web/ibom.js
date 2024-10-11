@@ -745,7 +745,6 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
     }
     bom.appendChild(tr);
     var handler = createRowHighlightHandler(tr.id, references, netname);
-    //tr.onmousemove = handler;   /*  Made a choice in settings  */
     if (settings.highlightRowOnClick) {
       tr.onmousedown = handler;
     } else {

@@ -450,7 +450,7 @@ function overwriteSettings(newSettings) {
   setRedrawOnDrag(settings.redrawOnDrag);
   document.getElementById("dragCheckbox").checked = settings.redrawOnDrag;
   setHighlightRowOnClick(settings.highlightRowOnClick);
-	document.getElementById("highlightRowOnClickCheckbox").checked = settings.highlightRowOnClick;
+  document.getElementById("highlightRowOnClickCheckbox").checked = settings.highlightRowOnClick;
   setDarkMode(settings.darkMode);
   document.getElementById("darkmodeCheckbox").checked = settings.darkMode;
   setHighlightPin1(settings.highlightpin1);

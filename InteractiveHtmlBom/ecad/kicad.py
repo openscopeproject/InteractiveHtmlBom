@@ -535,7 +535,10 @@ class PcbnewParser(EcadParser):
             if hasattr(f_copy, 'GetFootprintRect'):
                 footprint_rect = f_copy.GetFootprintRect()
             else:
-                footprint_rect = f_copy.GetBoundingBox(False, False)
+                try:
+                    footprint_rect = f_copy.GetBoundingBox(False, False)
+                except TypeError:
+                    footprint_rect = f_copy.GetBoundingBox(False)
             bbox = {
                 "pos": self.normalize(f.GetPosition()),
                 "relpos": self.normalize(footprint_rect.GetPosition()),
