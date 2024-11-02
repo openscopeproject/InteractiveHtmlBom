@@ -113,6 +113,19 @@ class EasyEdaParser(EcadParser):
 
         return layer, segments_json
 
+    def parse_via(self, shape):
+        print('Parsing via', shape)
+        shape = self.tilda_split(shape)
+        assert len(shape) >= 5, 'Invalid via ' + str(shape)
+        x, y = self.normalize(shape[0]), self.normalize(shape[1])
+        width = self.normalize(shape[2])
+        return self.TOP_COPPER_LAYER, [{
+            "type": "segment",
+            "start": [x, y],
+            "end": [x, y],
+            "width": width
+        }]
+
     def parse_rect(self, shape):
         shape = self.tilda_split(shape)
         assert len(shape) >= 9, 'Invalid rect ' + str(shape)
@@ -387,6 +400,7 @@ class EasyEdaParser(EcadParser):
             shape = shape_str.split('~', 1)
             parse_func = {
                 'TRACK': self.parse_track,
+                'VIA': self.parse_via,
                 'RECT': self.parse_rect,
                 'CIRCLE': self.parse_circle,
                 'SOLIDREGION': self.parse_solid_region,
@@ -398,6 +412,9 @@ class EasyEdaParser(EcadParser):
             if parse_func:
                 layer, json_list = parse_func(shape[1])
                 drawings.setdefault(layer, []).extend(json_list)
+                print(shape[0], layer, json_list)
+                if shape[0] == 'VIA':
+                    drawings.setdefault(self.BOT_COPPER_LAYER, []).extend(json_list)
             if shape[0] == 'LIB':
                 layer, component, json, extras = self.parse_lib(shape[1])
                 for drawing_layer, drawing in extras:
