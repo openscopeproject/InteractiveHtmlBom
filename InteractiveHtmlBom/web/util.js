@@ -70,7 +70,8 @@ function saveBomTable(output) {
   var text = '';
   for (var node of bomhead.childNodes[0].childNodes) {
     if (node.firstChild) {
-      text += (output == 'csv' ? `"${node.firstChild.nodeValue}"` : node.firstChild.nodeValue);
+      var name = node.firstChild.nodeValue ?? "";
+      text += (output == 'csv' ? `"${name}"` : name);
     }
     if (node != bomhead.childNodes[0].lastChild) {
       text += (output == 'csv' ? ',' : '\t');
