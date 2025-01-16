@@ -310,6 +310,8 @@ function drawPadHole(ctx, pad, padHoleColor) {
   ctx.fillStyle = padHoleColor;
   if (pad.drillshape == "oblong") {
     ctx.fill(getOblongPath(pad.drillsize));
+  } else if (pad.drillshape == "rect") {
+    ctx.fill(getChamferedRectPath(pad.drillsize, 0, 0, 0));
   } else {
     ctx.fill(getCirclePath(pad.drillsize[0] / 2));
   }
