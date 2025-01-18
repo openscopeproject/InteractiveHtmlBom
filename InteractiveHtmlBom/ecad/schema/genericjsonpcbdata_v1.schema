@@ -462,7 +462,8 @@
             "type": "string",
             "enum": [
                 "circle",
-                "oblong"
+                "oblong",
+                "rect"
             ],
             "title": "Drillshape"
         },
