@@ -324,7 +324,7 @@ Footprints are a collection of pads, drawings and some metadata.
       // "smd" otherwise.
       "type": type,
       // Present only if type is "th".
-      // One of "circle", "oblong".
+      // One of "circle", "oblong" or "rect".
       "drillshape": drillshape,
       // Present only if type is "th". In case of circle shape x is diameter, y is ignored.
       "drillsize": [x, y],
