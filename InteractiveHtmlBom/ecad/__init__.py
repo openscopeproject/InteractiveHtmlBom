@@ -13,6 +13,8 @@ def get_parser_by_extension(file_name, config, logger):
             obj = json.load(f)
         if 'pcbdata' in obj:
             return get_generic_json_parser(file_name, config, logger)
+        elif 'Signature' in obj:
+            return get_altiumdesigner_parser(file_name, config, logger)
         else:
             return get_easyeda_parser(file_name, config, logger)
     elif ext in ['.fbrd', '.brd']:
@@ -24,6 +26,11 @@ def get_parser_by_extension(file_name, config, logger):
 def get_kicad_parser(file_name, config, logger, board=None):
     from .kicad import PcbnewParser
     return PcbnewParser(file_name, config, logger, board)
+
+
+def get_altiumdesigner_parser(file_name, config, logger):
+    from .altiumdesigner import AltiumDesignerParser
+    return AltiumDesignerParser(file_name, config, logger)
 
 
 def get_easyeda_parser(file_name, config, logger):
