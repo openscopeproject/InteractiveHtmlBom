@@ -935,6 +935,7 @@ function populateMetadata() {
 }
 
 function changeBomLayout(layout) {
+  document.getElementById("topmostdiv").setAttribute('data-layout-type', layout);
   document.getElementById("bom-btn").classList.remove("depressed");
   document.getElementById("lr-btn").classList.remove("depressed");
   document.getElementById("tb-btn").classList.remove("depressed");
@@ -947,17 +948,9 @@ function changeBomLayout(layout) {
         canvassplit.destroy();
         canvassplit = null;
       }
-      document.getElementById("frontcanvas").style.display = "none";
-      document.getElementById("backcanvas").style.display = "none";
-      document.getElementById("topmostdiv").style.height = "";
-      document.getElementById("topmostdiv").style.display = "block";
       break;
     case 'top-bottom':
       document.getElementById("tb-btn").classList.add("depressed");
-      document.getElementById("frontcanvas").style.display = "";
-      document.getElementById("backcanvas").style.display = "";
-      document.getElementById("topmostdiv").style.height = "100%";
-      document.getElementById("topmostdiv").style.display = "flex";
       document.getElementById("bomdiv").classList.remove("split-horizontal");
       document.getElementById("canvasdiv").classList.remove("split-horizontal");
       document.getElementById("frontcanvas").classList.add("split-horizontal");
@@ -982,10 +975,6 @@ function changeBomLayout(layout) {
       break;
     case 'left-right':
       document.getElementById("lr-btn").classList.add("depressed");
-      document.getElementById("frontcanvas").style.display = "";
-      document.getElementById("backcanvas").style.display = "";
-      document.getElementById("topmostdiv").style.height = "100%";
-      document.getElementById("topmostdiv").style.display = "flex";
       document.getElementById("bomdiv").classList.add("split-horizontal");
       document.getElementById("canvasdiv").classList.add("split-horizontal");
       document.getElementById("frontcanvas").classList.remove("split-horizontal");
