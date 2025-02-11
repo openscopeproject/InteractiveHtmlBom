@@ -869,6 +869,18 @@ a {
   padding: 0;
 }
 
+/* Layout states */
+#topmostdiv {
+  display: flex;
+  height: 100%;
+}
+#topmostdiv[data-layout-type="bom-only"] #frontcanvas { display: none; }
+#topmostdiv[data-layout-type="bom-only"] #backcanvas { display: none; }
+#topmostdiv[data-layout-type="bom-only"] {
+  display: block;
+  height: auto;
+}
+
 /* removes default styling from input color element */
 ::-webkit-color-swatch {
   border: none;
