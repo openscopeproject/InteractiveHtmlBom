@@ -212,23 +212,14 @@ function initUtils() {
   }
 }
 
-function parseValue(val, ref) {
-  var inferUnit = (unit, ref) => {
+function parseValue(val) {
+  var inferUnit = (unit) => {
     if (unit) {
       unit = unit.toLowerCase();
       if (unit == 'Ω' || unit == "ohm" || unit == "ohms") {
         unit = 'r';
       }
       unit = unit[0];
-    } else {
-      ref = /^([a-z]+)\d+$/i.exec(ref);
-      if (ref) {
-        ref = ref[1].toLowerCase();
-        if (ref == "c") unit = 'f';
-        else if (ref == "l") unit = 'h';
-        else if (ref == "r" || ref == "rv") unit = 'r';
-        else unit = null;
-      }
     }
     return unit;
   };
@@ -240,7 +231,7 @@ function parseValue(val, ref) {
     if (match[2]) {
       val = val * units.getMultiplier(match[2]);
     }
-    unit = inferUnit(match[3], ref);
+    unit = inferUnit(match[3]);
     if (!unit) return null;
     else return {
       val: val,
@@ -254,7 +245,7 @@ function parseValue(val, ref) {
     if (match[3]) {
       val = val * units.getMultiplier(match[3]);
     }
-    unit = inferUnit(match[2], ref);
+    unit = inferUnit(match[2]);
     if (!unit) return null;
     else return {
       val: val,
