@@ -221,45 +221,44 @@ function parseValue(val, ref) {
       if (unit == 'Ω' || unit == "ohm" || unit == "ohms") {
         unit = 'r';
       }
-      unit = unit[0];
-    } else {
-      ref = /^([a-z]+)\d+$/i.exec(ref);
-      if (ref) {
-        ref = ref[1].toLowerCase();
-        if (ref == "c") unit = 'f';
-        else if (ref == "l") unit = 'h';
-        else if (ref == "r" || ref == "rv") unit = 'r';
-        else unit = null;
-      }
+      return unit[0];
     }
-    return unit;
+
+    var resarr = /^([a-z]+)\d+$/i.exec(ref);
+    switch (Array.isArray(resarr) && resarr[1].toLowerCase()) {
+      case "c": return 'f';
+      case "l": return 'h';
+      case "r":
+      case "rv": return 'r';
+    }
+    return null;
   };
   val = val.replace(/,/g, "");
   var match = units.valueRegex.exec(val);
-  var unit;
-  if (match) {
-    val = parseFloat(match[1]);
-    if (match[2]) {
-      val = val * units.getMultiplier(match[2]);
-    }
-    unit = inferUnit(match[3], ref);
+  if (Array.isArray(match)) {
+    var unit = inferUnit(match[3], ref);
+    var val_i = parseFloat(match[1]);
     if (!unit) return null;
-    else return {
-      val: val,
+    if (match[2]) {
+      val_i = val_i * getMultiplier(match[2]);
+    }
+    return {
+      val: val_i,
       unit: unit,
       extra: match[4],
     }
   }
+
   match = units.valueAltRegex.exec(val);
-  if (match && (match[1] || match[4])) {
-    val = parseFloat(match[1] + "." + match[4]);
-    if (match[3]) {
-      val = val * units.getMultiplier(match[3]);
-    }
-    unit = inferUnit(match[2], ref);
+  if (Array.isArray(match) && (match[1] || match[4])) {
+    var unit = inferUnit(match[2], ref);
+    var val_i = parseFloat(match[1] + "." + match[4]);
     if (!unit) return null;
-    else return {
-      val: val,
+    if (match[3]) {
+      val_i = val_i * getMultiplier(match[3]);
+    }
+    return {
+      val: val_i,
       unit: unit,
       extra: match[5],
     }
