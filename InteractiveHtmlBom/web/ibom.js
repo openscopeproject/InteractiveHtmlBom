@@ -362,6 +362,25 @@ function highlightFilter(s) {
   return r;
 }
 
+function getSelectedBomList() {
+  if (settings.bommode == "netlist") {
+    return pcbdata.nets.slice();
+  }
+  var out = [];
+  switch (settings.canvaslayout) {
+    case 'F':
+      out = pcbdata.bom.F.slice();
+      break;
+    case 'FB':
+      out = pcbdata.bom.both.slice();
+      break;
+    case 'B':
+      out = pcbdata.bom.B.slice();
+      break;
+  }
+  return (settings.bommode == "ungrouped") ? out.flat() : out;
+}
+
 function checkboxSetUnsetAllHandler(checkboxname) {
   return function () {
     var checkboxnum = 0;
@@ -619,31 +638,9 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
   var first = true;
   var style = getComputedStyle(topmostdiv);
   var defaultNetColor = style.getPropertyValue('--track-color').trim();
-  if (settings.bommode == "netlist") {
-    bomtable = pcbdata.nets.slice();
-  } else {
-    switch (settings.canvaslayout) {
-      case 'F':
-        bomtable = pcbdata.bom.F.slice();
-        break;
-      case 'FB':
-        bomtable = pcbdata.bom.both.slice();
-        break;
-      case 'B':
-        bomtable = pcbdata.bom.B.slice();
-        break;
-    }
-    if (settings.bommode == "ungrouped") {
-      // expand bom table
-      expandedTable = []
-      for (var bomentry of bomtable) {
-        for (var ref of bomentry) {
-          expandedTable.push([ref]);
-        }
-      }
-      bomtable = expandedTable;
-    }
-  }
+  
+  bomtable = getSelectedBomList();
+
   if (bomSortFunction) {
     bomtable = bomtable.sort(bomSortFunction);
   }
@@ -1294,10 +1291,10 @@ function topToggle() {
 }
 
 window.onload = function (e) {
-  initUtils();
   initRender();
   initStorage();
   initDefaults();
+  initUtils();
   cleanGutters();
   populateMetadata();
   dbgdiv = document.getElementById("dbg");

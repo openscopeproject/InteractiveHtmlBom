@@ -206,8 +206,10 @@ function initUtils() {
   if (config.fields.includes("Value")) {
     var index = config.fields.indexOf("Value");
     pcbdata.bom["parsedValues"] = {};
+    var bomList = getSelectedBomList().flat();
     for (var id in pcbdata.bom.fields) {
-      pcbdata.bom.parsedValues[id] = parseValue(pcbdata.bom.fields[id][index])
+      var ref_row = bomList.find(item => item[1] == id) || [];
+      pcbdata.bom.parsedValues[id] = parseValue(pcbdata.bom.fields[id][index], ref_row[0] ||'');
     }
   }
 }
