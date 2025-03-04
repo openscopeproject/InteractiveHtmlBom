@@ -378,7 +378,19 @@ function getSelectedBomList() {
       out = pcbdata.bom.B.slice();
       break;
   }
-  return (settings.bommode == "ungrouped") ? out.flat() : out;
+
+  if (settings.bommode == "ungrouped") {
+    // expand bom table
+    var expandedTable = [];
+    for (var bomentry of out) {
+      for (var ref of bomentry) {
+        expandedTable.push([ref]);
+      }
+    }
+    return expandedTable;
+  }
+
+  return out;
 }
 
 function checkboxSetUnsetAllHandler(checkboxname) {
