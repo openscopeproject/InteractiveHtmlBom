@@ -240,7 +240,7 @@ function parseValue(val, ref) {
     var val_i = parseFloat(match[1]);
     if (!unit) return null;
     if (match[2]) {
-      val_i = val_i * getMultiplier(match[2]);
+      val_i = val_i * units.getMultiplier(match[2]);
     }
     return {
       val: val_i,
@@ -255,7 +255,7 @@ function parseValue(val, ref) {
     var val_i = parseFloat(match[1] + "." + match[4]);
     if (!unit) return null;
     if (match[3]) {
-      val_i = val_i * getMultiplier(match[3]);
+      val_i = val_i * units.getMultiplier(match[3]);
     }
     return {
       val: val_i,
