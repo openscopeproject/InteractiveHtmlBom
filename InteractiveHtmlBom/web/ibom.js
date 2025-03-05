@@ -362,22 +362,25 @@ function highlightFilter(s) {
   return r;
 }
 
+function findBomRefRowById(id) {
+  var allList = getBomListByLayer('FB').flat();
+  return allList.find(item => item[1] == Number(id)) || [];
+}
+
+function getBomListByLayer(layer) {
+  switch (layer) {
+    case 'F': return pcbdata.bom.F.slice();
+    case 'B': return pcbdata.bom.B.slice();
+    case 'FB': return pcbdata.bom.both.slice();
+  }
+  return [];
+}
+
 function getSelectedBomList() {
   if (settings.bommode == "netlist") {
     return pcbdata.nets.slice();
   }
-  var out = [];
-  switch (settings.canvaslayout) {
-    case 'F':
-      out = pcbdata.bom.F.slice();
-      break;
-    case 'FB':
-      out = pcbdata.bom.both.slice();
-      break;
-    case 'B':
-      out = pcbdata.bom.B.slice();
-      break;
-  }
+  var out = getBomListByLayer(settings.canvaslayout);
 
   if (settings.bommode == "ungrouped") {
     // expand bom table
