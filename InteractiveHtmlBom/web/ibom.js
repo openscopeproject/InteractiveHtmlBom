@@ -362,11 +362,6 @@ function highlightFilter(s) {
   return r;
 }
 
-function findBomRefRowById(id) {
-  var allList = getBomListByLayer('FB').flat();
-  return allList.find(item => item[1] == Number(id)) || [];
-}
-
 function getBomListByLayer(layer) {
   switch (layer) {
     case 'F': return pcbdata.bom.F.slice();
@@ -653,7 +648,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
   var first = true;
   var style = getComputedStyle(topmostdiv);
   var defaultNetColor = style.getPropertyValue('--track-color').trim();
-  
+
   bomtable = getSelectedBomList();
 
   if (bomSortFunction) {
