@@ -183,6 +183,7 @@ var units = {
     return 1;
   },
   valueRegex: null,
+  valueAltRegex: null,
 }
 
 function initUtils() {
