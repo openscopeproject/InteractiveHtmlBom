@@ -183,6 +183,7 @@ var units = {
     return 1;
   },
   valueRegex: null,
+  valueAltRegex: null,
 }
 
 function initUtils() {
@@ -209,7 +210,7 @@ function initUtils() {
     var allList = getBomListByLayer('FB').flat();
     for (var id in pcbdata.bom.fields) {
       var ref_key = allList.find(item => item[1] == Number(id)) || [];
-      pcbdata.bom.parsedValues[id] = parseValue(pcbdata.bom.fields[id][index], ref_key);
+      pcbdata.bom.parsedValues[id] = parseValue(pcbdata.bom.fields[id][index], ref_key[0] || '');
     }
   }
 }
