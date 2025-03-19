@@ -38,7 +38,11 @@ pattern = "LAST_TAG = 'v(?P<version>[^']+)'"
 
 [tool.hatch.envs.default]
 system-packages = true
-dependencies = ["coverage[toml]>=6.5", "pytest"]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "pytest",
+  "pytest-sugar"
+]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
