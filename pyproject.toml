@@ -37,7 +37,12 @@ path = "InteractiveHtmlBom/version.py"
 pattern = "LAST_TAG = 'v(?P<version>[^']+)'"
 
 [tool.hatch.envs.default]
-dependencies = ["coverage[toml]>=6.5", "pytest"]
+system-packages = true
+dependencies = [
+  "coverage[toml]>=6.5",
+  "pytest",
+  "pytest-sugar"
+]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
