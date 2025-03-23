@@ -603,7 +603,7 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
         tr.appendChild(createColumnHeader("References", "references", (a, b) => {
           var i = 0;
           while (i < a.length && i < b.length) {
-            if (a[i] != b[i]) return compareRefs(a[i][0], b[i][0]);
+            if (a[i][0] != b[i][0]) return compareRefs(a[i][0], b[i][0]);
             i++;
           }
           return a.length - b.length;
