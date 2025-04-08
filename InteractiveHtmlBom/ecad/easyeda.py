@@ -114,7 +114,6 @@ class EasyEdaParser(EcadParser):
         return layer, segments_json
 
     def parse_via(self, shape):
-        print('Parsing via', shape)
         shape = self.tilda_split(shape)
         assert len(shape) >= 5, 'Invalid via ' + str(shape)
         x, y = self.normalize(shape[0]), self.normalize(shape[1])
@@ -412,7 +411,6 @@ class EasyEdaParser(EcadParser):
             if parse_func:
                 layer, json_list = parse_func(shape[1])
                 drawings.setdefault(layer, []).extend(json_list)
-                print(shape[0], layer, json_list)
                 if shape[0] == 'VIA':
                     drawings.setdefault(self.BOT_COPPER_LAYER, []).extend(json_list)
             if shape[0] == 'LIB':
