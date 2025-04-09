@@ -340,7 +340,7 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
 
         if self.extra_field_data is not None:
             field_list = list(self.extra_field_data.fields)
-            self._setFieldsList(["Value", "Footprint"] + field_list)
+            self._setFieldsList(["Value", "Footprint", "Position X", "Position Y", "Rotation"] + field_list)
             self.SetCheckedFields()
             field_list.append(self.NONE_STRING)
             self.boardVariantFieldBox.SetItems(field_list)
