@@ -434,6 +434,17 @@ class PcbnewParser(EcadParser):
 
         return drawings
 
+    @staticmethod
+    def _pad_is_through_hole(pad):
+        # type: (pcbnew.PAD) -> bool
+        if hasattr(pcbnew, 'PAD_ATTRIB_PTH'):
+            through_hole_attributes = [pcbnew.PAD_ATTRIB_PTH,
+                                       pcbnew.PAD_ATTRIB_NPTH]
+        else:
+            through_hole_attributes = [pcbnew.PAD_ATTRIB_STANDARD,
+                                       pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED]
+        return pad.GetAttribute() in through_hole_attributes
+
     def parse_pad(self, pad):
         # type: (pcbnew.PAD) -> list[dict]
         custom_padstack = False
@@ -451,7 +462,7 @@ class PcbnewParser(EcadParser):
         for layer, letter in outer_layers:
             if layer in layers_set:
                 layers.append(letter)
-        if not layers:
+        if not layers and not self._pad_is_through_hole(pad):
             return []
 
         if custom_padstack:
@@ -537,13 +548,8 @@ class PcbnewParser(EcadParser):
             except TypeError:
                 pad_dict["chamfpos"] = pad.GetChamferPositions()
                 pad_dict["chamfratio"] = pad.GetChamferRectRatio()
-        if hasattr(pcbnew, 'PAD_ATTRIB_PTH'):
-            through_hole_attributes = [pcbnew.PAD_ATTRIB_PTH,
-                                       pcbnew.PAD_ATTRIB_NPTH]
-        else:
-            through_hole_attributes = [pcbnew.PAD_ATTRIB_STANDARD,
-                                       pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED]
-        if pad.GetAttribute() in through_hole_attributes:
+
+        if self._pad_is_through_hole(pad):
             pad_dict["type"] = "th"
             pad_dict["drillshape"] = {
                 pcbnew.PAD_DRILL_SHAPE_CIRCLE: "circle",
@@ -552,6 +558,7 @@ class PcbnewParser(EcadParser):
             pad_dict["drillsize"] = self.normalize(pad.GetDrillSize())
         else:
             pad_dict["type"] = "smd"
+
         if hasattr(pad, "GetOffset"):
             try:
                 pad_dict["offset"] = self.normalize(pad.GetOffset(layer))
