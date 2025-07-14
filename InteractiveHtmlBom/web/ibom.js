@@ -23,6 +23,7 @@ function redrawIfInitDone() {
   if (initDone) {
     redrawCanvas(allcanvas.front);
     redrawCanvas(allcanvas.back);
+    scheduleARUpdate();
   }
 }
 
@@ -131,6 +132,21 @@ function setHighlightPin1(value) {
   writeStorage("highlightpin1", value);
   settings.highlightpin1 = value;
   redrawIfInitDone();
+}
+
+function setAROpacity(value) {
+  settings.arOpacity = parseInt(value);
+  document.getElementById("arOpacityPercent").textContent = settings.arOpacity;
+
+  const arIframe = document.getElementById('ar-iframe');
+  if (arIframe && arIframe.contentWindow) {
+    arIframe.contentWindow.postMessage({
+      type: 'change-opacity',
+      value: settings.arOpacity / 100
+    }, '*');
+  }
+
+  writeStorage("arOpacity", settings.arOpacity);
 }
 
 function setHighlightRowOnClick(value) {
@@ -863,25 +879,55 @@ function updateRefLookup(input) {
 }
 
 function changeCanvasLayout(layout) {
+  if (settings.bomlayout === "ar-view") {
+    if (layout === 'FB') {
+      return;
+    }
+
+    if (settings.canvaslayout === layout) {
+      return;
+    }
+
+    document.getElementById("fl-btn").classList.remove("depressed");
+    document.getElementById("bl-btn").classList.remove("depressed");
+
+    if (layout === 'F') {
+      document.getElementById("fl-btn").classList.add("depressed");
+    } else if (layout === 'B') {
+      document.getElementById("bl-btn").classList.add("depressed");
+    }
+
+    settings.canvaslayout = layout;
+    writeStorage("canvaslayout", layout);
+
+    completeARReload();
+
+    if (canvassplit) {
+      canvassplit.setSizes([50, 50]);
+    }
+    resizeAll();
+    return;
+  }
+    
   document.getElementById("fl-btn").classList.remove("depressed");
   document.getElementById("fb-btn").classList.remove("depressed");
   document.getElementById("bl-btn").classList.remove("depressed");
   switch (layout) {
     case 'F':
       document.getElementById("fl-btn").classList.add("depressed");
-      if (settings.bomlayout != "bom-only") {
+      if (settings.bomlayout != "bom-only" && canvassplit) {
         canvassplit.collapse(1);
       }
       break;
     case 'B':
       document.getElementById("bl-btn").classList.add("depressed");
-      if (settings.bomlayout != "bom-only") {
+      if (settings.bomlayout != "bom-only" && canvassplit) {
         canvassplit.collapse(0);
       }
       break;
     default:
       document.getElementById("fb-btn").classList.add("depressed");
-      if (settings.bomlayout != "bom-only") {
+      if (settings.bomlayout != "bom-only" && canvassplit) {
         canvassplit.setSizes([50, 50]);
       }
   }
@@ -941,16 +987,46 @@ function populateMetadata() {
     /^v\d+\.\d+/.exec(pcbdata.ibom_version)[0];
 }
 
+function handleARButtonClick() {
+  if (!pcbdata.ar_config || !pcbdata.ar_config.enabled) {
+    alert("AR functionality is not configured.\n\nTo enable AR:\n1. Open the plugin settings\n2. Check 'Enable AR functionality'\n3. Provide front and back PCB mind files (.mind)\n4. Regenerate the BOM");
+    return;
+  }
+  changeBomLayout('ar-view');
+}
+
 function changeBomLayout(layout) {
   document.getElementById("bom-btn").classList.remove("depressed");
   document.getElementById("lr-btn").classList.remove("depressed");
   document.getElementById("tb-btn").classList.remove("depressed");
+  document.getElementById("ar-btn").classList.remove("depressed");
+
+  if (layout !== 'ar-view') {
+    if (typeof pcbARStarted !== 'undefined' && pcbARStarted) {
+      stopPCBAR(function() {
+        removeARIframe();
+        document.getElementById("arcanvas").style.display = "none";
+      });
+    } else {
+      removeARIframe();
+      document.getElementById("arcanvas").style.display = "none";
+    }
+
+    document.getElementById("fl-btn").disabled = false;
+    document.getElementById("fb-btn").disabled = false;
+    document.getElementById("fb-btn").title = "Front and Back";
+    document.getElementById("bl-btn").disabled = false;
+    document.getElementById("frontcanvas").style.visibility = "visible";
+    document.getElementById("backcanvas").style.visibility = "visible";
+  }
   switch (layout) {
     case 'bom-only':
       document.getElementById("bom-btn").classList.add("depressed");
       if (bomsplit) {
         bomsplit.destroy();
         bomsplit = null;
+      }
+      if (canvassplit) {
         canvassplit.destroy();
         canvassplit = null;
       }
@@ -972,6 +1048,8 @@ function changeBomLayout(layout) {
       if (bomsplit) {
         bomsplit.destroy();
         bomsplit = null;
+      }
+      if (canvassplit) {
         canvassplit.destroy();
         canvassplit = null;
       }
@@ -1000,6 +1078,8 @@ function changeBomLayout(layout) {
       if (bomsplit) {
         bomsplit.destroy();
         bomsplit = null;
+      }
+      if (canvassplit) {
         canvassplit.destroy();
         canvassplit = null;
       }
@@ -1014,10 +1094,21 @@ function changeBomLayout(layout) {
         direction: "vertical",
         onDragEnd: resizeAll
       });
+      break;
+    case 'ar-view':
+      if (!pcbdata.ar_config || !pcbdata.ar_config.enabled) {
+        console.warn('AR functionality is not configured. Cannot switch to AR view.');
+        changeBomLayout('left-right');
+        return;
+      }
+      initializeARMode();
   }
   settings.bomlayout = layout;
   writeStorage("bomlayout", layout);
-  changeCanvasLayout(settings.canvaslayout);
+
+  if (layout !== 'ar-view') {
+    changeCanvasLayout(settings.canvaslayout);
+  }
 }
 
 function changeBomMode(mode) {
@@ -1315,6 +1406,15 @@ window.onload = function (e) {
   if (!("nets" in pcbdata)) {
     hideNetlistButton();
   }
+
+  if (!pcbdata.ar_config || !pcbdata.ar_config.enabled) {
+    var arButton = document.getElementById("ar-btn");
+    if (arButton) {
+      arButton.title = "AR View - Not configured (Click for details)";
+      arButton.style.opacity = "0.5";
+    }
+  }
+
   initDone = true;
   setBomCheckboxes(document.getElementById("bomCheckboxes").value);
   // Triggers render

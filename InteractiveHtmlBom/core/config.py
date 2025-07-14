@@ -59,6 +59,9 @@ class Config:
     layer_view = layer_view_choices[1]
     compression = True
     open_browser = True
+    enable_ar = False
+    ar_front_mind_file = ''
+    ar_back_mind_file = ''
 
     # General section
     bom_dest_dir = 'bom/'  # This is relative to pcb file directory
@@ -125,6 +128,9 @@ class Config:
         self.layer_view = f.Read('layer_view', self.layer_view)
         self.compression = f.ReadBool('compression', self.compression)
         self.open_browser = f.ReadBool('open_browser', self.open_browser)
+        self.enable_ar = f.ReadBool('enable_ar', self.enable_ar)
+        self.ar_front_mind_file = f.Read('ar_front_mind_file', self.ar_front_mind_file)
+        self.ar_back_mind_file = f.Read('ar_back_mind_file', self.ar_back_mind_file)
 
         f.SetPath('/general')
         self.bom_dest_dir = f.Read('bom_dest_dir', self.bom_dest_dir)
@@ -184,6 +190,9 @@ class Config:
         f.Write('layer_view', self.layer_view)
         f.WriteBool('compression', self.compression)
         f.WriteBool('open_browser', self.open_browser)
+        f.WriteBool('enable_ar', self.enable_ar)
+        f.Write('ar_front_mind_file', self.ar_front_mind_file)
+        f.Write('ar_back_mind_file', self.ar_back_mind_file)
 
         f.SetPath('/general')
         bom_dest_dir = self.bom_dest_dir
@@ -231,6 +240,9 @@ class Config:
             dlg.html.layerDefaultView.Selection]
         self.compression = dlg.html.compressionCheckbox.IsChecked()
         self.open_browser = dlg.html.openBrowserCheckbox.IsChecked()
+        self.enable_ar = dlg.general.enableArCheckbox.IsChecked()
+        self.ar_front_mind_file = dlg.general.arFrontMindFilePicker.Path
+        self.ar_back_mind_file = dlg.general.arBackMindFilePicker.Path
 
         # General
         self.bom_dest_dir = dlg.general.bomDirPicker.Path
@@ -296,6 +308,9 @@ class Config:
         dlg.general.blacklistEmptyValCheckbox.Value = self.blacklist_empty_val
         dlg.general.includeTracksCheckbox.Value = self.include_tracks
         dlg.general.includeNetsCheckbox.Value = self.include_nets
+        dlg.general.enableArCheckbox.Value = self.enable_ar
+        dlg.general.arFrontMindFilePicker.Path = self.ar_front_mind_file
+        dlg.general.arBackMindFilePicker.Path = self.ar_back_mind_file
 
         # Fields
         dlg.fields.extraDataFilePicker.SetInitialDirectory(
@@ -371,6 +386,12 @@ class Config:
                             action='store_true')
         parser.add_argument('--no-browser', help='Do not launch browser.',
                             action='store_true')
+        parser.add_argument('--enable-ar', help='Enable AR functionality.',
+                            action='store_true')
+        parser.add_argument('--ar-front-mind', help='Path to front PCB mind file.',
+                            type=str, default='')
+        parser.add_argument('--ar-back-mind', help='Path to back PCB mind file.',
+                            type=str, default='')
 
         # General
         parser.add_argument('--dest-dir', default=cls.bom_dest_dir,
@@ -450,6 +471,9 @@ class Config:
         self.layer_view = args.layer_view
         self.compression = not args.no_compression
         self.open_browser = not args.no_browser
+        self.enable_ar = args.enable_ar
+        self.ar_front_mind_file = args.ar_front_mind
+        self.ar_back_mind_file = args.ar_back_mind
 
         # General
         self.bom_dest_dir = args.dest_dir

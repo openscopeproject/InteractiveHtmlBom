@@ -548,6 +548,7 @@ function drawHighlightsOnLayer(canvasdict, clear = true) {
 function drawHighlights() {
   drawHighlightsOnLayer(allcanvas.front);
   drawHighlightsOnLayer(allcanvas.back);
+  scheduleARUpdate();
 }
 
 function drawBackground(canvasdict, clear = true) {
@@ -660,6 +661,19 @@ function redrawCanvas(layerdict) {
   drawHighlightsOnLayer(layerdict);
 }
 
+let arUpdateTimeout = null;
+function scheduleARUpdate() {
+  if (typeof pcbARStarted !== 'undefined' && pcbARStarted && typeof sendPCBDataToAR === 'function') {
+    if (arUpdateTimeout) {
+      clearTimeout(arUpdateTimeout);
+    }
+    arUpdateTimeout = setTimeout(() => {
+      sendPCBDataToAR();
+      arUpdateTimeout = null;
+    }, 150);
+  }
+}
+
 function resizeCanvas(layerdict) {
   var canvasdivid = {
     "F": "frontcanvas",
@@ -674,6 +688,7 @@ function resizeCanvas(layerdict) {
 function resizeAll() {
   resizeCanvas(allcanvas.front);
   resizeCanvas(allcanvas.back);
+  scheduleARUpdate();
 }
 
 function pointWithinDistanceToSegment(x, y, x1, y1, x2, y2, d) {
