@@ -49,6 +49,8 @@ class SettingsDialogPanel ( wx.Panel ):
         self.saveSettingsBtn = wx.Button( self, wx.ID_ANY, u"Save current settings...", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
         bSizer39.Add( self.saveSettingsBtn, 0, wx.ALL, 5 )
 
+        self.arHelpBtn = wx.Button( self, wx.ID_ANY, u"AR Help", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
+        bSizer39.Add( self.arHelpBtn, 0, wx.ALL, 5 )
 
         bSizer39.Add( ( 50, 0), 1, wx.EXPAND, 5 )
 
@@ -69,6 +71,7 @@ class SettingsDialogPanel ( wx.Panel ):
 
         # Connect Events
         self.saveSettingsBtn.Bind( wx.EVT_BUTTON, self.OnSave )
+        self.arHelpBtn.Bind( wx.EVT_BUTTON, self.OnArHelp )
         self.generateBomBtn.Bind( wx.EVT_BUTTON, self.OnGenerateBom )
         self.cancelBtn.Bind( wx.EVT_BUTTON, self.OnExit )
 
@@ -78,6 +81,9 @@ class SettingsDialogPanel ( wx.Panel ):
 
     # Virtual event handlers, override them in your derived class
     def OnSave( self, event ):
+        event.Skip()
+
+    def OnArHelp( self, event ):
         event.Skip()
 
     def OnGenerateBom( self, event ):
@@ -351,6 +357,42 @@ class GeneralSettingsPanelBase ( wx.Panel ):
 
 
         bSizer32.Add( blacklistSizer, 1, wx.ALL|wx.EXPAND|wx.TOP, 5 )
+
+        sbSizer12 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"AR (Augmented Reality)" ), wx.VERTICAL )
+
+        self.enableArCheckbox = wx.CheckBox( sbSizer12.GetStaticBox(), wx.ID_ANY, u"Enable AR functionality", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer12.Add( self.enableArCheckbox, 0, wx.ALL, 5 )
+
+        sbSizer13 = wx.StaticBoxSizer( wx.StaticBox( sbSizer12.GetStaticBox(), wx.ID_ANY, u"AR Mind Files" ), wx.VERTICAL )
+
+        self.arInfoText = wx.StaticText( sbSizer13.GetStaticBox(), wx.ID_ANY, u"AR requires .mind files from KiCad 3D Viewer screenshots (orthographic, top/bottom views, tight crop).", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.arInfoText.Wrap( 400 )
+        sbSizer13.Add( self.arInfoText, 0, wx.ALL, 5 )
+
+        self.m_staticText11 = wx.StaticText( sbSizer13.GetStaticBox(), wx.ID_ANY, u"Front PCB Mind File (.mind)", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText11.Wrap( -1 )
+
+        sbSizer13.Add( self.m_staticText11, 0, wx.ALL, 5 )
+
+        self.arFrontMindFilePicker = wx.FilePickerCtrl( sbSizer13.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select front PCB mind file", u"Mind files (*.mind)|*.mind", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE )
+        sbSizer13.Add( self.arFrontMindFilePicker, 0, wx.ALL|wx.EXPAND, 5 )
+
+        self.m_staticText12 = wx.StaticText( sbSizer13.GetStaticBox(), wx.ID_ANY, u"Back PCB Mind File (.mind)", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText12.Wrap( -1 )
+
+        sbSizer13.Add( self.m_staticText12, 0, wx.ALL, 5 )
+
+        self.arBackMindFilePicker = wx.FilePickerCtrl( sbSizer13.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select back PCB mind file", u"Mind files (*.mind)|*.mind", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE )
+        sbSizer13.Add( self.arBackMindFilePicker, 0, wx.ALL|wx.EXPAND, 5 )
+
+        self.createMindFileButton = wx.Button( sbSizer13.GetStaticBox(), wx.ID_ANY, u"Create Mind Files Online", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer13.Add( self.createMindFileButton, 0, wx.ALL|wx.CENTER, 5 )
+
+
+        sbSizer12.Add( sbSizer13, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+        bSizer32.Add( sbSizer12, 0, wx.ALL|wx.EXPAND, 5 )
 
 
         self.SetSizer( bSizer32 )
