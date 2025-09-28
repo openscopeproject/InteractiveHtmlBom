@@ -20,7 +20,7 @@ function setBomHandlers() {
     draggingElement.remove();
 
     // Make BOM selectable again
-    bom.style.removeProperty("userSelect");
+    bom.style.removeProperty("user-select");
 
     // Remove listeners
     document.removeEventListener('mousemove', mouseMoveHandler);
