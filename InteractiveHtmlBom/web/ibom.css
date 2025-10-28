@@ -110,6 +110,10 @@ button#copy:active {
   box-shadow: inset 0px 0px 5px #6c6c6c;
 }
 
+.button-highlight {
+  border: 1px solid red;
+}
+
 textarea.clipboard-temp {
   position: fixed;
   top: 0;
@@ -206,9 +210,35 @@ canvas:active {
   position: relative;
 }
 
+.bom th,
+.bom td button {
+  margin-right: 6px;
+  border-radius: 4px;
+  padding: 4px 0;
+  font-size: 10pt;
+  height: fit-content !important;
+
+}
+
+.bom th,
+.bom td button:hover {
+ background: rgba(255, 255, 255, 0.5);
+}
+
 .dark .bom th,
 .dark .bom td {
   border: 1px solid #777;
+}
+
+.dark .bom th,
+.dark .bom td button {
+  background: #666666;
+  color: #dddddd;
+}
+
+.dark .bom th,
+.dark .bom td button:hover {
+ background: rgba(102, 102, 102, 0.5);
 }
 
 .bom th {
