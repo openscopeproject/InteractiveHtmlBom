@@ -42,4 +42,4 @@ generated bom page.
 plugin (MIT license).
 
 `svgpath.py` is heavily based on
-[svgpathtools](https://github.com/mathandy/svgpathtools) module (MIT license).
+[svgpathtools](https://github.com/mathandy/svgpathtools) module (MIT license). 
