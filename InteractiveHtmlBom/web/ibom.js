@@ -892,7 +892,15 @@ function highlightNextRow() {
   smoothScrollToRow(currentHighlightedRowId);
 }
 
+function highlightClear() {
+  currentHighlightedRowId = null;
+  highlightedFootprints = []; // remove old refs highlight
+  removeAllBtnHighlight(); // remove old btns highlight
+  drawHighlights();
+}
+
 function populateBomTable() {
+  highlightClear();
   populateBomHeader();
   populateBomBody();
   setBomHandlers();
