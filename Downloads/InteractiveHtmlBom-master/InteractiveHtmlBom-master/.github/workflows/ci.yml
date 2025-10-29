@@ -1,0 +1,43 @@
+---
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  Build:
+    name: KiCAD ${{ matrix.kicad-version }}
+
+    strategy:
+      matrix:
+        os:
+          - Ubuntu
+        kicad-version:
+          - "8.0"
+          - "9.0"
+
+    runs-on: ${{ matrix.os }}-latest
+    container:
+      image: kicad/kicad:${{ matrix.kicad-version }}
+      options: --user root
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up build environment
+        shell: bash
+        run: |
+          apt update && apt install -y python3-pip
+          python3 -m pip install --break-system-packages --upgrade hatch
+
+      - name: Test
+        run: hatch -v run pytest -vv tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
