@@ -443,12 +443,20 @@
             "properties": {
                 "svgpath": { "type": "string" },
                 "thickness": { "type": "number" },
+                "fillrule": {
+                    "type": "string",
+                    "enum": [
+                        "nonzero",
+                        "evenodd"
+                    ]
+                },
                 "ref": { "type": "integer" , "const": 1 },
                 "val": { "type": "integer" , "const": 1 }
             },
-            "required": [
-                "svgpath",
-                "thickness"
+            "required": ["svgpath"],
+            "oneOf": [
+                { "required": ["thickness"] },
+                { "required": ["fillrule"] }
             ],
             "title": "DrawingText"
         },
