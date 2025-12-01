@@ -39,7 +39,7 @@ class Config:
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
         'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'checkboxes',
         'bom_view', 'layer_view', 'offset_back_rotation',
-        'kicad_text_formatting'
+        'kicad_text_formatting', 'mark_when_checked'
     ]
     default_show_group_fields = ["Value", "Footprint"]
 
@@ -55,6 +55,7 @@ class Config:
     board_rotation = 0
     offset_back_rotation = False
     checkboxes = ','.join(default_checkboxes)
+    mark_when_checked = ''
     bom_view = bom_view_choices[1]
     layer_view = layer_view_choices[1]
     compression = True
@@ -121,6 +122,7 @@ class Config:
         self.offset_back_rotation = f.ReadBool(
             'offset_back_rotation', self.offset_back_rotation)
         self.checkboxes = f.Read('checkboxes', self.checkboxes)
+        self.mark_when_checked = f.Read('mark_when_checked', self.mark_when_checked)
         self.bom_view = f.Read('bom_view', self.bom_view)
         self.layer_view = f.Read('layer_view', self.layer_view)
         self.compression = f.ReadBool('compression', self.compression)
@@ -180,6 +182,7 @@ class Config:
         f.WriteInt('board_rotation', self.board_rotation)
         f.WriteBool('offset_back_rotation', self.offset_back_rotation)
         f.Write('checkboxes', self.checkboxes)
+        f.Write('mark_when_checked', self.mark_when_checked)
         f.Write('bom_view', self.bom_view)
         f.Write('layer_view', self.layer_view)
         f.WriteBool('compression', self.compression)
@@ -226,6 +229,7 @@ class Config:
         self.offset_back_rotation = \
             dlg.html.offsetBackRotationCheckbox.IsChecked()
         self.checkboxes = dlg.html.bomCheckboxesCtrl.Value
+        # No dialog for mark_when_checked ...
         self.bom_view = self.bom_view_choices[dlg.html.bomDefaultView.Selection]
         self.layer_view = self.layer_view_choices[
             dlg.html.layerDefaultView.Selection]
@@ -275,6 +279,7 @@ class Config:
         dlg.html.boardRotationSlider.Value = self.board_rotation
         dlg.html.offsetBackRotationCheckbox.Value = self.offset_back_rotation
         dlg.html.bomCheckboxesCtrl.Value = self.checkboxes
+        # No dialog for mark_when_checked ...
         dlg.html.bomDefaultView.Selection = self.bom_view_choices.index(
             self.bom_view)
         dlg.html.layerDefaultView.Selection = self.layer_view_choices.index(
@@ -360,6 +365,10 @@ class Config:
         parser.add_argument('--checkboxes',
                             default=cls.checkboxes,
                             help='Comma separated list of checkbox columns.')
+        parser.add_argument('--mark-when-checked',
+                            default=cls.mark_when_checked,
+                            help='Name of the checkbox column used to mark '
+                                 'components when checked.')
         parser.add_argument('--bom-view', default=cls.bom_view,
                             choices=cls.bom_view_choices,
                             help='Default BOM view.')
@@ -446,6 +455,7 @@ class Config:
         self.board_rotation = math.fmod(args.board_rotation // 5, 37)
         self.offset_back_rotation = args.offset_back_rotation
         self.checkboxes = args.checkboxes
+        self.mark_when_checked = args.mark_when_checked
         self.bom_view = args.bom_view
         self.layer_view = args.layer_view
         self.compression = not args.no_compression

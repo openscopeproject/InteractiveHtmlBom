@@ -549,7 +549,10 @@ function initDefaults() {
   setHighlightPin1(highlightpin1);
   document.forms.highlightpin1.highlightpin1.value = highlightpin1;
 
-  settings.markWhenChecked = readStorage("markWhenChecked") || "";
+  settings.markWhenChecked = readStorage("markWhenChecked");
+  if (settings.markWhenChecked == null) {
+    settings.markWhenChecked = config.mark_when_checked;
+  }
   populateMarkWhenCheckedOptions();
 
   function initBooleanSetting(storageString, def, elementId, func) {
