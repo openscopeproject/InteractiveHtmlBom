@@ -28,15 +28,13 @@ function drawText(ctx, text, color) {
     if ("thickness" in text) {
       ctx.lineWidth = text.thickness;
       ctx.stroke(new Path2D(text.svgpath));
-      ctx.restore();
-      return;
-    }
-    if ("fillrule" in text) {
+    } else if ("fillrule" in text) {
       ctx.fill(new Path2D(text.svgpath), text.fillrule);
-      ctx.restore();
-      return;
     }
+    ctx.restore();
+    return;
   }
+  ctx.lineWidth = text.thickness;
   if ("polygons" in text) {
     ctx.fill(getPolygonsPath(text));
     ctx.restore();

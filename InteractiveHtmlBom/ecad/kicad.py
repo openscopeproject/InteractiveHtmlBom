@@ -31,9 +31,11 @@ class PcbnewParser(EcadParser):
         if self.board is None:
             self.board = pcbnew.LoadBoard(self.file_name)  # type: pcbnew.BOARD
         if hasattr(self.board, 'GetModules'):
-            self.footprints = list(self.board.GetModules())  # type: list[pcbnew.MODULE]
+            # type: list[pcbnew.MODULE]
+            self.footprints = list(self.board.GetModules())
         else:
-            self.footprints = list(self.board.GetFootprints())  # type: list[pcbnew.FOOTPRINT]
+            # type: list[pcbnew.FOOTPRINT]
+            self.footprints = list(self.board.GetFootprints())
         self.font_parser = FontParser()
 
     def get_extra_field_data(self, file_name):
@@ -273,7 +275,8 @@ class PcbnewParser(EcadParser):
                 "svgpath": create_path(lines)
             }
         elif hasattr(d, 'GetEffectiveTextShape'):
-            shape = d.GetEffectiveTextShape(False)  # type: pcbnew.SHAPE_COMPOUND
+            # type: pcbnew.SHAPE_COMPOUND
+            shape = d.GetEffectiveTextShape(False)
             segments = []
             polygons = []
             for s in shape.GetSubshapes():
@@ -426,7 +429,7 @@ class PcbnewParser(EcadParser):
             for d in f.GraphicalItems():
                 drawings.append((d.GetClass(), d))
             if hasattr(f, "GetFields"):
-                fields = f.GetFields() # type: list[pcbnew.PCB_FIELD]
+                fields = f.GetFields()  # type: list[pcbnew.PCB_FIELD]
                 for field in fields:
                     if field.IsReference() or field.IsValue():
                         continue
@@ -450,11 +453,15 @@ class PcbnewParser(EcadParser):
         custom_padstack = False
         outer_layers = [(pcbnew.F_Cu, "F"), (pcbnew.B_Cu, "B")]
         if hasattr(pad, 'Padstack'):
-            padstack = pad.Padstack() # type: pcbnew.PADSTACK
+            padstack = pad.Padstack()  # type: pcbnew.PADSTACK
             layers_set = list(padstack.LayerSet().Seq())
+            if hasattr(pcbnew, "UNCONNECTED_LAYER_MODE_REMOVE_ALL"):
+                ULMRA = pcbnew.UNCONNECTED_LAYER_MODE_REMOVE_ALL
+            else:
+                ULMRA = padstack.UNCONNECTED_LAYER_MODE_REMOVE_ALL
             custom_padstack = (
-                padstack.Mode() != padstack.MODE_NORMAL or \
-                    padstack.UnconnectedLayerMode() == padstack.UNCONNECTED_LAYER_MODE_REMOVE_ALL
+                padstack.Mode() != padstack.MODE_NORMAL or
+                padstack.UnconnectedLayerMode() == ULMRA
             )
         else:
             layers_set = list(pad.GetLayerSet().Seq())
