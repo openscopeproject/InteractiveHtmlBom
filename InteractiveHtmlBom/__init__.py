@@ -3,11 +3,11 @@ import sys
 import threading
 import time
 
-import wx
-import wx.aui
+from .compat import get_wx
 
 
 def check_for_bom_button():
+    wx = get_wx()
     # From Miles McCoo's blog
     # https://kicad.mmccoo.com/2017/03/05/adding-your-own-command-buttons-to-the-pcbnew-gui/
     def find_pcbnew_window():

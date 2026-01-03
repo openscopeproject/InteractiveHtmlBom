@@ -8,13 +8,11 @@ import re
 import sys
 from datetime import datetime
 
-import wx
-
 from . import units
 from .config import Config
-from ..dialog import SettingsDialog
 from ..ecad.common import EcadParser, Component
 from ..errors import ParsingException
+from ..compat import get_wx
 
 
 class Logger(object):
@@ -38,13 +36,13 @@ class Logger(object):
         if self.cli:
             self.logger.error(msg)
         else:
-            wx.MessageBox(msg)
+            get_wx().MessageBox(msg)
 
     def warn(self, msg):
         if self.cli:
             self.logger.warning(msg)
         else:
-            wx.LogWarning(msg)
+            get_wx().LogWarning(msg)
 
 
 log = None
@@ -341,6 +339,8 @@ def main(parser, config, logger):
 
 def run_with_dialog(parser, config, logger):
     # type: (EcadParser, Config, Logger) -> None
+    from ..dialog import SettingsDialog
+
     def save_config(dialog_panel, locally=False):
         config.set_from_dialog(dialog_panel)
         config.save(locally)
@@ -358,7 +358,7 @@ def run_with_dialog(parser, config, logger):
         if extra_data_file is not None:
             dlg.set_extra_data_path(extra_data_file)
         config.transfer_to_dialog(dlg.panel)
-        if dlg.ShowModal() == wx.ID_OK:
+        if dlg.ShowModal() == get_wx().ID_OK:
             config.set_from_dialog(dlg.panel)
             main(parser, config, logger)
     finally:
