@@ -4,9 +4,7 @@ import argparse
 import os
 import re
 
-from wx import FileConfig
-
-from .. import dialog
+from ..compat import get_wx
 
 
 class Config:
@@ -107,7 +105,7 @@ class Config:
         else:
             return
 
-        f = FileConfig(localFilename=file)
+        f = get_wx().FileConfig(localFilename=file)
 
         f.SetPath('/html_defaults')
         self.dark_mode = f.ReadBool('dark_mode', self.dark_mode)
@@ -170,7 +168,7 @@ class Config:
     def save(self, locally):
         file = self.local_config_file if locally else self.global_config_file
         print('Saving to', file)
-        f = FileConfig(localFilename=file)
+        f = get_wx().FileConfig(localFilename=file)
 
         f.SetPath('/html_defaults')
         f.WriteBool('dark_mode', self.dark_mode)
