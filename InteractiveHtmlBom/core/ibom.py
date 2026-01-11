@@ -299,6 +299,7 @@ def generate_file(pcb_file_dir, pcb_file_name, pcbdata, config):
     html = html.replace('///UTILJS///', get_file_content('util.js'))
     html = html.replace('///RENDERJS///', get_file_content('render.js'))
     html = html.replace('///TABLEUTILJS///', get_file_content('table-util.js'))
+    html = html.replace('///ARJS///', get_file_content('ar.js'))
     html = html.replace('///IBOMJS///', get_file_content('ibom.js'))
     html = html.replace('///USERJS///', get_file_content('user.js'))
     html = html.replace('///USERHEADER///',
@@ -322,12 +323,59 @@ def main(parser, config, logger):
     pcb_file_name = os.path.basename(parser.file_name)
     pcb_file_dir = os.path.dirname(parser.file_name)
 
+    # Validate AR configuration if enabled
+    if config.enable_ar:
+        logger.info("AR functionality enabled")
+
+        # Validate mind files
+        if not config.ar_front_mind_file or not os.path.isfile(config.ar_front_mind_file):
+            logger.error(f"Front PCB mind file not found: {config.ar_front_mind_file}")
+            raise ParsingException("AR functionality requires valid front PCB mind file")
+
+        if not config.ar_back_mind_file or not os.path.isfile(config.ar_back_mind_file):
+            logger.error(f"Back PCB mind file not found: {config.ar_back_mind_file}")
+            raise ParsingException("AR functionality requires valid back PCB mind file")
+
+        logger.info(f"Using AR mind files:")
+        logger.info(f"  Front: {config.ar_front_mind_file}")
+        logger.info(f"  Back: {config.ar_back_mind_file}")
+
     pcbdata, components = parser.parse()
     if not pcbdata and not components:
         raise ParsingException('Parsing failed.')
 
     pcbdata["bom"] = generate_bom(components, config)
     pcbdata["ibom_version"] = config.version
+
+    # Add AR configuration to pcbdata if enabled
+    if config.enable_ar:
+        import base64
+
+        ar_config = {
+            "enabled": True,
+            "front_mind_data": None,
+            "back_mind_data": None
+        }
+
+        # Convert front mind file to base64
+        try:
+            with open(config.ar_front_mind_file, 'rb') as f:
+                front_data = f.read()
+                ar_config["front_mind_data"] = base64.b64encode(front_data).decode('utf-8')
+                logger.info(f"Embedded front mind file: {config.ar_front_mind_file}")
+        except Exception as e:
+            logger.error(f"Failed to read front mind file: {str(e)}")
+
+        # Convert back mind file to base64
+        try:
+            with open(config.ar_back_mind_file, 'rb') as f:
+                back_data = f.read()
+                ar_config["back_mind_data"] = base64.b64encode(back_data).decode('utf-8')
+                logger.info(f"Embedded back mind file: {config.ar_back_mind_file}")
+        except Exception as e:
+            logger.error(f"Failed to read back mind file: {str(e)}")
+
+        pcbdata["ar_config"] = ar_config
 
     # build BOM
     bom_file = generate_file(pcb_file_dir, pcb_file_name, pcbdata, config)
