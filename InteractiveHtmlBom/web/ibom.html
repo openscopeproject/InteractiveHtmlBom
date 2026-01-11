@@ -1,3 +1,5 @@
+<!-- InteractiveHtmlBom/web/ibom.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -131,6 +133,14 @@
           <label class="menu-label">
             <input id="dragCheckbox" type="checkbox" checked onchange="setRedrawOnDrag(this.checked)">
             Continuous redraw on drag
+          </label>
+          <label class="menu-label">
+            <input id="rainbowModeCheckbox" type="checkbox" onchange="setRainbowMode(this.checked)">
+            Assign each group a unique color
+          </label>
+          <label class="menu-label" id="highlightAllLabel" style="display: none;">
+            <input id="highlightAllCheckbox" type="checkbox" onchange="setHighlightAll(this.checked)">
+            Highlight all group colors simultaneously
           </label>
           <label class="menu-label">
             Highlight first pin
@@ -290,24 +300,30 @@
       </div>
     </div>
   </div>
+
   <div id="topdivider">
     <div class="hideonprint">
       <div id="toptoggle" onclick="topToggle()">︽</div>
     </div>
   </div>
+
   <div id="bot" class="split" style="flex: 1 1">
     <div id="bomdiv" class="split split-horizontal">
+
       <div style="width: 100%">
         <input id="reflookup" class="textbox searchbox reflookup hideonprint" type="text" placeholder="Ref lookup"
                oninput="updateRefLookup(this.value)">
         <input id="filter" class="textbox searchbox filter hideonprint" type="text" placeholder="Filter"
                oninput="updateFilter(this.value)">
-        <div class="button-container hideonprint" style="float: left; margin: 0;">
+
+        <div class="rainbowGroupsEnabled button-container hideonprint" style="float: left; margin: 0;">
           <button id="copy" title="Copy bom table to clipboard"
                onclick="saveBomTable('clipboard')"></button>
         </div>
+
       </div>
       <div id="dbg"></div>
+
       <table class="bom" id="bomtable">
         <thead id="bomhead">
         </thead>

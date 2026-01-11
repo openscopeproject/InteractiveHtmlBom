@@ -1,3 +1,5 @@
+// InteractiveHtmlBom/web/render.js
+
 /* PCB rendering code */
 
 var emptyContext2d = document.createElement("canvas").getContext("2d");
@@ -379,7 +381,7 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
   ctx.lineWidth = 3 / scalefactor;
   var style = getComputedStyle(topmostdiv);
 
-  var colors = {
+  var defaultColors = {
     pad: style.getPropertyValue('--pad-color'),
     padHole: style.getPropertyValue('--pad-hole-color'),
     outline: style.getPropertyValue('--pin1-outline-color'),
@@ -390,19 +392,30 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
     var outline = settings.renderDnpOutline && pcbdata.bom.skipped.includes(i);
     var h = highlightedFootprints.includes(i);
     var d = markedFootprints.has(i);
+    var rainbowColor = settings.rainbowMode ? footprintColors[i] : null;
+    var colors = Object.assign({}, defaultColors);
+
     if (highlight) {
-      if(h && d) {
-        colors.pad = style.getPropertyValue('--pad-color-highlight-both');
-        colors.outline = style.getPropertyValue('--pin1-outline-color-highlight-both');
-      } else if (h) {
-        colors.pad = style.getPropertyValue('--pad-color-highlight');
-        colors.outline = style.getPropertyValue('--pin1-outline-color-highlight');
-      } else if (d) {
-        colors.pad = style.getPropertyValue('--pad-color-highlight-marked');
-        colors.outline = style.getPropertyValue('--pin1-outline-color-highlight-marked');
+      var shouldDraw = h || d || (settings.highlightAll && rainbowColor);
+      if (shouldDraw) {
+        if (rainbowColor) {
+          colors.pad = rainbowColor;
+          colors.outline = rainbowColor;
+        } else {
+           if(h && d) {
+             colors.pad = style.getPropertyValue('--pad-color-highlight-both');
+             colors.outline = style.getPropertyValue('--pin1-outline-color-highlight-both');
+           } else if (h) {
+             colors.pad = style.getPropertyValue('--pad-color-highlight');
+             colors.outline = style.getPropertyValue('--pin1-outline-color-highlight');
+           } else if (d) {
+             colors.pad = style.getPropertyValue('--pad-color-highlight-marked');
+             colors.outline = style.getPropertyValue('--pin1-outline-color-highlight-marked');
+           }
+        }
+        drawFootprint(ctx, layer, scalefactor, mod, colors, highlight, outline);
       }
-    }
-    if( h || d || !highlight) {
+    } else {
       drawFootprint(ctx, layer, scalefactor, mod, colors, highlight, outline);
     }
   }
@@ -541,7 +554,7 @@ function drawHighlightsOnLayer(canvasdict, clear = true) {
   if (clear) {
     clearCanvas(canvasdict.highlight);
   }
-  if (markedFootprints.size > 0 || highlightedFootprints.length > 0) {
+  if (markedFootprints.size > 0 || highlightedFootprints.length > 0 || settings.rainbowMode) {
     drawFootprints(canvasdict.highlight, canvasdict.layer,
       canvasdict.transform.s * canvasdict.transform.zoom, true);
   }

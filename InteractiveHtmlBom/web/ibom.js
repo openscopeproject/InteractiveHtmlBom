@@ -1,3 +1,5 @@
+// InteractiveHtmlBom/web/ibom.js
+
 /* DOM manipulation and misc code */
 
 var bomsplit;
@@ -14,6 +16,7 @@ var markedFootprints = new Set();
 var highlightedFootprints = [];
 var highlightedNet = null;
 var lastClicked;
+var footprintColors = {};
 
 function dbg(html) {
   dbgdiv.innerHTML = html;
@@ -139,6 +142,40 @@ function setHighlightRowOnClick(value) {
   if (initDone) {
     populateBomTable();
   }
+}
+
+function setRainbowMode(value) {
+  settings.rainbowMode = value;
+  writeStorage("rainbowMode", value);
+  var highlightAllLabel = document.getElementById("highlightAllLabel");
+  if (highlightAllLabel) {
+    highlightAllLabel.style.display = value ? "" : "none";
+  }
+  populateBomTable();
+  redrawIfInitDone();
+}
+
+function setHighlightAll(value) {
+  settings.highlightAll = value;
+  writeStorage("highlightAll", value);
+  redrawIfInitDone();
+}
+
+function getRainbowColor(index, total) {
+  // 16 colors per round
+  var hue = (index * (360 / 16)) % 360;
+  var round = Math.floor(index / 16);
+  var saturation = 100;
+  var lightness = 50;
+  var alpha = 0.7;
+
+  if (round % 2 == 1) {
+    saturation = 60;
+    lightness = 60;
+    alpha = 0.5;
+  }
+
+  return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
 }
 
 function getStoredCheckboxRefs(checkbox) {
@@ -645,6 +682,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
   footprintIndexToHandler = {};
   netsToHandler = {};
   currentHighlightedRowId = null;
+  footprintColors = {};
   var first = true;
   var style = getComputedStyle(topmostdiv);
   var defaultNetColor = style.getPropertyValue('--track-color').trim();
@@ -749,6 +787,16 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           tr.appendChild(td);
         }
       });
+
+      if (settings.rainbowMode && references) {
+        var color = getRainbowColor(i, bomtable.length);
+        tr.style.backgroundColor = color;
+        for (var ref of references) {
+          footprintColors[ref[1]] = color;
+        }
+      } else {
+        tr.style.backgroundColor = "";
+      }
     }
     bom.appendChild(tr);
     var handler = createRowHighlightHandler(tr.id, references, netname);
@@ -1317,6 +1365,19 @@ window.onload = function (e) {
   }
   initDone = true;
   setBomCheckboxes(document.getElementById("bomCheckboxes").value);
+
+  // Sync UI for rainbow mode and highlight all
+  if (document.getElementById("rainbowModeCheckbox")) {
+    document.getElementById("rainbowModeCheckbox").checked = settings.rainbowMode;
+    var highlightAllLabel = document.getElementById("highlightAllLabel");
+    if (highlightAllLabel) {
+      highlightAllLabel.style.display = settings.rainbowMode ? "" : "none";
+    }
+  }
+  if (document.getElementById("highlightAllCheckbox")) {
+    document.getElementById("highlightAllCheckbox").checked = settings.highlightAll;
+  }
+
   // Triggers render
   changeBomLayout(settings.bomlayout);
 
@@ -1327,5 +1388,6 @@ window.onload = function (e) {
   });
 }
 
+
 window.onresize = resizeAll;
-window.matchMedia("print").addListener(resizeAll);
+window.matchMedia("print").addEventListener("change", resizeAll);

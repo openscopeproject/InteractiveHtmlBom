@@ -1,3 +1,5 @@
+/* InteractiveHtmlBom/web/ibom.css */
+
 :root {
   --pcb-edge-color: black;
   --pad-color: #878787;
@@ -38,6 +40,11 @@ body {
   background-color: #252c30;
   color: #eee;
 }
+
+.rainbowGroupsEnabled .menu-label-top {
+  font-size: 0.8rem;
+}
+
 
 button {
   background-color: #eee;
@@ -221,11 +228,11 @@ canvas:active {
 }
 
 .bom tr.highlighted:nth-child(n) {
-  background-color: #cfc;
+  background-color: #cfc !important;
 }
 
 .dark .bom tr.highlighted:nth-child(n) {
-  background-color: #226022;
+  background-color: #226022 !important;
 }
 
 .bom tr:nth-child(even) {
