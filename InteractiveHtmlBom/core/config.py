@@ -1,3 +1,5 @@
+# InteractiveHtmlBom/core/config.py
+
 """Config object"""
 
 import argparse
@@ -37,7 +39,7 @@ class Config:
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
         'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'checkboxes',
         'bom_view', 'layer_view', 'offset_back_rotation',
-        'kicad_text_formatting', 'mark_when_checked'
+        'kicad_text_formatting', 'mark_when_checked', 'rainbow_mode'
     ]
     default_show_group_fields = ["Value", "Footprint"]
 
@@ -58,6 +60,7 @@ class Config:
     layer_view = layer_view_choices[1]
     compression = True
     open_browser = True
+    rainbow_mode = False
 
     # General section
     bom_dest_dir = 'bom/'  # This is relative to pcb file directory
@@ -125,6 +128,7 @@ class Config:
         self.layer_view = f.Read('layer_view', self.layer_view)
         self.compression = f.ReadBool('compression', self.compression)
         self.open_browser = f.ReadBool('open_browser', self.open_browser)
+        self.rainbow_mode = f.ReadBool('rainbow_mode', self.rainbow_mode)
 
         f.SetPath('/general')
         self.bom_dest_dir = f.Read('bom_dest_dir', self.bom_dest_dir)
@@ -185,6 +189,7 @@ class Config:
         f.Write('layer_view', self.layer_view)
         f.WriteBool('compression', self.compression)
         f.WriteBool('open_browser', self.open_browser)
+        f.WriteBool('rainbow_mode', self.rainbow_mode)
 
         f.SetPath('/general')
         bom_dest_dir = self.bom_dest_dir
@@ -233,6 +238,7 @@ class Config:
             dlg.html.layerDefaultView.Selection]
         self.compression = dlg.html.compressionCheckbox.IsChecked()
         self.open_browser = dlg.html.openBrowserCheckbox.IsChecked()
+        self.rainbow_mode = dlg.html.rainbowModeCheckbox.IsChecked()
 
         # General
         self.bom_dest_dir = dlg.general.bomDirPicker.Path
@@ -284,6 +290,7 @@ class Config:
             self.layer_view)
         dlg.html.compressionCheckbox.Value = self.compression
         dlg.html.openBrowserCheckbox.Value = self.open_browser
+        dlg.html.rainbowModeCheckbox.Value = self.rainbow_mode
 
         # General
         import os.path
@@ -378,6 +385,8 @@ class Config:
                             action='store_true')
         parser.add_argument('--no-browser', help='Do not launch browser.',
                             action='store_true')
+        parser.add_argument('--rainbow-mode', help='Enable rainbow mode for component highlighting.',
+                            action='store_true')
 
         # General
         parser.add_argument('--dest-dir', default=cls.bom_dest_dir,
@@ -458,6 +467,7 @@ class Config:
         self.layer_view = args.layer_view
         self.compression = not args.no_compression
         self.open_browser = not args.no_browser
+        self.rainbow_mode = args.rainbow_mode
 
         # General
         self.bom_dest_dir = args.dest_dir

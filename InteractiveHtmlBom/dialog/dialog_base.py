@@ -1,3 +1,5 @@
+# InteractiveHtmlBom/dialog/dialog_base.py
+
 # -*- coding: utf-8 -*-
 
 ###########################################################################
@@ -180,6 +182,9 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         self.openBrowserCheckbox = wx.CheckBox( sbSizer10.GetStaticBox(), wx.ID_ANY, u"Open browser", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.openBrowserCheckbox.SetValue(True)
         sbSizer10.Add( self.openBrowserCheckbox, 0, wx.ALL, 5 )
+
+        self.rainbowModeCheckbox = wx.CheckBox( sbSizer10.GetStaticBox(), wx.ID_ANY, u"Assign each group a unique color", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer10.Add( self.rainbowModeCheckbox, 0, wx.ALL, 5 )
 
 
         b_sizer.Add( sbSizer10, 1, wx.EXPAND|wx.ALL, 5 )
@@ -574,5 +579,3 @@ class FieldsPanelBase ( wx.Panel ):
 
     def OnBoardVariantFieldChange( self, event ):
         event.Skip()
-
-
