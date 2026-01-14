@@ -1,4 +1,4 @@
-// InteractiveHtmlBom/web/render.js
+// render.js
 
 /* PCB rendering code */
 
@@ -325,28 +325,126 @@ function drawPadHole(ctx, pad, padHoleColor) {
   ctx.restore();
 }
 
+function drawValueGrid(ctx, footprint, colors, scalefactor) {
+  ctx.save();
+  ctx.translate(...footprint.bbox.pos);
+  ctx.rotate(deg2rad(-footprint.bbox.angle));
+  ctx.translate(...footprint.bbox.relpos);
+
+  var w = footprint.bbox.size[0];
+  var h = footprint.bbox.size[1];
+  var cw = w / 3;
+  var ch = h / 3;
+
+  // Colors: [0] -> TR/BL, [1] -> RM/LM, [2] -> Center, [3] -> TM/BM
+
+  // Color 0: Top-Right (2,0) & Bottom-Left (0,2)
+  if (colors.length > 0) {
+    ctx.fillStyle = colors[0];
+    ctx.fillRect(2 * cw, 0, cw, ch); // TR
+    ctx.fillRect(0, 2 * ch, cw, ch); // BL
+  }
+
+  // Color 1: Right-Middle (2,1) & Left-Middle (0,1)
+  if (colors.length > 1) {
+    ctx.fillStyle = colors[1];
+    ctx.fillRect(2 * cw, ch, cw, ch); // RM
+    ctx.fillRect(0, ch, cw, ch); // LM
+  }
+
+  // Color 2: Center (1,1)
+  if (colors.length > 2) {
+    ctx.fillStyle = colors[2];
+    ctx.fillRect(cw, ch, cw, ch); // Center
+  }
+
+  // Color 3: Top-Middle (1,0) & Bottom-Middle (1,2)
+  if (colors.length > 3) {
+    ctx.fillStyle = colors[3];
+    ctx.fillRect(cw, 0, cw, ch); // TM
+    ctx.fillRect(cw, 2 * ch, cw, ch); // BM
+  }
+
+  // Draw outline
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 1 / scalefactor;
+  ctx.strokeRect(0, 0, w, h);
+
+  ctx.restore();
+}
+
+function drawUnitText(ctx, footprint, unitData, scalefactor) {
+  if (!unitData || !unitData.text) return;
+
+  ctx.save();
+  ctx.translate(...footprint.bbox.pos);
+  ctx.rotate(deg2rad(-footprint.bbox.angle));
+  ctx.translate(...footprint.bbox.relpos);
+
+  var w = footprint.bbox.size[0];
+  var h = footprint.bbox.size[1];
+
+  // Font size based on component size, clamped
+  var fontSize = Math.min(w, h) * 0.25;
+  ctx.font = `bold ${fontSize}px sans-serif`;
+  ctx.textBaseline = "top";
+  ctx.textAlign = "left";
+
+  // Helper to draw colored text
+  function drawColoredText(text, x, y, prefixColor, unitColor) {
+    var prefix = text.length > 1 ? text.substring(0, text.length - 1) : "";
+    var unit = text.substring(text.length - 1);
+    
+    ctx.fillStyle = prefixColor;
+    ctx.fillText(prefix, x, y);
+    
+    var prefixWidth = ctx.measureText(prefix).width;
+    ctx.fillStyle = unitColor;
+    ctx.fillText(unit, x + prefixWidth, y);
+  }
+
+  // Top-Left (Upright)
+  drawColoredText(unitData.text, 0, 0, unitData.prefixColor, unitData.unitColor);
+
+  // Bottom-Right (Upside down)
+  ctx.save();
+  ctx.translate(w, h);
+  ctx.rotate(Math.PI);
+  drawColoredText(unitData.text, 0, 0, unitData.prefixColor, unitData.unitColor);
+  ctx.restore();
+
+  ctx.restore();
+}
+
 function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, outline) {
   if (highlight) {
     // draw bounding box
     if (footprint.layer == layer) {
-      ctx.save();
-      ctx.globalAlpha = 0.2;
-      ctx.translate(...footprint.bbox.pos);
-      ctx.rotate(deg2rad(-footprint.bbox.angle));
-      ctx.translate(...footprint.bbox.relpos);
-      ctx.fillStyle = colors.pad;
-      ctx.fillRect(0, 0, ...footprint.bbox.size);
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = colors.pad;
-      ctx.lineWidth = 3 / scalefactor;
-      ctx.strokeRect(0, 0, ...footprint.bbox.size);
-      ctx.restore();
+      if (colors.pad && colors.pad.bands) {
+        drawValueGrid(ctx, footprint, colors.pad.bands, scalefactor);
+        if (settings.showUnits && colors.pad.unit) {
+          drawUnitText(ctx, footprint, colors.pad.unit, scalefactor);
+        }
+      } else {
+        ctx.save();
+        ctx.globalAlpha = 0.2;
+        ctx.translate(...footprint.bbox.pos);
+        ctx.rotate(deg2rad(-footprint.bbox.angle));
+        ctx.translate(...footprint.bbox.relpos);
+        ctx.fillStyle = colors.pad;
+        ctx.fillRect(0, 0, ...footprint.bbox.size);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = colors.pad;
+        ctx.lineWidth = 3 / scalefactor;
+        ctx.strokeRect(0, 0, ...footprint.bbox.size);
+        ctx.restore();
+      }
     }
   }
   // draw drawings
   for (var drawing of footprint.drawings) {
     if (drawing.layer == layer) {
-      drawDrawing(ctx, scalefactor, drawing.drawing, colors.pad);
+      drawDrawing(ctx, scalefactor, drawing.drawing, colors.pad && colors.pad.bands ? "#878787" : colors.pad);
     }
   }
   ctx.lineWidth = 3 / scalefactor;
@@ -354,7 +452,7 @@ function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, ou
   if (settings.renderPads) {
     for (var pad of footprint.pads) {
       if (pad.layers.includes(layer)) {
-        drawPad(ctx, pad, colors.pad, outline);
+        drawPad(ctx, pad, (colors.pad && colors.pad.bands) ? "#878787" : colors.pad, outline);
         if (pad.pin1 &&
           (settings.highlightpin1 == "all" ||
             settings.highlightpin1 == "selected" && highlight)) {
@@ -400,7 +498,7 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
       if (shouldDraw) {
         if (rainbowColor) {
           colors.pad = rainbowColor;
-          colors.outline = rainbowColor;
+          colors.outline = (rainbowColor && rainbowColor.bands) ? "#000000" : rainbowColor;
         } else {
            if(h && d) {
              colors.pad = style.getPropertyValue('--pad-color-highlight-both');

@@ -1,4 +1,4 @@
-// InteractiveHtmlBom/web/ibom.js
+// ibom.js
 
 /* DOM manipulation and misc code */
 
@@ -151,6 +151,10 @@ function setRainbowMode(value) {
   if (highlightAllLabel) {
     highlightAllLabel.style.display = value ? "" : "none";
   }
+  var showUnitsLabel = document.getElementById("showUnitsLabel");
+  if (showUnitsLabel) {
+    showUnitsLabel.style.display = value ? "" : "none";
+  }
   populateBomTable();
   redrawIfInitDone();
 }
@@ -158,6 +162,12 @@ function setRainbowMode(value) {
 function setHighlightAll(value) {
   settings.highlightAll = value;
   writeStorage("highlightAll", value);
+  redrawIfInitDone();
+}
+
+function setShowUnits(value) {
+  settings.showUnits = value;
+  writeStorage("showUnits", value);
   redrawIfInitDone();
 }
 
@@ -176,6 +186,138 @@ function getRainbowColor(index, total) {
   }
 
   return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+}
+
+function invertColor(hex) {
+  if (hex.indexOf('#') === 0) {
+    hex = hex.slice(1);
+  }
+  // convert 3-digit hex to 6-digits.
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  if (hex.length !== 6) {
+    return '#000000';
+  }
+  var r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16),
+    g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16),
+    b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
+  // pad each with zeros
+  function padZero(str, len) {
+    len = len || 2;
+    var zeros = new Array(len).join('0');
+    return (zeros + str).slice(-len);
+  }
+  return "#" + padZero(r) + padZero(g) + padZero(b);
+}
+
+function getValueColors(val) {
+  var numMatch = val.match(/^([0-9.]+)/);
+  if (!numMatch) return null;
+  var s = numMatch[1];
+
+  // Normalize leading decimal
+  if (s.startsWith('.')) s = "0" + s;
+
+  // Format to 3 digits + decimal
+  if (s.indexOf('.') !== -1) {
+    var parts = s.split('.');
+    var intPart = parts[0];
+    var fracPart = parts[1];
+    var currentDigits = intPart.length + fracPart.length;
+    if (currentDigits < 3) {
+      fracPart += "0".repeat(3 - currentDigits);
+    } else if (currentDigits > 3) {
+      if (intPart.length >= 3) {
+        intPart = intPart.substring(0, 3);
+        fracPart = "";
+      } else {
+        fracPart = fracPart.substring(0, 3 - intPart.length);
+      }
+    }
+    s = intPart + "." + fracPart;
+  } else {
+    if (s.length >= 3) {
+      s = s.substring(0, 3) + ".";
+    } else {
+      s = s + ".";
+      while (s.replace('.', '').length < 3) {
+        s += "0";
+      }
+    }
+  }
+
+  var colors = [];
+  var map = {
+    '0': '#FFFFFF',
+    '1': '#996633',
+    '.': '#000000',
+    '2': '#FF0000',
+    '3': '#FF9900',
+    '4': '#FFFF00',
+    '5': '#00FF00',
+    '6': '#0000FF',
+    '7': '#FF00FF',
+    '8': '#CCCCCC',
+    '9': '#4B0082'
+  };
+  for (var i = 0; i < s.length; i++) {
+    if (map[s[i]]) colors.push(map[s[i]]);
+    else return null;
+  }
+  return colors.length === 4 ? colors : null;
+}
+
+function getUnitData(val, refPrefix) {
+  // Match number, optional space, optional prefix, optional unit
+  var match = val.match(/^([0-9.]+)\s*([pnumkMGµu]?)(F|Ω|H|V|A|R|Ohms|Ohm)?/i);
+  if (!match) return null;
+  var prefix = match[2];
+  var unit = match[3];
+
+  // Normalize prefix
+  if (prefix === 'u') prefix = 'µ';
+
+  // Infer unit from reference designator if missing
+  if (!unit) {
+    if (refPrefix.startsWith('C')) unit = 'F';
+    else if (refPrefix.startsWith('R')) unit = 'Ω';
+  } else {
+    // Normalize unit
+    if (unit.toUpperCase().startsWith('OHM') || unit.toUpperCase() === 'R') unit = 'Ω';
+  }
+
+  if (!unit) return null;
+
+  var prefixColor = '#000000';
+  var unitColor = '#000000';
+
+  // Unit Colors
+  if (unit === 'Ω') unitColor = '#707070'; // Dark Silver
+  else if (unit === 'F') unitColor = '#8C7853'; // Dark Brass
+  
+  // Prefix Colors
+  // 2: Red, 3: Orange, 6: Blue, 9: Indigo
+  var colorMap = {
+      '2': '#FF0000', // Red
+      '3': '#FF9900', // Orange
+      '6': '#0000FF', // Blue
+      '9': '#4B0082'  // Indigo
+  };
+
+  if (prefix === 'k') prefixColor = colorMap['3'];
+  else if (prefix === 'M') prefixColor = colorMap['6'];
+  else if (prefix === 'G') prefixColor = colorMap['9'];
+  else if (prefix === 'm') prefixColor = invertColor(colorMap['3']);
+  else if (prefix === 'µ') prefixColor = invertColor(colorMap['6']);
+  else if (prefix === 'n') prefixColor = invertColor(colorMap['9']);
+  else if (prefix === 'p') prefixColor = invertColor(colorMap['2']);
+
+  return {
+    text: (prefix || "") + unit,
+    prefixColor: prefixColor,
+    unitColor: unitColor
+  };
 }
 
 function getStoredCheckboxRefs(checkbox) {
@@ -784,18 +926,50 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
             }
           }
           td.innerHTML = output.join(", ");
+
+          // Add color bands if rainbow mode is enabled and this is the Value column
+          if (settings.rainbowMode && column === "Value" && references) {
+            var firstRef = references[0][0];
+            if (firstRef.startsWith('C') || firstRef.startsWith('R')) {
+              var val = pcbdata.bom.fields[bomentry[0][1]][field_index];
+              var colors = getValueColors(val);
+              if (colors) {
+                var bandContainer = document.createElement("div");
+                bandContainer.style.display = "flex";
+                bandContainer.style.height = "5px";
+                bandContainer.style.marginTop = "2px";
+                bandContainer.style.width = "100%";
+                for (var c of colors) {
+                  var band = document.createElement("div");
+                  band.style.flex = "1";
+                  band.style.backgroundColor = c;
+                  bandContainer.appendChild(band);
+                }
+                td.appendChild(bandContainer);
+              }
+            }
+          }
+
           tr.appendChild(td);
         }
       });
 
       if (settings.rainbowMode && references) {
-        var color = getRainbowColor(i, bomtable.length);
-        tr.style.backgroundColor = color;
-        for (var ref of references) {
-          footprintColors[ref[1]] = color;
+        var firstRef = references[0][0];
+        if (firstRef.startsWith('C') || firstRef.startsWith('R')) {
+          var valueIndex = config.fields.indexOf("Value");
+          var val = pcbdata.bom.fields[bomentry[0][1]][valueIndex];
+          var colors = getValueColors(val);
+          var unitData = getUnitData(val, firstRef);
+          if (colors) {
+            for (var ref of references) {
+              footprintColors[ref[1]] = {
+                bands: colors,
+                unit: unitData
+              };
+            }
+          }
         }
-      } else {
-        tr.style.backgroundColor = "";
       }
     }
     bom.appendChild(tr);
@@ -1373,9 +1547,16 @@ window.onload = function (e) {
     if (highlightAllLabel) {
       highlightAllLabel.style.display = settings.rainbowMode ? "" : "none";
     }
+    var showUnitsLabel = document.getElementById("showUnitsLabel");
+    if (showUnitsLabel) {
+      showUnitsLabel.style.display = settings.rainbowMode ? "" : "none";
+    }
   }
   if (document.getElementById("highlightAllCheckbox")) {
     document.getElementById("highlightAllCheckbox").checked = settings.highlightAll;
+  }
+  if (document.getElementById("showUnitsCheckbox")) {
+    document.getElementById("showUnitsCheckbox").checked = settings.showUnits;
   }
 
   // Triggers render

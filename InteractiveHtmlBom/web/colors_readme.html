@@ -1,0 +1,367 @@
+<html><head><style id="notebooklm-styles">
+  .notebooklm-link-selectable {
+    cursor: pointer !important;
+    position: relative;
+    z-index: 10000;
+    transition: background-color 0.2s ease;
+  }
+  
+  .notebooklm-link-selectable:hover {
+    background-color: rgba(255, 0, 0, 0.1) !important;
+    outline: 1px solid rgba(255, 0, 0, 0.5) !important;
+  }
+  
+  .notebooklm-link-selected {
+    background-color: rgba(0, 123, 255, 0.2) !important;
+    outline: 2px solid rgba(0, 123, 255, 0.5) !important;
+  }
+  
+  .notebooklm-link-success {
+    background-color: rgba(40, 167, 69, 0.2) !important;
+    outline: 2px solid rgba(40, 167, 69, 0.8) !important;
+  }
+  
+  .notebooklm-link-failed {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+    outline: 2px solid rgba(220, 53, 69, 0.8) !important;
+  }
+  
+  body.chrome-ext-highlight-mode {
+    cursor: crosshair !important;
+  }
+</style><style type="text/css">.src-service-contentScript-browser-contentScript-contentScript__toolFrame--2uksu {
+position: fixed !important;
+right: 0 !important;
+top: 0 !important;
+width: 100% !important;
+height: 100% !important;
+z-index: 2147483646 !important;
+border: none !important;
+}
+.src-service-contentScript-browser-contentScript-contentScript__web-clipper-loading-box--fHTwh {
+position: fixed;
+right: 0;
+top: 0;
+width: 100%;
+height: 100%;
+z-index: 2147483646;
+border: none;
+}
+.src-service-contentScript-browser-contentScript-contentScript__web-clipper-loading-box--fHTwh .web-clipper-loading {
+position: fixed;
+right: 10px;
+top: 10px;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 12px 0px;
+background: white;
+width: 324px;
+height: 150px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.src-service-contentScript-browser-contentScript-contentScript__web-clipper-loading-box--fHTwh .web-clipper-loading .line {
+animation: src-service-contentScript-browser-contentScript-contentScript__expand--31ZFO 1s ease-in-out infinite;
+border-radius: 10px;
+display: inline-block;
+transform-origin: center center;
+margin: 0 3px;
+width: 1px;
+height: 25px;
+}
+.src-service-contentScript-browser-contentScript-contentScript__web-clipper-loading-box--fHTwh .web-clipper-loading .line:nth-child(1) {
+background: #27ae60;
+}
+.src-service-contentScript-browser-contentScript-contentScript__web-clipper-loading-box--fHTwh .web-clipper-loading .line:nth-child(2) {
+animation-delay: 180ms;
+background: #f1c40f;
+}
+.src-service-contentScript-browser-contentScript-contentScript__web-clipper-loading-box--fHTwh .web-clipper-loading .line:nth-child(3) {
+animation-delay: 360ms;
+background: #e67e22;
+}
+.src-service-contentScript-browser-contentScript-contentScript__web-clipper-loading-box--fHTwh .web-clipper-loading .line:nth-child(4) {
+animation-delay: 540ms;
+background: #2980b9;
+}
+@keyframes src-service-contentScript-browser-contentScript-contentScript__expand--31ZFO {
+0% {
+  transform: scale(1);
+}
+25% {
+  transform: scale(2);
+}
+}
+</style><style type="text/css">#index_crossLine__2WHMH {
+position: fixed;
+height: 100%;
+width: 100%;
+z-index: 2147483645;
+}
+#index_crossLine__2WHMH::before {
+border: none;
+content: '';
+height: 100%;
+position: absolute;
+width: 100%;
+z-index: 2147483645;
+border-right: 1px solid red;
+border-bottom: 1px solid red;
+left: -100%;
+top: -100%;
+}
+#index_crossLine__2WHMH::after {
+border: none;
+content: '';
+height: 100%;
+position: absolute;
+width: 100%;
+z-index: 2147483645;
+border-top: 1px solid red;
+border-left: 1px solid red;
+left: 0;
+top: 0;
+}
+#index_selectArea__2G3Z3 {
+border: 1px solid red;
+position: fixed;
+z-index: 2147483645;
+}
+</style><style type="text/css">.index_highlightSelector__-qiHd {
+background-color: #fafafa !important;
+outline: 3px dashed #1976d2 !important;
+opacity: 0.8 !important;
+cursor: pointer !important;
+transition: opacity 0.5s ease !important;
+}
+</style></head><body><div align="center">
+<ul>
+</ul>
+<table width="95%" border="1" cellpadding="10" align="center" bgcolor="#999999">
+  <tbody><tr> 
+    <td bgcolor="#FFFFFF"> 
+      <div align="center"><font face="Comic Sans MS"><b>White</b></font></div>
+    </td><td bgcolor="#000000"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFFFFF"><b>Black</b></font></div>
+    </td>
+    <td bgcolor="#996633"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFFFFF"><b>Brown</b></font></div>
+    </td>
+    <td bgcolor="#FF0000"> 
+      <div align="center"><font face="Comic Sans MS"><b>Red</b></font></div>
+    </td>
+    <td bgcolor="#FF9900"> 
+      <div align="center"><font face="Comic Sans MS"><b>Orange</b></font></div>
+    </td>
+    <td bgcolor="#FFFF00"> 
+      <div align="center"><font face="Comic Sans MS"><b>Yellow</b></font></div>
+    </td>
+    <td bgcolor="#00FF00"> 
+      <div align="center"><font face="Comic Sans MS"><b>Green</b></font></div>
+    </td>
+    <td bgcolor="#0000FF"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFFFFF"><b>Blue</b></font></div>
+    </td>
+    <td bgcolor="#FF00FF"> 
+      <div align="center"><font face="Comic Sans MS"><b>Violet</b></font></div>
+    </td>
+    <td bgcolor="#CCCCCC"> 
+      <div align="center"><font face="Comic Sans MS"><b>Grey</b></font></div>
+    </td>
+    <td bgcolor="#4B0082"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFF"><b>Indigo</b></font></div>
+    </td>
+    
+  </tr>
+  <tr> 
+    <td bgcolor="#FFFFFF"> 
+      <div align="center"><font face="Comic Sans MS">#FFFFFF</font></div>
+    </td><td bgcolor="#000000"> 
+      <div align="center"><font color="#FFF" face="Comic Sans MS">#000000</font></div>
+    </td>
+    <td bgcolor="#996633"> 
+      <div align="center"><font color="#FFFFFF" face="Comic Sans MS">#996633</font></div>
+    </td>
+    <td bgcolor="#FF0000"> 
+      <div align="center"><font face="Comic Sans MS">#FF0000</font></div>
+    </td>
+    <td bgcolor="#FF9900"> 
+      <div align="center"><font face="Comic Sans MS">#FF9900</font></div>
+    </td>
+    <td bgcolor="#FFFF00"> 
+      <div align="center"><font face="Comic Sans MS">#FFFF00</font></div>
+    </td>
+    <td bgcolor="#00FF00"> 
+      <div align="center"><font face="Comic Sans MS">#00FF00</font></div>
+    </td>
+    <td bgcolor="#0000FF"> 
+      <div align="center"><font color="#FFFFFF" face="Comic Sans MS">#0000FF</font></div>
+    </td>
+    <td bgcolor="#FF00FF"> 
+      <div align="center"><font face="Comic Sans MS">#FF00FF</font></div>
+    </td>
+    <td bgcolor="#CCCCCC"> 
+      <div align="center"><font face="Comic Sans MS">#CCCCCC</font></div>
+    </td>
+    <td bgcolor="#4B0082"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFF">#4B0082</font></div>
+    </td>
+    
+  </tr>
+  <tr> 
+    <td bgcolor="#FFFFFF"> 
+      <div align="center"><font face="Comic Sans MS"><b>0</b></font></div>
+    </td><td bgcolor="#000000"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFFFFF"><b>.</b></font></div>
+    </td>
+    <td bgcolor="#996633"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFFFFF"><b>1</b></font></div>
+    </td>
+    <td bgcolor="#FF0000"> 
+      <div align="center"><font face="Comic Sans MS"><b>2</b></font></div>
+    </td>
+    <td bgcolor="#FF9900"> 
+      <div align="center"><font face="Comic Sans MS"><b>3</b></font></div>
+    </td>
+    <td bgcolor="#FFFF00"> 
+      <div align="center"><font face="Comic Sans MS"><b>4</b></font></div>
+    </td>
+    <td bgcolor="#00FF00"> 
+      <div align="center"><font face="Comic Sans MS"><b>5</b></font></div>
+    </td>
+    <td bgcolor="#0000FF"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFFFFF"><b>6</b></font></div>
+    </td>
+    <td bgcolor="#FF00FF"> 
+      <div align="center"><font face="Comic Sans MS"><b>7</b></font></div>
+    </td>
+    <td bgcolor="#CCCCCC"> 
+      <div align="center"><font face="Comic Sans MS"><b>8</b></font></div>
+    </td>
+    <td bgcolor="#4B0082"> 
+      <div align="center"><font face="Comic Sans MS" color="#FFF"><b>9</b></font></div>
+    </td>
+    
+  </tr>
+</tbody></table>
+
+<br>
+<br>
+
+<table width="360" border="1" cellpadding="0" cellspacing="0" align="center" bgcolor="#FFFFFF">
+  <tbody><tr height="80">
+    <td width="120" bgcolor="#CCCCCC"></td>
+    <td width="120" align="center"><font face="Comic Sans MS" size="6"><b>4</b></font></td>
+    <td width="120" align="center"><font face="Comic Sans MS" size="6"><b>1</b></font></td>
+  </tr>
+  <tr height="80">
+    <td width="120" align="center"><font face="Comic Sans MS" size="6"><b>2</b></font></td>
+    <td width="120" align="center"><font face="Comic Sans MS" size="6"><b>3</b></font></td>
+    <td width="120" align="center"><font face="Comic Sans MS" size="6"><b>2</b></font></td>
+  </tr>
+  <tr height="80">
+    <td width="120" align="center"><font face="Comic Sans MS" size="6"><b>1</b></font></td>
+    <td width="120" align="center"><font face="Comic Sans MS" size="6"><b>4</b></font></td>
+    <td width="120" bgcolor="#CCCCCC"></td>
+  </tr>
+</tbody></table>
+<p align="center"><font face="Comic Sans MS">
+    <h4>Reading Order: </font></p><font face="Comic Sans MS"></h4>
+<br>
+<h2>Start in either corner, then sequence the values in a clockwise motion until you've got 3 numbers and a decimal.</h2>
+</font>
+<br>
+<br>
+<p style="border: thin solid black"></p>
+<p align="center"><font face="Comic Sans MS" size="5"><b>Examples</b></font></p>
+
+<table width="800" border="0" cellpadding="20" align="center">
+<tbody><tr>
+  <td align="center" valign="top">
+    <font face="Comic Sans MS"><b>100nF (100.)</b></font><br><br>
+    <table width="360" border="1" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+      <tbody><tr height="80">
+        <td width="80" bgcolor="#FFF" style="text-align: center; font-size: 2rem; margin: 2rem; color: red;">X</td>
+        <td width="120" bgcolor="#000000"></td> <!-- 4: . -->
+        <td width="120" bgcolor="#996633"></td> <!-- 1: 1 -->
+      </tr>
+      <tr height="80">
+        <td width="120" bgcolor="#FFFFFF"></td> <!-- 2: 0 -->
+        <td width="120" bgcolor="#FFFFFF"></td> <!-- 3: 0 -->
+        <td width="120" bgcolor="#FFFFFF"></td> <!-- 2: 0 -->
+      </tr>
+      <tr height="80">
+        <td width="120" bgcolor="#996633"></td> <!-- 1: 1 -->
+        <td width="120" bgcolor="#000000"></td> <!-- 4: . -->
+        <td width="80" bgcolor="#FFF" style="text-align: center; font-size: 2rem; margin: 2rem; color: red;">X</td>
+      </tr>
+    </tbody></table>
+    <br>
+    <font face="Comic Sans MS">
+    1: Brown (1)<br>
+    2: White (0)<br>
+    3: White (0)<br>
+    4: Black (.)
+    </font>
+  </td>
+  <td align="center" valign="top">
+    <font face="Comic Sans MS"><b>0.10uF (0.10) - Rotated 90°</b></font><br><br>
+    <table width="240" border="1" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+      <tbody><tr height="120">
+        <td width="80" bgcolor="#FFFFFF"></td> <!-- 1: 0 -->
+        <td width="80" bgcolor="#000000"></td> <!-- 2: . -->
+        <td width="80" bgcolor="#FFF" style="text-align: center; font-size: 2rem; margin: 2rem; color: red;">X</td>
+      </tr>
+      <tr height="120">
+        <td width="80" bgcolor="#FFFFFF"></td> <!-- 4: 0 -->
+        <td width="80" bgcolor="#996633"></td> <!-- 3: 1 -->
+        <td width="80" bgcolor="#FFFFFF"></td> <!-- 4: 0 -->
+      </tr>
+      <tr height="120">
+        <td width="80" bgcolor="#FFF" style="text-align: center; font-size: 2rem; margin: 2rem; color: red;">X</td>
+        <td width="80" bgcolor="#000000"></td> <!-- 2: . -->
+        <td width="80" bgcolor="#FFFFFF"></td> <!-- 1: 0 -->
+      </tr>
+    </tbody></table>
+    <br>
+    <font face="Comic Sans MS">
+    1: White (0)<br>
+    2: Black (.)<br>
+    3: Brown (1)<br>
+    4: White (0)
+    </font>
+  </td>
+</tr>
+</tbody></table>
+  <p align="center">
+    <font face="Comic Sans MS">
+      <h4>Guide:</h4>
+  </font></p><font face="Comic Sans MS">
+<br>
+
+  <p></p>
+  <div>
+    <li>The other 2 corners will always be transparent, which could be confusing if you aren't familiar with the color
+      block
+      syntax. Try it in Dark mode if you're uncertain. </li>
+
+    <li>The key thing to realize about this encoding method is that it isn't math, it's purely syntactical. Meaning,
+      100nF
+      looks different than 0.1uF. </li>
+    <li>This is intentional. There are a number of reasons you might use one over the other. I wanted the original
+      formatting to be retained, and the decoding to be toddler proof. </li>
+    <li>You don't need to know what any of the colors mean to at least tell each unique value apart. And the color
+      codes are
+      identical to the standard resistor bands for the numbers 1-8, but I had to steal black to represent the decimal
+      point so, 0 is white instead and 9 is Indigo.</li>
+  </div>
+  </font>
+  <p></p>
+</div>
+
+
+
+
+
+
+
+</body></html>
