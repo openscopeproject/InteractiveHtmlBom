@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version 3.10.1-0-g8feb16b3)
+## Python code generated with wxFormBuilder (version 4.2.1-0-g80c4cb6)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO *NOT* EDIT THIS FILE!
@@ -412,6 +412,13 @@ class FieldsPanelBase ( wx.Panel ):
 
         self.extraDataFilePicker = wx.FilePickerCtrl( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select a file", u"Netlist and xml files (*.net; *.xml)|*.net;*.xml", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_SMALL|wx.FLP_USE_TEXTCTRL|wx.BORDER_SIMPLE )
         sbSizer7.Add( self.extraDataFilePicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+
+        self.variantLabel = wx.StaticText( sbSizer7.GetStaticBox(), wx.ID_ANY, u"Current variant:", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.variantLabel.Wrap( -1 )
+
+        self.variantLabel.Hide()
+
+        sbSizer7.Add( self.variantLabel, 0, wx.ALL, 5 )
 
 
         bSizer42.Add( sbSizer7, 0, wx.ALL|wx.EXPAND, 5 )

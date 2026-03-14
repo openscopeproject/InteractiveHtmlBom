@@ -66,6 +66,7 @@ def main():
     print("Loading %s" % args.file)
 
     config = Config(version, os.path.dirname(os.path.abspath(args.file)))
+    config.kicad_variant = args.kicad_variant
 
     parser = get_parser_by_extension(
         os.path.abspath(args.file), config, logger)

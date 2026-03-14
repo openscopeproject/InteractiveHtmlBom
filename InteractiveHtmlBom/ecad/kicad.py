@@ -30,6 +30,10 @@ class PcbnewParser(EcadParser):
         self.board = board
         if self.board is None:
             self.board = pcbnew.LoadBoard(self.file_name)  # type: pcbnew.BOARD
+            if not self.board:
+                raise Exception('Failed to load board file')
+            if hasattr(self.board, "SetCurrentVariant"):
+                self.board.SetCurrentVariant(config.kicad_variant)
         if hasattr(self.board, 'GetModules'):
             # type: list[pcbnew.MODULE]
             self.footprints = list(self.board.GetModules())
@@ -48,8 +52,7 @@ class PcbnewParser(EcadParser):
 
         return ExtraFieldData(data[0], data[1])
 
-    @staticmethod
-    def get_footprint_fields(f):
+    def get_footprint_fields(self, f):
         # type: (pcbnew.FOOTPRINT) -> dict
         props = {}
         if hasattr(f, "GetProperties"):
@@ -62,6 +65,15 @@ class PcbnewParser(EcadParser):
         if hasattr(f, "IsDNP"):
             if f.IsDNP():
                 props["kicad_dnp"] = "DNP"
+        if hasattr(f, 'GetVariant'):
+            variant = f.GetVariant(self.config.kicad_variant)
+            if variant:
+                var_fields = variant.GetFields()
+                for k in var_fields.keys():
+                    props[str(k)] = str(f.GetFieldShownText(str(k)))
+                if variant.GetDNP():
+                    props["kicad_dnp"] = "DNP"
+
         return props
 
     def parse_extra_data_from_pcb(self):
@@ -742,8 +754,7 @@ class PcbnewParser(EcadParser):
         nets = sorted([str(s) for s in nets])
         return nets
 
-    @staticmethod
-    def footprint_to_component(footprint, extra_fields):
+    def footprint_to_component(self, footprint, extra_fields):
         try:
             footprint_name = str(footprint.GetFPID().GetFootprintName())
         except AttributeError:
@@ -753,6 +764,10 @@ class PcbnewParser(EcadParser):
         if hasattr(pcbnew, 'FP_EXCLUDE_FROM_BOM'):
             if footprint.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_BOM:
                 attr = 'Virtual'
+            if hasattr(footprint, 'GetExcludedFromBOMForVariant'):
+                if footprint.GetExcludedFromBOMForVariant(
+                        self.config.kicad_variant):
+                    attr = 'Virtual'
         elif hasattr(pcbnew, 'MOD_VIRTUAL'):
             if footprint.GetAttributes() == pcbnew.MOD_VIRTUAL:
                 attr = 'Virtual'
@@ -912,7 +927,7 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
         from ..errors import ParsingException
 
         logger = ibom.Logger()
-        board = pcbnew.GetBoard()
+        board = pcbnew.GetBoard()  # type: pcbnew.BOARD
         pcb_file_name = board.GetFileName()
 
         if not pcb_file_name:
@@ -920,6 +935,9 @@ class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
             return
 
         config = Config(version, os.path.dirname(pcb_file_name))
+        if hasattr(board, 'GetCurrentVariant'):
+            config.kicad_variant = board.GetCurrentVariant()
+
         parser = PcbnewParser(pcb_file_name, config, logger, board)
 
         try:

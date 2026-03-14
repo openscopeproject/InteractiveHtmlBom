@@ -334,8 +334,11 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
             self.extra_field_data = self.extra_data_func(
                 extra_data_file, self.normalizeCaseCheckbox.Value)
         except Exception as e:
+            import traceback
             pop_error(
-                "Failed to parse file %s\n\n%s" % (extra_data_file, e))
+                "Failed to parse file %s\n\n%s" % (
+                    extra_data_file,
+                    str(e) + '\n' + traceback.format_exc()))
             self.extraDataFilePicker.Path = ''
 
         if self.extra_field_data is not None:
