@@ -734,6 +734,8 @@ class PcbnewParser(EcadParser):
                 if (hasattr(zone, 'GetFilledPolysUseThickness') and
                         not zone.GetFilledPolysUseThickness()):
                     width = 0
+                if KICAD_VERSION[0] >= 7:
+                    width = 0
                 zone_dict = {
                     "polygons": self.parse_poly_set(poly_set),
                     "width": width,
