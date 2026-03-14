@@ -305,6 +305,9 @@
                 },
                 "date": {
                     "type": "string"
+                },
+                "variant": {
+                    "type": "string"
                 }
             },
             "required": ["title", "revision", "company", "date"],

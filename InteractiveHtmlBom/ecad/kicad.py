@@ -863,6 +863,7 @@ class PcbnewParser(EcadParser):
                 "revision": revision,
                 "company": company,
                 "date": file_date,
+                "variant": self.config.kicad_variant,
             },
             "bom": {},
             "font_data": self.font_parser.get_parsed_font()

@@ -96,6 +96,7 @@ pcbdata = {
     "revision": "rev",
     "company": "Horns and Hoofs",
     "date": "2019-04-18",
+    "variant": "var" // optional
   },
   // Contains full bom table as well as filtered by front/back.
   // See bom row description below.

@@ -15,6 +15,8 @@ class Config:
         '    %p : pcb/project title from pcb metadata.\n'
         '    %c : company from pcb metadata.\n'
         '    %r : revision from pcb metadata.\n'
+        '    %v : pcb variant.\n'
+        '    %V : pcb variant or \'default\', if empty.\n'
         '    %d : pcb date from metadata if available, '
         'file modification date otherwise.\n'
         '    %D : bom generation date.\n'

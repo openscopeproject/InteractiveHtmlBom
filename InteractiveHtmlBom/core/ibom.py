@@ -232,6 +232,8 @@ def process_substitutions(bom_name_format, pcb_file_name, metadata):
     name = name.replace('%c', metadata['company'])
     name = name.replace('%r', metadata['revision'])
     name = name.replace('%d', metadata['date'].replace(':', '-'))
+    name = name.replace('%v', metadata.get('variant', ''))
+    name = name.replace('%V', metadata.get('variant', '') or 'default')
     now = datetime.now()
     name = name.replace('%D', now.strftime('%Y-%m-%d'))
     name = name.replace('%T', now.strftime('%H-%M-%S'))
