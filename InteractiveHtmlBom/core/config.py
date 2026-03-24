@@ -62,7 +62,7 @@ class Config:
     open_browser = True
 
     # General section
-    bom_dest_dir = 'bom/'  # This is relative to pcb file directory
+    bom_dest_dir = 'bom'  # This is relative to pcb file directory
     bom_name_format = 'ibom'
     component_sort_order = default_sort_order
     component_blacklist = []
