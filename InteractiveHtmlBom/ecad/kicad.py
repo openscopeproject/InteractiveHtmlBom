@@ -798,9 +798,9 @@ class PcbnewParser(EcadParser):
                              self.config.dnp_field)
 
         if not self.config.extra_data_file and need_extra_fields:
-            self.logger.warn('Ignoring extra fields related config parameters '
-                             'since no netlist/xml file was specified.')
-            need_extra_fields = False
+            self.config.extra_data_file = self.file_name
+            self.logger.warn('Assuming extra data file to be the pcb file '
+                             'since --extra-data-file was not specified.')
 
         extra_field_data = None
         if (self.config.extra_data_file and
