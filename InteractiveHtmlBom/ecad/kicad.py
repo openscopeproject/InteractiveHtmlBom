@@ -223,7 +223,8 @@ class PcbnewParser(EcadParser):
                 "angle": angle,
                 "polygons": polygons
             }
-            if hasattr(d, "IsFilled") and not d.IsFilled():
+            if ((hasattr(d, "IsFilled") and not d.IsFilled()) or
+                    (hasattr(d, "IsSolidFill") and not d.IsSolidFill())):
                 shape_dict["filled"] = 0
                 shape_dict["width"] = d.GetWidth() * 1e-6
             return shape_dict
