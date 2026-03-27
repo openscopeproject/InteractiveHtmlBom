@@ -757,19 +757,24 @@ class PcbnewParser(EcadParser):
         return nets
 
     def footprint_to_component(self, footprint, extra_fields):
+        # type: (pcbnew.FOOTPRINT, list) -> Component
         try:
             footprint_name = str(footprint.GetFPID().GetFootprintName())
         except AttributeError:
             footprint_name = str(footprint.GetFPID().GetLibItemName())
 
+        value = footprint.GetValue()
+        if hasattr(footprint, 'GetFieldValueForVariant'):
+            value = footprint.GetFieldValueForVariant(
+                self.config.kicad_variant, 'Value')
         attr = 'Normal'
         if hasattr(pcbnew, 'FP_EXCLUDE_FROM_BOM'):
-            if footprint.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_BOM:
-                attr = 'Virtual'
             if hasattr(footprint, 'GetExcludedFromBOMForVariant'):
                 if footprint.GetExcludedFromBOMForVariant(
                         self.config.kicad_variant):
                     attr = 'Virtual'
+            elif footprint.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_BOM:
+                attr = 'Virtual'
         elif hasattr(pcbnew, 'MOD_VIRTUAL'):
             if footprint.GetAttributes() == pcbnew.MOD_VIRTUAL:
                 attr = 'Virtual'
@@ -779,7 +784,7 @@ class PcbnewParser(EcadParser):
         }.get(footprint.GetLayer())
 
         return Component(footprint.GetReference(),
-                         footprint.GetValue(),
+                         value,
                          footprint_name,
                          layer,
                          attr,
