@@ -494,6 +494,8 @@ class PcbnewParser(EcadParser):
                     pads.append(pad_dict)
             return pads
         else:
+            if not layers_set:
+                return []
             pad_dict = self.parse_pad_layer(pad, layers_set[0])
             pad_dict["layers"] = layers
             return [pad_dict]
