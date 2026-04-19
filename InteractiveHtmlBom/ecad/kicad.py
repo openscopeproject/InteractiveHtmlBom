@@ -494,7 +494,8 @@ class PcbnewParser(EcadParser):
                     pads.append(pad_dict)
             return pads
         else:
-            pad_dict = self.parse_pad_layer(pad, layers_set[0])
+            pad_layer = layers_set[0] if layers_set else pcbnew.F_Cu
+            pad_dict = self.parse_pad_layer(pad, pad_layer)
             pad_dict["layers"] = layers
             return [pad_dict]
 
