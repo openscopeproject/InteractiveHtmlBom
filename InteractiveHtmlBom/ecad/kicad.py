@@ -71,8 +71,7 @@ class PcbnewParser(EcadParser):
                 var_fields = variant.GetFields()
                 for k in var_fields.keys():
                     props[str(k)] = str(f.GetFieldShownText(str(k)))
-                if variant.GetDNP():
-                    props["kicad_dnp"] = "DNP"
+                props["kicad_dnp"] = "DNP" if variant.GetDNP() else ""
 
         return props
 
