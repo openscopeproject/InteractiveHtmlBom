@@ -500,6 +500,7 @@ var settings = {
   highlightpin1: "none",
   redrawOnDrag: true,
   boardRotation: 0,
+  arOpacity: 80,
   offsetBackRotation: false,
   renderPads: true,
   renderReferences: true,
@@ -519,7 +520,7 @@ function initDefaults() {
   if (settings.bomlayout === null) {
     settings.bomlayout = config.bom_view;
   }
-  if (!['bom-only', 'left-right', 'top-bottom'].includes(settings.bomlayout)) {
+  if (!['bom-only', 'left-right', 'top-bottom', 'ar-view'].includes(settings.bomlayout)) {
     settings.bomlayout = config.bom_view;
   }
   settings.bommode = readStorage("bommode");
@@ -611,6 +612,17 @@ function initDefaults() {
   document.getElementById("rotationDegree").textContent = settings.boardRotation;
   initBooleanSetting("offsetBackRotation", config.offset_back_rotation, "offsetBackRotationCheckbox", setOffsetBackRotation);
 
+  settings.arOpacity = readStorage("arOpacity");
+  if (settings.arOpacity === null) {
+    settings.arOpacity = 80;
+  } else {
+    settings.arOpacity = parseInt(settings.arOpacity);
+  }
+  document.getElementById("arOpacitySlider").value = settings.arOpacity;
+  document.getElementById("arOpacityPercent").textContent = settings.arOpacity;
+  
+  updateARButtonStatus();
+    
   settings.netColors = JSON.parse(readStorage("netColors")) || {};
 }
 
