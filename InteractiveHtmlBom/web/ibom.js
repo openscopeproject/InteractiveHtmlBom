@@ -267,6 +267,14 @@ function createRowHighlightHandler(rowid, refs, net) {
       }
       document.getElementById(currentHighlightedRowId).classList.remove("highlighted");
     }
+
+    // highlight buttons by refs
+    removeAllBtnHighlight();
+    refs.forEach(ref => {
+      let btnOfRef = document.getElementById(`refId${ref[1]}`);
+      btnOfRef.classList.add('button-highlight');
+    })
+
     document.getElementById(rowid).classList.add("highlighted");
     currentHighlightedRowId = rowid;
     highlightedFootprints = refs ? refs.map(r => r[1]) : [];
@@ -636,6 +644,69 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
   bomhead.appendChild(tr);
 }
 
+function removeAllBtnHighlight() {
+  const elements = document.querySelectorAll('.button-highlight');
+  elements.forEach(element => {
+    element.classList.remove('button-highlight');
+  });
+}
+
+function onRefsBtnClick(refName, refId, rowId, netName) {
+  console.log("Ref click: name = " + refName + ", Id = " + refId + ", rowId = " + rowId);
+  console.log("currentHighlightedRowId = " + currentHighlightedRowId);
+
+  if (currentHighlightedRowId) {
+    if (currentHighlightedRowId !== rowId) {
+      removeAllBtnHighlight(); // remove old btns highlight
+      highlightedFootprints = null; // remove old refs highlight
+      document.getElementById(currentHighlightedRowId).classList.remove("highlighted"); // remove old row highlight
+    }
+  }
+
+  // Button style update to highlight mode
+  let btnThis = document.getElementById(`refId${refId}`);
+
+  document.getElementById(rowId).classList.add("highlighted");
+  currentHighlightedRowId = rowId;
+  highlightedNet = netName;
+  // append to 'highlightedFootprints' if not exists
+  if (highlightedFootprints == null) {
+    highlightedFootprints = [refId];
+    btnThis.classList.add('button-highlight');
+  } else {
+    let indexOfHighlightList = highlightedFootprints.indexOf(refId);
+    if (indexOfHighlightList === -1) {
+      highlightedFootprints.push(refId); // set highlight
+      btnThis.classList.add('button-highlight');
+    } else {
+      highlightedFootprints.splice(indexOfHighlightList, 1); // clear highlight
+      btnThis.classList.remove('button-highlight');
+    }
+  }
+  drawHighlights();
+  EventHandler.emitEvent(
+    IBOM_EVENT_TYPES.HIGHLIGHT_EVENT, {
+    rowid: rowId,
+    refs: [[refName, refId]],
+    net: netName
+  });
+}
+
+function createButtonForRefs(container, refs, rowId, netName) {
+  console.log("refs = ", refs);
+  refs.forEach(ref => {
+    const button = document.createElement('button');
+    button.innerHTML = highlightFilter(ref[0]);
+    button.type = 'button'; // Not form
+    button.id = `refId${ref[1]}`; // Bind btn to ref, example: refId233, we can getElementById.
+    button.onmousedown = (e) => e.stopPropagation(); // Not row select.
+    button.onclick = (e) => {
+      onRefsBtnClick(ref[0], ref[1], rowId, netName);
+    }
+    container.appendChild(button);
+  });
+}
+
 function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
   const urlRegex = /^(https?:\/\/[^\s\/$.?#][^\s]*|file:\/\/([a-zA-Z]:|\/)[^\x00]+)$/;
   while (bom.firstChild) {
@@ -721,7 +792,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           }
         } else if (column === "References") {
           td = document.createElement("TD");
-          td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
+          createButtonForRefs(td, references, tr.id, netname); // create buttons for references
           tr.appendChild(td);
         } else if (column === "Quantity" && settings.bommode == "grouped") {
           // Quantity
@@ -821,7 +892,15 @@ function highlightNextRow() {
   smoothScrollToRow(currentHighlightedRowId);
 }
 
+function highlightClear() {
+  currentHighlightedRowId = null;
+  highlightedFootprints = []; // remove old refs highlight
+  removeAllBtnHighlight(); // remove old btns highlight
+  drawHighlights();
+}
+
 function populateBomTable() {
+  highlightClear();
   populateBomHeader();
   populateBomBody();
   setBomHandlers();
