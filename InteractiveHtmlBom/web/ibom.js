@@ -1194,6 +1194,47 @@ function updateCheckboxStats(checkbox) {
   td.lastChild.innerHTML = checked + "/" + total + " (" + Math.round(percent) + "%)";
 }
 
+function selectComponentByReference(ref) {
+  // Find the footprint with matching reference
+  var footprintIndex = -1;
+  for (var i = 0; i < pcbdata.footprints.length; i++) {
+    if (pcbdata.footprints[i].ref === ref) {
+      footprintIndex = i;
+      break;
+    }
+  }
+  
+  // If we found the component, select it
+  if (footprintIndex !== -1) {
+    // Use the existing footprintIndexToHandler to trigger selection
+    if (footprintIndex in footprintIndexToHandler) {
+      footprintIndexToHandler[footprintIndex]();
+      // Scroll to the selected row to center it on screen
+      if (currentHighlightedRowId) {
+        smoothScrollToRow(currentHighlightedRowId);
+      }
+    } else {
+      // If no handler exists, try to find the row manually
+      for (var i = 0; i < highlightHandlers.length; i++) {
+        var handlerInfo = highlightHandlers[i];
+        if (handlerInfo.handler && handlerInfo.handler.refs) {
+          // Check if any of the references in this row match our target ref
+          for (var j = 0; j < handlerInfo.handler.refs.length; j++) {
+            if (handlerInfo.handler.refs[j][0] === ref) {
+              handlerInfo.handler();
+              if (currentHighlightedRowId) {
+                smoothScrollToRow(currentHighlightedRowId);
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  // If component not found, do nothing (preserve existing behavior)
+}
+
 function constrain(number, min, max) {
   return Math.min(Math.max(parseInt(number), min), max);
 }
@@ -1319,6 +1360,14 @@ window.onload = function (e) {
   setBomCheckboxes(document.getElementById("bomCheckboxes").value);
   // Triggers render
   changeBomLayout(settings.bomlayout);
+
+  // Parse URL parameters for deep-linking
+  var urlParams = new URLSearchParams(window.location.search);
+  var refParam = urlParams.get('ref') || urlParams.get('component');
+  if (refParam) {
+    // Try to find and select the component
+    selectComponentByReference(refParam);
+  }
 
   // Users may leave fullscreen without touching the checkbox. Uncheck.
   document.addEventListener('fullscreenchange', () => {
