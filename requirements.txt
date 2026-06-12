@@ -1,0 +1,12 @@
+# Dependencies for the KiCad IPC plugin runtime.
+# KiCad installs these into a per-plugin virtual environment created
+# with --system-site-packages.
+kicad-python>=0.7.1
+# The interactive settings dialog needs wxPython. It is intentionally
+# NOT listed here: pip has no prebuilt wheels for many Linux distros
+# and building it from source inside KiCad's plugin venv can take a
+# very long time or fail. The venv inherits system site-packages, so
+# installing wxPython through the system package manager (e.g.
+# python3-wxgtk4.0 on Debian/Ubuntu, it usually comes with KiCad
+# itself) makes the dialog available. Without wxPython the plugin
+# falls back to headless generation with saved/default settings.

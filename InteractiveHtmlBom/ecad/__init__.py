@@ -26,6 +26,11 @@ def get_kicad_parser(file_name, config, logger, board=None):
     return PcbnewParser(file_name, config, logger, board)
 
 
+def get_kicad_ipc_parser(file_name, config, logger, kicad=None, board=None):
+    from .kicad_ipc import IpcApiParser
+    return IpcApiParser(file_name, config, logger, kicad, board)
+
+
 def get_easyeda_parser(file_name, config, logger):
     from .easyeda import EasyEdaParser
     return EasyEdaParser(file_name, config, logger)
