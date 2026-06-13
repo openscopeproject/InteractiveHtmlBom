@@ -1368,6 +1368,13 @@ window.onload = function (e) {
     // Try to find and select the component
     selectComponentByReference(refParam);
   }
+  
+  // Handle net parameter for deep-linking to nets
+  var netParam = urlParams.get('net');
+  if (netParam && "nets" in pcbdata) {
+    // Try to find and select the net
+    netClicked(netParam);
+  }
 
   // Users may leave fullscreen without touching the checkbox. Uncheck.
   document.addEventListener('fullscreenchange', () => {
