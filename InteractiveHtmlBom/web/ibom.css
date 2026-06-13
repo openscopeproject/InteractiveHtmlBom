@@ -886,3 +886,15 @@ a {
 ::-moz-focus-inner {
   padding: 0;
 }
+
+.copy-link-button {
+  font-size: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.copy-link-button:hover {
+  opacity: 0.7;
+}

@@ -671,6 +671,25 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
       netname = bomentry;
       td = document.createElement("TD");
       td.innerHTML = highlightFilter(netname ? netname : "&lt;no net&gt;");
+      
+      // Add copy button for net names in netlist mode
+      if (settings.bommode === "netlist") {
+        var copyButton = document.createElement("button");
+        copyButton.className = "copy-link-button";
+        copyButton.title = "Copy deep-link URL";
+        copyButton.innerHTML = "🔗";
+        copyButton.style.cssText = "margin-left: 5px; font-size: 10pt; border: none; background: transparent; cursor: pointer; height: 100%";
+		(function(currentNetname) {
+			copyButton.onclick = function(e) {
+				e.stopPropagation();
+				var url = new URL(window.location.href);
+				url.searchParams.set("net", "\"" + currentNetname + "\"");
+				copyToClipboard(url.toString());
+			};
+		})(netname);
+        td.appendChild(copyButton);
+      }
+      
       tr.appendChild(td);
       var color = settings.netColors[netname] || defaultNetColor;
       td = document.createElement("TD");
@@ -721,7 +740,31 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           }
         } else if (column === "References") {
           td = document.createElement("TD");
-          td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
+          var refHtml = highlightFilter(references.map(r => r[0]).join(", "));
+		  td.innerHTML = refHtml;
+          
+          // Add copy button for component references in ungrouped mode
+          if (settings.bommode === "ungrouped") {
+            var copyButton = document.createElement("button");
+            copyButton.className = "copy-link-button";
+            copyButton.title = "Copy deep-link URL";
+            copyButton.innerHTML = "🔗";
+            copyButton.style.cssText = "margin-left: 5px; font-size: 10pt; border: none; background: transparent; cursor: pointer; height: 100%";
+			var refName = references[0][0];
+			(function(currentRefname) {
+				copyButton.onclick = function(e) {
+				  e.stopPropagation();
+				  // Get the first reference to create URL (since we have multiple refs, we'll use the first one)
+				  var url = new URL(window.location.href);
+				  url.searchParams.set("ref", "\"" + currentRefname + "\"");
+				  copyToClipboard(url.toString());
+
+				};
+			})(refName);
+			td.appendChild(copyButton);
+          }
+          
+          
           tr.appendChild(td);
         } else if (column === "Quantity" && settings.bommode == "grouped") {
           // Quantity
@@ -781,6 +824,26 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
     checkboxes: settings.checkboxes,
     bommode: settings.bommode,
   });
+}
+
+function copyToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  textArea.className = "clipboard-temp";
+  textArea.value = text;
+  document.body.appendChild(textArea);
+  textArea.select();
+  try {
+    var successful = document.execCommand('copy');
+    if (!successful) {
+      // Fallback for browsers that don't support execCommand
+      navigator.clipboard.writeText(text).catch(function(err) {
+        console.error('Could not copy text: ', err);
+      });
+    }
+  } catch (err) {
+    console.error('Could not copy text: ', err);
+  }
+  document.body.removeChild(textArea);
 }
 
 function highlightPreviousRow() {
