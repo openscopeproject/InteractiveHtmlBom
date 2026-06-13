@@ -1365,6 +1365,10 @@ window.onload = function (e) {
   var urlParams = new URLSearchParams(window.location.search);
   var refParam = urlParams.get('ref') || urlParams.get('component');
   if (refParam) {
+    // Change layout to ungrouped
+    changeBomMode('ungrouped');
+    // Extract the value from the "" or the '' string
+    refParam = refParam.replace(/^["']|["']$/g, "");
     // Try to find and select the component
     selectComponentByReference(refParam);
   }
@@ -1372,6 +1376,10 @@ window.onload = function (e) {
   // Handle net parameter for deep-linking to nets
   var netParam = urlParams.get('net');
   if (netParam && "nets" in pcbdata) {
+    // Change layout to netlist
+    changeBomMode('netlist');
+    // Extract the value from the "" or the '' string
+    netParam = netParam.replace(/^["']|["']$/g, "");
     // Try to find and select the net
     netClicked(netParam);
   }
