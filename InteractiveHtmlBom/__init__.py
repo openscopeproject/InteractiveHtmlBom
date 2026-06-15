@@ -43,9 +43,28 @@ def check_for_bom_button():
             top_tb.Realize()
 
 
+def _supports_ipc_api():
+    # KiCad 9+ ships the IPC API plugin system; the iBOM action is then
+    # provided through the plugin manifest (ipc_entrypoint.py) instead of
+    # the legacy SWIG ActionPlugin, so registering the SWIG one would just
+    # duplicate the toolbar button.
+    try:
+        import pcbnew
+    except ImportError:
+        return False
+    if not hasattr(pcbnew, 'Version'):
+        return False
+    try:
+        major = int(pcbnew.Version().split('.')[0].split('-')[0])
+    except (ValueError, IndexError):
+        return False
+    return major >= 9
+
+
 if (not os.environ.get('INTERACTIVE_HTML_BOM_CLI_MODE', False) and
-    not os.path.basename(sys.argv[0]).startswith('generate_interactive_bom')):
-    from .ecad.kicad import InteractiveHtmlBomPlugin
+    not os.path.basename(sys.argv[0]).startswith('generate_interactive_bom')
+        and not _supports_ipc_api()):
+    from .ecad.kicad_swig import InteractiveHtmlBomPlugin
 
     plugin = InteractiveHtmlBomPlugin()
     plugin.register()
