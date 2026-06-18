@@ -386,7 +386,7 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
   }
 
   for (var i = 0; i < pcbdata.footprints.length; i++) {
-    var mod = pcbdata.footprints[i];
+    var fp = pcbdata.footprints[i];
     var outline = settings.renderDnpOutline && pcbdata.bom.skipped.includes(i);
     var h = highlightedFootprints.includes(i);
     var d = markedFootprints.has(i);
@@ -403,7 +403,7 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
       }
     }
     if( h || d || !highlight) {
-      drawFootprint(ctx, layer, scalefactor, mod, colors, highlight, outline);
+      drawFootprint(ctx, layer, scalefactor, fp, colors, highlight, outline);
     }
   }
 }
