@@ -890,6 +890,7 @@ a {
 .copy-link-button {
   font-size: 1em;
   border: none;
+  height: 1.5em;
   background: transparent;
   background-color: transparent !important;
   cursor: pointer;
