@@ -816,7 +816,22 @@ function createCopyButton(type, value) {
     if (type === "net") {
       url.searchParams.set("net", value);
     } else if (type === "ref") {
+      // For reference links, also include the ID to make it more robust
       url.searchParams.set("ref", value);
+      
+      // Try to find the corresponding ID for this reference
+      var id = null;
+      if (pcbdata && pcbdata.footprints) {
+        for (var i = 0; i < pcbdata.footprints.length; i++) {
+          if (pcbdata.footprints[i].ref === value) {
+            id = i;
+            break;
+          }
+        }
+      }
+      if (id !== null) {
+        url.searchParams.set("id", id);
+      }
     }
 
     return url.toString();
@@ -872,6 +887,14 @@ function copyToClipboard(text) {
     }
   } catch (err) {
     console.error('Could not copy text: ', err);
+    // Fallback to navigator.clipboard if execCommand fails
+    try {
+      navigator.clipboard.writeText(text).catch(function(err) {
+        console.error('Could not copy text with clipboard API: ', err);
+      });
+    } catch (clipboardErr) {
+      console.error('Clipboard API also failed: ', clipboardErr);
+    }
   }
   document.body.removeChild(textArea);
 }
@@ -1328,6 +1351,16 @@ function selectComponentByReference(ref) {
   // If component not found, do nothing (preserve existing behavior)
 }
 
+function validateReferenceForId(ref, id) {
+  // Validate that the reference corresponds to the given ID in pcbdata
+  if (!pcbdata || !pcbdata.footprints || id >= pcbdata.footprints.length) {
+    return false;
+  }
+  
+  // Check if the footprint at the specified ID has the correct reference
+  return pcbdata.footprints[id].ref === ref;
+}
+
 function constrain(number, min, max) {
   return Math.min(Math.max(parseInt(number), min), max);
 }
@@ -1457,13 +1490,28 @@ window.onload = function (e) {
   // Parse URL parameters for deep-linking
   var urlParams = new URLSearchParams(window.location.search);
   var refParam = urlParams.get('ref') || urlParams.get('component');
+  var idParam = urlParams.get('id');
+  
   if (refParam) {
     // Change layout to ungrouped
     changeBomMode('ungrouped');
     // Extract the value from the "" or the '' string
     refParam = refParam.replace(/^["']|["']$/g, "");
-    // Try to find and select the component
-    selectComponentByReference(refParam);
+    
+    // If we have both ref and id parameters, validate them together
+    if (idParam !== null) {
+      var id = parseInt(idParam);
+      if (!isNaN(id) && validateReferenceForId(refParam, id)) {
+        // Both parameters are valid, select the component
+        selectComponentByReference(refParam);
+      } else {
+        // Only ref parameter is valid, select by reference
+        selectComponentByReference(refParam);
+      }
+    } else {
+      // Only ref parameter is provided, select by reference
+      selectComponentByReference(refParam);
+    }
   }
   
   // Handle net parameter for deep-linking to nets
