@@ -810,6 +810,9 @@ function createCopyButton(type, value) {
   statusBox.className = "copy-status";
   statusBox.textContent = "Copied!";
 
+  // Cache footprint references for faster lookups (only build if needed)
+  var footprintRefCache = null;
+  
   function buildUrl() {
     var url = new URL(window.location.href);
 
@@ -822,11 +825,17 @@ function createCopyButton(type, value) {
       // Try to find the corresponding ID for this reference
       var id = null;
       if (pcbdata && pcbdata.footprints) {
-        for (var i = 0; i < pcbdata.footprints.length; i++) {
-          if (pcbdata.footprints[i].ref === value) {
-            id = i;
-            break;
+        // Build cache if needed
+        if (!footprintRefCache) {
+          footprintRefCache = {};
+          for (var i = 0; i < pcbdata.footprints.length; i++) {
+            footprintRefCache[pcbdata.footprints[i].ref] = i;
           }
+        }
+        
+        // Use the cache to get ID quickly
+        if (footprintRefCache[value] !== undefined) {
+          id = footprintRefCache[value];
         }
       }
       if (id !== null) {
@@ -869,6 +878,120 @@ function createCopyButton(type, value) {
   wrapper.appendChild(statusBox);
 
   return wrapper;
+}
+
+function validateReferenceForId(ref, id) {
+  // Validate that the reference corresponds to the given ID in pcbdata
+  if (!pcbdata || !pcbdata.footprints || id >= pcbdata.footprints.length) {
+    return false;
+  }
+  
+  // Check if the footprint at the specified ID has the correct reference
+  return pcbdata.footprints[id].ref === ref;
+}
+
+function showReferenceMismatchWarning(ref, id) {
+  // Ha már van ilyen figyelmeztetés, töröljük
+  document
+    .querySelectorAll(".reference-warning-toast")
+    .forEach(el => el.remove());
+
+  const toast = document.createElement("div");
+  toast.className = "reference-warning-toast";
+
+  toast.innerHTML = `
+    <div class="toast-header">
+      <span class="toast-icon">⚠️</span>
+      <span class="toast-title">Reference mismatch</span>
+      <button class="toast-close" title="Close">&times;</button>
+    </div>
+
+    <div class="toast-body">
+      <p>
+        Reference <strong>${escapeHtml(ref)}</strong> does not match the
+        expected reference for ID <strong>${id}</strong>.
+      </p>
+
+      <p class="toast-note">
+        This link may be stale. Choose which value to use.
+      </p>
+    </div>
+
+    <div class="toast-actions">
+      <button class="btn btn-primary">
+        Use Reference
+      </button>
+
+      <button class="btn btn-secondary">
+        Use ID
+      </button>
+    </div>
+  `;
+
+  toast.querySelector(".toast-close").addEventListener("click", () => {
+    toast.remove();
+  });
+
+  toast.querySelector(".btn-primary").addEventListener("click", () => {
+    toast.remove();
+    selectComponentByReference(ref);
+  });
+
+  toast.querySelector(".btn-secondary").addEventListener("click", () => {
+    toast.remove();
+    selectComponentById(id);
+  });
+
+  document.body.appendChild(toast);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function selectComponentByReference(ref) {
+  // Find the footprint with matching reference
+  var footprintIndex = -1;
+  if (pcbdata && pcbdata.footprints) {
+    for (var i = 0; i < pcbdata.footprints.length; i++) {
+      if (pcbdata.footprints[i].ref === ref) {
+        footprintIndex = i;
+        break;
+      }
+    }
+  }
+  
+  // If we found the component, select it
+  if (footprintIndex !== -1) {
+    // Use the existing footprintIndexToHandler to trigger selection
+    if (footprintIndex in footprintIndexToHandler) {
+      footprintIndexToHandler[footprintIndex]();
+      // Scroll to the selected row to center it on screen
+      if (currentHighlightedRowId) {
+        smoothScrollToRow(currentHighlightedRowId);
+      }
+    } else {
+      // If no handler exists, try to find the row manually
+      for (var i = 0; i < highlightHandlers.length; i++) {
+        var handlerInfo = highlightHandlers[i];
+        if (handlerInfo.handler && handlerInfo.handler.refs) {
+          // Check if any of the references in this row match our target ref
+          for (var j = 0; j < handlerInfo.handler.refs.length; j++) {
+            if (handlerInfo.handler.refs[j][0] === ref) {
+              handlerInfo.handler();
+              if (currentHighlightedRowId) {
+                smoothScrollToRow(currentHighlightedRowId);
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  // If component not found, do nothing (preserve existing behavior)
 }
 
 function copyToClipboard(text) {
@@ -1310,55 +1433,12 @@ function updateCheckboxStats(checkbox) {
   td.lastChild.innerHTML = checked + "/" + total + " (" + Math.round(percent) + "%)";
 }
 
-function selectComponentByReference(ref) {
-  // Find the footprint with matching reference
-  var footprintIndex = -1;
-  for (var i = 0; i < pcbdata.footprints.length; i++) {
-    if (pcbdata.footprints[i].ref === ref) {
-      footprintIndex = i;
-      break;
-    }
+function selectComponentById(id) {
+  // Find the footprint with matching ID 
+  if (pcbdata && pcbdata.footprints && id < pcbdata.footprints.length) {
+    var ref = pcbdata.footprints[id].ref;
+    selectComponentByReference(ref);
   }
-  
-  // If we found the component, select it
-  if (footprintIndex !== -1) {
-    // Use the existing footprintIndexToHandler to trigger selection
-    if (footprintIndex in footprintIndexToHandler) {
-      footprintIndexToHandler[footprintIndex]();
-      // Scroll to the selected row to center it on screen
-      if (currentHighlightedRowId) {
-        smoothScrollToRow(currentHighlightedRowId);
-      }
-    } else {
-      // If no handler exists, try to find the row manually
-      for (var i = 0; i < highlightHandlers.length; i++) {
-        var handlerInfo = highlightHandlers[i];
-        if (handlerInfo.handler && handlerInfo.handler.refs) {
-          // Check if any of the references in this row match our target ref
-          for (var j = 0; j < handlerInfo.handler.refs.length; j++) {
-            if (handlerInfo.handler.refs[j][0] === ref) {
-              handlerInfo.handler();
-              if (currentHighlightedRowId) {
-                smoothScrollToRow(currentHighlightedRowId);
-              }
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-  // If component not found, do nothing (preserve existing behavior)
-}
-
-function validateReferenceForId(ref, id) {
-  // Validate that the reference corresponds to the given ID in pcbdata
-  if (!pcbdata || !pcbdata.footprints || id >= pcbdata.footprints.length) {
-    return false;
-  }
-  
-  // Check if the footprint at the specified ID has the correct reference
-  return pcbdata.footprints[id].ref === ref;
 }
 
 function constrain(number, min, max) {
@@ -1497,15 +1577,22 @@ window.onload = function (e) {
     changeBomMode('ungrouped');
     // Extract the value from the "" or the '' string
     refParam = refParam.replace(/^["']|["']$/g, "");
-    
+
     // If we have both ref and id parameters, validate them together
     if (idParam !== null) {
       var id = parseInt(idParam);
-      if (!isNaN(id) && validateReferenceForId(refParam, id)) {
-        // Both parameters are valid, select the component
-        selectComponentByReference(refParam);
+      if (!isNaN(id)) {
+        if (validateReferenceForId(refParam, id)) {
+          // Both parameters are valid, select the component
+          selectComponentByReference(refParam);
+        } else {
+          // Parameters don't match, show warning
+          showReferenceMismatchWarning(refParam, id);
+          // Fallback to selecting by reference
+          selectComponentByReference(refParam);
+        }
       } else {
-        // Only ref parameter is valid, select by reference
+        // Invalid ID, fallback to selecting by reference only
         selectComponentByReference(refParam);
       }
     } else {
