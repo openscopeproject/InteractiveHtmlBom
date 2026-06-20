@@ -674,19 +674,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
       
       // Add copy button for net names in netlist mode
       if (settings.bommode === "netlist") {
-        var copyButton = document.createElement("button");
-        copyButton.className = "copy-link-button";
-        copyButton.title = "Copy deep-link URL";
-        copyButton.innerHTML = "🔗";
-        copyButton.style.cssText = "margin-left: 5px; font-size: 10pt; border: none; background: transparent; cursor: pointer; height: 100%";
-		(function(currentNetname) {
-			copyButton.onclick = function(e) {
-				e.stopPropagation();
-				var url = new URL(window.location.href);
-				url.searchParams.set("net", "\"" + currentNetname + "\"");
-				copyToClipboard(url.toString());
-			};
-		})(netname);
+        var copyButton = createCopyButton("net", netname);
         td.appendChild(copyButton);
       }
       
@@ -745,23 +733,8 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           
           // Add copy button for component references in ungrouped mode
           if (settings.bommode === "ungrouped") {
-            var copyButton = document.createElement("button");
-            copyButton.className = "copy-link-button";
-            copyButton.title = "Copy deep-link URL";
-            copyButton.innerHTML = "🔗";
-            copyButton.style.cssText = "margin-left: 5px; font-size: 10pt; border: none; background: transparent; cursor: pointer; height: 100%";
-			var refName = references[0][0];
-			(function(currentRefname) {
-				copyButton.onclick = function(e) {
-				  e.stopPropagation();
-				  // Get the first reference to create URL (since we have multiple refs, we'll use the first one)
-				  var url = new URL(window.location.href);
-				  url.searchParams.set("ref", "\"" + currentRefname + "\"");
-				  copyToClipboard(url.toString());
-
-				};
-			})(refName);
-			td.appendChild(copyButton);
+            var copyButton = createCopyButton("ref", references[0][0]);
+            td.appendChild(copyButton);
           }
           
           
@@ -824,6 +797,63 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
     checkboxes: settings.checkboxes,
     bommode: settings.bommode,
   });
+}
+
+function createCopyButton(type, value) {
+  var copyButton = document.createElement("button");
+  copyButton.className = "copy-link-button";
+  copyButton.title = "Copy deep-link URL";
+  copyButton.innerHTML = "🔗";
+
+  // status box for visual feedback
+  var statusBox = document.createElement("span");
+  statusBox.className = "copy-status";
+  statusBox.textContent = "Copied!";
+
+  function buildUrl() {
+    var url = new URL(window.location.href);
+
+    if (type === "net") {
+      url.searchParams.set("net", value);
+    } else if (type === "ref") {
+      url.searchParams.set("ref", value);
+    }
+
+    return url.toString();
+  }
+
+  // Left-click -> copy
+  copyButton.addEventListener("click", function (e) {
+    e.stopPropagation();
+
+    var url = buildUrl();
+    copyToClipboard(url);
+
+    statusBox.classList.add("visible");
+
+    clearTimeout(statusBox.hideTimer);
+
+    statusBox.hideTimer = setTimeout(function () {
+        statusBox.classList.remove("visible");
+    }, 2000);
+  });
+
+  // Right-click -> open in new window
+  copyButton.addEventListener("mousedown", function (e) {
+    if (e.button === 1) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      window.open(buildUrl(), "_blank");
+    }
+  });
+
+  // return with a wrapper
+  var wrapper = document.createElement("span");
+  wrapper.appendChild(copyButton);
+  wrapper.appendChild(statusBox);
+
+  return wrapper;
 }
 
 function copyToClipboard(text) {
