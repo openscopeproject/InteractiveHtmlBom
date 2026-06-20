@@ -82,10 +82,88 @@ class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
         self.Bind(
             wx.EVT_MENU, self.OnSaveGlobally, id=self.save_globally.GetId())
 
+    def OnArHelp(self, event):
+        """Show AR help dialog and open online resources"""
+        import webbrowser
+
+        help_msg = ("AR (Augmented Reality) Functionality Help\n\n"
+                   "REQUIREMENTS:\n"
+                   "• Internet connection (downloads AR libraries from CDN)\n"
+                   "• Localhost or HTTPS access (file:// protocol NOT supported)\n"
+                   "• Modern browser with camera support\n"
+                   "• .mind files created from 3D Viewer screenshots\n\n"
+                   "Quick Setup Steps:\n"
+                   "1. Use 3D Viewer (orthographic mode, top/bottom views)\n"
+                   "2. Take tight screenshots (no white space around PCB)\n"
+                   "3. Create .mind files using MindAR online tool\n"
+                   "4. Select .mind files in plugin settings\n"
+                   "5. Open BOM via localhost (127.0.0.1) or HTTPS for camera access\n\n"
+                   "AR Features: Real-time overlay, manual lock, opacity control\n\n"
+                   "Click YES to open MindAR tool\n"
+                   "Click NO to view detailed setup guide")
+
+        result = wx.MessageBox(help_msg, "AR Help",
+                              wx.YES_NO | wx.CANCEL | wx.ICON_INFORMATION,
+                              self)
+
+        if result == wx.YES:
+            # Open MindAR online tool
+            try:
+                webbrowser.open('https://hiukim.github.io/mind-ar-js-doc/tools/compile')
+            except Exception as e:
+                wx.MessageBox(f"Failed to open web browser: {str(e)}\n\n"
+                             "Please manually visit:\n"
+                             "https://hiukim.github.io/mind-ar-js-doc/tools/compile",
+                             "Error", wx.OK | wx.ICON_ERROR)
+        elif result == wx.NO:
+            # Open setup guide
+            try:
+                # Try to open local ARSETUP.md file
+                import os
+                setup_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ARSETUP.md')
+                if os.path.exists(setup_file):
+                    if os.name == 'nt':  # Windows
+                        os.startfile(setup_file)
+                    else:  # macOS and Linux
+                        webbrowser.open('file://' + setup_file)
+                else:
+                    # Fallback to GitHub
+                    webbrowser.open('https://github.com/openscopeproject/InteractiveHtmlBom/blob/master/ARSETUP.md')
+            except Exception as e:
+                wx.MessageBox(f"Failed to open setup guide: {str(e)}\n\n"
+                             "Please check ARSETUP.md in the plugin directory",
+                             "Error", wx.OK | wx.ICON_ERROR)
+
     def OnExit(self, event):
         self.GetParent().EndModal(wx.ID_CANCEL)
 
     def OnGenerateBom(self, event):
+        # Validate AR settings if AR is enabled
+        if self.general.enableArCheckbox.IsChecked():
+            front_mind = self.general.arFrontMindFilePicker.Path
+            back_mind = self.general.arBackMindFilePicker.Path
+
+            if not front_mind or not os.path.isfile(front_mind):
+                wx.MessageBox("Please select a valid front PCB mind file (.mind) for AR functionality.",
+                             "AR Configuration Error", wx.OK | wx.ICON_ERROR)
+                return
+
+            if not back_mind or not os.path.isfile(back_mind):
+                wx.MessageBox("Please select a valid back PCB mind file (.mind) for AR functionality.",
+                             "AR Configuration Error", wx.OK | wx.ICON_ERROR)
+                return
+
+            # Validate file extensions
+            if not front_mind.lower().endswith('.mind'):
+                wx.MessageBox("Front PCB file must be a .mind file.",
+                             "AR Configuration Error", wx.OK | wx.ICON_ERROR)
+                return
+
+            if not back_mind.lower().endswith('.mind'):
+                wx.MessageBox("Back PCB file must be a .mind file.",
+                             "AR Configuration Error", wx.OK | wx.ICON_ERROR)
+                return
+
         self.GetParent().EndModal(wx.ID_OK)
 
     def finish_init(self):
@@ -114,6 +192,8 @@ class HtmlSettingsPanel(dialog_base.HtmlSettingsPanelBase):
         self.rotationDegreeLabel.LabelText = u"{}\u00B0".format(degrees)
 
 
+
+
 # Implementing GeneralSettingsPanelBase
 class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
 
@@ -135,6 +215,15 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
         self.m_btnNameHint.SetBitmap(bmp_question)
         self.m_btnBlacklistAdd.SetBitmap(bmp_plus)
         self.m_btnBlacklistRemove.SetBitmap(bmp_minus)
+
+        # Bind AR checkbox event
+        self.enableArCheckbox.Bind(wx.EVT_CHECKBOX, self.OnEnableArCheckbox)
+
+        # Bind create mind file button event
+        self.createMindFileButton.Bind(wx.EVT_BUTTON, self.OnCreateMindFileButton)
+
+        # Initially disable AR mind file pickers
+        self.OnEnableArCheckbox(None)
 
         self.Layout()
 
@@ -206,6 +295,50 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
     def OnNameFormatHintClick(self, event):
         wx.MessageBox(self.file_name_format_hint, 'File name format help',
                       style=wx.ICON_NONE | wx.OK)
+
+    def OnEnableArCheckbox(self, event):
+        """Enable/disable AR mind file pickers based on AR checkbox state"""
+        ar_enabled = self.enableArCheckbox.IsChecked()
+        self.arInfoText.Enable(ar_enabled)
+        self.arFrontMindFilePicker.Enable(ar_enabled)
+        self.arBackMindFilePicker.Enable(ar_enabled)
+        self.createMindFileButton.Enable(ar_enabled)
+
+        # Update labels to show required status
+        if ar_enabled:
+            self.m_staticText11.SetLabel("Front PCB Mind File (.mind) *Required")
+            self.m_staticText12.SetLabel("Back PCB Mind File (.mind) *Required")
+        else:
+            self.m_staticText11.SetLabel("Front PCB Mind File (.mind)")
+            self.m_staticText12.SetLabel("Back PCB Mind File (.mind)")
+
+    def OnCreateMindFileButton(self, event):
+        """Open MindAR online tool for creating mind files"""
+        import webbrowser
+
+        # Show simplified information dialog
+        info_msg = ("This will open the MindAR Image Target Creator.\n\n"
+                   "Before using the tool:\n"
+                   "1. Capture PCB screenshots from KiCad 3D Viewer\n"
+                   "   - Use orthographic mode (disable perspective)\n"
+                   "   - Take top and bottom views\n"
+                   "   - Crop tightly (no white space around PCB)\n\n"
+                   "2. Upload images to MindAR tool\n"
+                   "3. Download generated .mind files\n"
+                   "4. Select them in the file pickers above\n\n"
+                   "Open MindAR tool now?")
+
+        result = wx.MessageBox(info_msg, "Create Mind Files",
+                              wx.YES_NO | wx.ICON_INFORMATION)
+
+        if result == wx.YES:
+            try:
+                webbrowser.open('https://hiukim.github.io/mind-ar-js-doc/tools/compile')
+            except Exception as e:
+                wx.MessageBox(f"Failed to open web browser: {str(e)}\n\n"
+                             "Please manually visit:\n"
+                             "https://hiukim.github.io/mind-ar-js-doc/tools/compile",
+                             "Error", wx.OK | wx.ICON_ERROR)
 
     def OnSize(self, event):
         # Trick the listCheckBox best size calculations
