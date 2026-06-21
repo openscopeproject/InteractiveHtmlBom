@@ -815,6 +815,7 @@ function createCopyButton(type, value) {
   
   function buildUrl() {
     var url = new URL(window.location.href);
+	url.search = "";
 
     if (type === "net") {
       url.searchParams.set("net", value);
@@ -902,14 +903,14 @@ function showReferenceMismatchWarning(ref, id) {
   toast.innerHTML = `
     <div class="toast-header">
       <span class="toast-icon">⚠️</span>
-      <span class="toast-title">Reference mismatch</span>
+      <span class="toast-title">Designator mismatch</span>
       <button class="toast-close" title="Close">&times;</button>
     </div>
 
     <div class="toast-body">
       <p>
-        Reference <strong>${escapeHtml(ref)}</strong> does not match the
-        expected reference for ID <strong>${id}</strong>.
+        Designator <strong>${escapeHtml(ref)}</strong> does not match the
+        expected reference for Unique ID <strong>${id}</strong>.
       </p>
 
       <p class="toast-note">
@@ -919,11 +920,11 @@ function showReferenceMismatchWarning(ref, id) {
 
     <div class="toast-actions">
       <button class="btn btn-primary">
-        Use Reference
+        Use Designator
       </button>
 
       <button class="btn btn-secondary">
-        Use ID
+        Use Unique ID
       </button>
     </div>
   `;
@@ -942,7 +943,8 @@ function showReferenceMismatchWarning(ref, id) {
     selectComponentById(id);
   });
 
-  document.body.appendChild(toast);
+  //const root = document.querySelector(".topmostdiv") || document.body;
+  topmostdiv.appendChild(toast);
 }
 
 function escapeHtml(str) {

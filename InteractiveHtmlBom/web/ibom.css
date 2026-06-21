@@ -20,14 +20,17 @@
   --zone-color: #def5f1;
   --zone-color-highlight: #d0404080;
   
-  --toast-bg: rgba(215,215,215,0.2);
-  --toast-border: #ffb629;
-  --toast-text: #222;
-  --toast-muted: #666;
+  --toast-bg: rgba(222,245,241,0.45);
+  --toast-border: #d04040;
+  --toast-text: #464646;
+  --toast-muted: #d04040;
   --toast-header-border: rgba(0,0,0,0.12);
 
   --toast-primary: #42c642;
-  --toast-primary-hover: #30a130;
+  --toast-primary-hover: #d04040;
+  
+  --toast-secondary: #cccccc;
+  --toast-secondary-hover: #d04040;
 }
 
 html,
@@ -44,11 +47,19 @@ body {
   --pin1-outline-color-highlight: #ccff00;
   --track-color: #42524f;
   --zone-color: #42524f;
-  --toast-bg: rgba(215,215,215,0.20);
+
+  --toast-bg: rgba(10,10,10,0.63);
   --toast-border: #ffb629;
   --toast-text: #f3f4f6;
   --toast-muted: #ffb629;
   --toast-header-border: rgba(255,255,255,0.17);
+
+  --toast-primary: #42c642;
+  --toast-primary-hover: #ffb629;
+  
+  --toast-secondary: #cccccc;
+  --toast-secondary-hover: #ffb629;
+
   background-color: #252c30;
   color: #eee;
 }
@@ -942,7 +953,7 @@ a {
   max-width: calc(100vw - 32px);
 
   border: 2px solid var(--toast-border);
-  border-left: 4px var(--toast-border);
+  border-left: 6px solid var(--toast-border);
 
   border-radius: 12px;
 
@@ -983,10 +994,10 @@ a {
 
 .toast-close {
   border: none;
-  background: transparent;
+  background: transparent !important;
   cursor: pointer;
 
-  color: #f3f4f6;
+  color: var(--toast-text);
   font-size: 22px;
   line-height: 1;
 
@@ -994,7 +1005,7 @@ a {
 }
 
 .toast-close:hover {
-  color: #ffb629;
+  color: var(--toast-border);
 }
 
 .toast-body {
@@ -1011,10 +1022,16 @@ a {
   margin-top: 8px;
 }
 
+.toast-body strong {
+	color: var(--toast-border);
+}
+
+
 .toast-note {
   color: var(--toast-muted);
   font-size: 14px;
 }
+
 
 .toast-actions {
   display: flex;
@@ -1048,21 +1065,21 @@ a {
 }
 
 .btn-primary {
-  background: #42c642;
+  background: var(--toast-primary) !important;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #30A130;
+  background: var(--toast-primary-hover) !important;
 }
 
 .btn-secondary {
-  background: #f3f4f6;
+  background: var(--toast-secondary) !important;
   color: #111827;
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: var(--toast-secondary-hover) !important;
 }
 
 @keyframes toast-slide-in {
