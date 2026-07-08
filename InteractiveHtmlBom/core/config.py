@@ -457,6 +457,9 @@ class Config:
     def set_from_args_with_ini(self, args):
         import configparser
         import math
+        import sys
+
+        from ..errors import ExitCodes
 
         if os.path.isfile(self.local_config_file):
             file = self.local_config_file
@@ -464,7 +467,7 @@ class Config:
             file = self.global_config_file
         else:
             print("Error! No ini file in usual locations")
-            exit(0)
+            sys.exit(ExitCodes.ERROR_FILE_NOT_FOUND)
 
         config = configparser.ConfigParser()
         config.read(file)
@@ -479,15 +482,27 @@ class Config:
                                                   fallback=args.show_fabrication)
         self.show_silkscreen = config.getboolean('html_defaults', 'show_silkscreen',
                                                  fallback=not args.hide_silkscreen)
-        self.highlight_pin1 = config.getboolean('html_defaults', 'highlight_pin1',
-                                                fallback=args.highlight_pin1)
+        self.highlight_pin1 = config.get('html_defaults', 'highlight_pin1',
+                                         fallback=args.highlight_pin1)
+        # migration from previous settings
+        if self.highlight_pin1 == '0':
+            self.highlight_pin1 = 'none'
+        if self.highlight_pin1 == '1':
+            self.highlight_pin1 = 'all'
         self.redraw_on_drag = config.getboolean('html_defaults',
                                                 'redraw_on_drag',
                                                 fallback=not args.no_redraw_on_drag)
-        self.board_rotation = config.getfloat('html_defaults', 'board_rotation',
-                                              fallback=args.board_rotation)
+        self.board_rotation = config.getint(
+            'html_defaults', 'board_rotation',
+            fallback=math.fmod(args.board_rotation // 5, 37))
+        self.offset_back_rotation = config.getboolean(
+            'html_defaults', 'offset_back_rotation',
+            fallback=args.offset_back_rotation)
         self.checkboxes = config.get('html_defaults', 'checkboxes',
                                      fallback=args.checkboxes)
+        self.mark_when_checked = config.get('html_defaults',
+                                            'mark_when_checked',
+                                            fallback=args.mark_when_checked)
         self.bom_view = config.get('html_defaults', 'bom_view',
                                    fallback=args.bom_view)
         self.layer_view = config.get('html_defaults', 'layer_view',
@@ -514,8 +529,9 @@ class Config:
         self.blacklist_virtual = config.getboolean('general',
                                                    'blacklist_virtual',
                                                    fallback=not args.no_blacklist_virtual)
-        self.blacklist_empty_val = config.get('general', 'blacklist_empty_val',
-                                              fallback=args.blacklist_empty_val)
+        self.blacklist_empty_val = config.getboolean(
+            'general', 'blacklist_empty_val',
+            fallback=args.blacklist_empty_val)
         self.include_tracks = config.getboolean('general', 'include_tracks',
                                                 fallback=args.include_tracks)
         self.include_nets = config.getboolean('general', 'include_nets',
