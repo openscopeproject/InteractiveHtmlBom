@@ -57,6 +57,11 @@ def main():
 
     Config.add_options(parser, version)
     args = parser.parse_args()
+    # Options explicitly provided on the command line (i.e. those that differ
+    # from their argparse default). Used so that CLI options take precedence
+    # over values loaded from the ini file.
+    cli_provided = frozenset(
+        k for k in vars(args) if getattr(args, k) != parser.get_default(k))
     logger = ibom.Logger(cli=True)
 
     if not os.path.isfile(args.file):
@@ -82,7 +87,7 @@ def main():
             exit_error(logger, ExitCodes.ERROR_PARSE, e)
     else:
         if args.use_ini:
-            config.set_from_args_with_ini(args)
+            config.set_from_args_with_ini(args, cli_provided)
         else:
             config.set_from_args(args)
         try:

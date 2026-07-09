@@ -454,9 +454,9 @@ class Config:
                                  'do not populate status. Components with '
                                  'this field not empty will be excluded.')
 
-    def set_from_args_with_ini(self, args):
+    def set_from_args_with_ini(self, args, cli_provided=frozenset()):
+        # type: (argparse.Namespace, frozenset) -> None
         import configparser
-        import math
         import sys
 
         from ..errors import ExitCodes
@@ -472,99 +472,127 @@ class Config:
         config = configparser.ConfigParser()
         config.read(file)
 
+        # Start from the command line arguments (and their defaults). Any option
+        # explicitly passed on the command line takes precedence over the ini
+        # file; the ini only fills in options the user did not specify.
+        self.set_from_args(args)
+
         # Html
-        self.dark_mode = config.getboolean('html_defaults', 'dark_mode',
-                                           fallback=args.dark_mode)
-        self.show_pads = config.getboolean('html_defaults', 'show_pads',
-                                           fallback=not args.hide_pads)
-        self.show_fabrication = config.getboolean('html_defaults',
-                                                  'show_fabrication',
-                                                  fallback=args.show_fabrication)
-        self.show_silkscreen = config.getboolean('html_defaults', 'show_silkscreen',
-                                                 fallback=not args.hide_silkscreen)
-        self.highlight_pin1 = config.get('html_defaults', 'highlight_pin1',
-                                         fallback=args.highlight_pin1)
-        # migration from previous settings
-        if self.highlight_pin1 == '0':
-            self.highlight_pin1 = 'none'
-        if self.highlight_pin1 == '1':
-            self.highlight_pin1 = 'all'
-        self.redraw_on_drag = config.getboolean('html_defaults',
-                                                'redraw_on_drag',
-                                                fallback=not args.no_redraw_on_drag)
-        self.board_rotation = config.getint(
-            'html_defaults', 'board_rotation',
-            fallback=math.fmod(args.board_rotation // 5, 37))
-        self.offset_back_rotation = config.getboolean(
-            'html_defaults', 'offset_back_rotation',
-            fallback=args.offset_back_rotation)
-        self.checkboxes = config.get('html_defaults', 'checkboxes',
-                                     fallback=args.checkboxes)
-        self.mark_when_checked = config.get('html_defaults',
-                                            'mark_when_checked',
-                                            fallback=args.mark_when_checked)
-        self.bom_view = config.get('html_defaults', 'bom_view',
-                                   fallback=args.bom_view)
-        self.layer_view = config.get('html_defaults', 'layer_view',
-                                     fallback=args.layer_view)
-        self.compression = config.getboolean('html_defaults', 'compression',
-                                             fallback=not args.no_compression)
-        self.open_browser = config.getboolean('html_defaults', 'open_browser',
-                                              fallback=not args.no_browser)
+        if 'dark_mode' not in cli_provided:
+            self.dark_mode = config.getboolean('html_defaults', 'dark_mode',
+                                               fallback=self.dark_mode)
+        if 'hide_pads' not in cli_provided:
+            self.show_pads = config.getboolean('html_defaults', 'show_pads',
+                                               fallback=self.show_pads)
+        if 'show_fabrication' not in cli_provided:
+            self.show_fabrication = config.getboolean('html_defaults',
+                                                      'show_fabrication',
+                                                      fallback=self.show_fabrication)
+        if 'hide_silkscreen' not in cli_provided:
+            self.show_silkscreen = config.getboolean('html_defaults',
+                                                     'show_silkscreen',
+                                                     fallback=self.show_silkscreen)
+        if 'highlight_pin1' not in cli_provided:
+            self.highlight_pin1 = config.get('html_defaults', 'highlight_pin1',
+                                             fallback=self.highlight_pin1)
+            # migration from previous settings
+            if self.highlight_pin1 == '0':
+                self.highlight_pin1 = 'none'
+            if self.highlight_pin1 == '1':
+                self.highlight_pin1 = 'all'
+        if 'no_redraw_on_drag' not in cli_provided:
+            self.redraw_on_drag = config.getboolean('html_defaults',
+                                                    'redraw_on_drag',
+                                                    fallback=self.redraw_on_drag)
+        if 'board_rotation' not in cli_provided:
+            self.board_rotation = config.getint('html_defaults', 'board_rotation',
+                                                fallback=self.board_rotation)
+        if 'offset_back_rotation' not in cli_provided:
+            self.offset_back_rotation = config.getboolean(
+                'html_defaults', 'offset_back_rotation',
+                fallback=self.offset_back_rotation)
+        if 'checkboxes' not in cli_provided:
+            self.checkboxes = config.get('html_defaults', 'checkboxes',
+                                         fallback=self.checkboxes)
+        if 'mark_when_checked' not in cli_provided:
+            self.mark_when_checked = config.get('html_defaults',
+                                                'mark_when_checked',
+                                                fallback=self.mark_when_checked)
+        if 'bom_view' not in cli_provided:
+            self.bom_view = config.get('html_defaults', 'bom_view',
+                                       fallback=self.bom_view)
+        if 'layer_view' not in cli_provided:
+            self.layer_view = config.get('html_defaults', 'layer_view',
+                                         fallback=self.layer_view)
+        if 'no_compression' not in cli_provided:
+            self.compression = config.getboolean('html_defaults', 'compression',
+                                                 fallback=self.compression)
+        if 'no_browser' not in cli_provided:
+            self.open_browser = config.getboolean('html_defaults', 'open_browser',
+                                                  fallback=self.open_browser)
 
         # General
-        self.bom_dest_dir = config.get('general', 'bom_dest_dir',
-                                       fallback=args.dest_dir)
-        self.bom_name_format = config.get('general', 'bom_name_format',
-                                          fallback=args.name_format)
-        self.component_sort_order = self._split(
-            config.get('general', 'component_sort_order',
-                       fallback=args.sort_order)
-        )
-        self.component_blacklist = self._split(
-            config.get('general',
-                       'component_blacklist',
-                       fallback=args.blacklist)
-        )
-        self.blacklist_virtual = config.getboolean('general',
-                                                   'blacklist_virtual',
-                                                   fallback=not args.no_blacklist_virtual)
-        self.blacklist_empty_val = config.getboolean(
-            'general', 'blacklist_empty_val',
-            fallback=args.blacklist_empty_val)
-        self.include_tracks = config.getboolean('general', 'include_tracks',
-                                                fallback=args.include_tracks)
-        self.include_nets = config.getboolean('general', 'include_nets',
-                                              fallback=args.include_nets)
+        if 'dest_dir' not in cli_provided:
+            self.bom_dest_dir = config.get('general', 'bom_dest_dir',
+                                           fallback=self.bom_dest_dir)
+        if 'name_format' not in cli_provided:
+            self.bom_name_format = config.get('general', 'bom_name_format',
+                                              fallback=self.bom_name_format)
+        if 'sort_order' not in cli_provided:
+            self.component_sort_order = self._split(config.get(
+                'general', 'component_sort_order',
+                fallback=self._join(self.component_sort_order)))
+        if 'blacklist' not in cli_provided:
+            self.component_blacklist = self._split(config.get(
+                'general', 'component_blacklist',
+                fallback=self._join(self.component_blacklist)))
+        if 'no_blacklist_virtual' not in cli_provided:
+            self.blacklist_virtual = config.getboolean(
+                'general', 'blacklist_virtual',
+                fallback=self.blacklist_virtual)
+        if 'blacklist_empty_val' not in cli_provided:
+            self.blacklist_empty_val = config.getboolean(
+                'general', 'blacklist_empty_val',
+                fallback=self.blacklist_empty_val)
+        if 'include_tracks' not in cli_provided:
+            self.include_tracks = config.getboolean('general', 'include_tracks',
+                                                    fallback=self.include_tracks)
+        if 'include_nets' not in cli_provided:
+            self.include_nets = config.getboolean('general', 'include_nets',
+                                                  fallback=self.include_nets)
 
         # Fields
-        self.extra_data_file = args.extra_data_file or args.netlist_file
-        if args.extra_fields is not None:
-            self.show_fields = self.default_show_group_fields + \
-                self._split(args.extra_fields)
-            self.group_fields = self.show_fields
-        else:
-            self.show_fields = self._split(
-                config.get('fields', 'show_fields', fallback=args.show_fields)
-            )
-            self.group_fields = self._split(
-                config.get('fields', 'group_fields',
-                           fallback=args.group_fields)
-            )
-        self.normalize_field_case = config.getboolean('fields',
-                                                      'normalize_field_case',
-                                                      fallback=args.normalize_field_case)
-        self.board_variant_field = config.get('fields', 'board_variant_field',
-                                              fallback=args.variant_field)
-        self.board_variant_whitelist = self._split(
-            config.get('fields', 'board_variant_whitelist',
-                       fallback=args.variants_whitelist)
-        )
-        self.board_variant_blacklist = self._split(
-            config.get('fields', 'board_variant_blacklist',
-                       fallback=args.variants_blacklist))
-        self.dnp_field = config.get('fields', 'dnp_field',
-                                    fallback=args.dnp_field)
+        # extra_data_file is intentionally not read from the ini; it is chosen
+        # dynamically unless explicitly given on the command line.
+        # show_fields/group_fields come from the ini only when the user did not
+        # override them (or --extra-fields) on the command line.
+        if 'extra_fields' not in cli_provided:
+            if 'show_fields' not in cli_provided:
+                self.show_fields = self._split(config.get(
+                    'fields', 'show_fields',
+                    fallback=self._join(self.show_fields)))
+            if 'group_fields' not in cli_provided:
+                self.group_fields = self._split(config.get(
+                    'fields', 'group_fields',
+                    fallback=self._join(self.group_fields)))
+        if 'normalize_field_case' not in cli_provided:
+            self.normalize_field_case = config.getboolean(
+                'fields', 'normalize_field_case',
+                fallback=self.normalize_field_case)
+        if 'variant_field' not in cli_provided:
+            self.board_variant_field = config.get('fields', 'board_variant_field',
+                                                  fallback=self.board_variant_field)
+        if 'variants_whitelist' not in cli_provided:
+            self.board_variant_whitelist = self._split(config.get(
+                'fields', 'board_variant_whitelist',
+                fallback=self._join(self.board_variant_whitelist)))
+        if 'variants_blacklist' not in cli_provided:
+            self.board_variant_blacklist = self._split(config.get(
+                'fields', 'board_variant_blacklist',
+                fallback=self._join(self.board_variant_blacklist)))
+        if 'dnp_field' not in cli_provided:
+            self.dnp_field = config.get('fields', 'dnp_field',
+                                        fallback=self.dnp_field)
 
     def set_from_args(self, args):
         # type: (argparse.Namespace) -> None
