@@ -9,3 +9,10 @@ demo
 *config.ini
 InteractiveHtmlBom/web/user*
 dist/
+
+# kicad's files
+.history
+*.lck
+*.kicad_prl
+*.kicad_pro
+*-backups
