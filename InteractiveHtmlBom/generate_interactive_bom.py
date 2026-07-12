@@ -56,16 +56,33 @@ def main():
                         help="KiCad PCB file")
 
     Config.add_options(parser, version)
-    args = parser.parse_args()
     logger = ibom.Logger(cli=True)
 
-    if not os.path.isfile(args.file):
+    # First pass over the arguments to find the pcb file and --use-ini.
+    pre_args, _ = parser.parse_known_args()
+
+    if not os.path.isfile(pre_args.file):
         exit_error(logger, ExitCodes.ERROR_FILE_NOT_FOUND,
-                   "File %s does not exist." % args.file)
+                   "File %s does not exist." % pre_args.file)
+
+    config = Config(version,
+                    os.path.dirname(os.path.abspath(pre_args.file)))
+
+    # With --use-ini the ini values are installed as parser defaults before
+    # the final parse: options given on the command line override the ini
+    # while all other options fall back to the ini values.
+    if pre_args.use_ini and not pre_args.show_dialog:
+        ini_defaults = config.get_ini_defaults()
+        if ini_defaults is None:
+            exit_error(logger, ExitCodes.ERROR_FILE_NOT_FOUND,
+                       "No ibom ini file found in usual locations.")
+        else:
+            parser.set_defaults(**ini_defaults)
+
+    args = parser.parse_args()
 
     print("Loading %s" % args.file)
 
-    config = Config(version, os.path.dirname(os.path.abspath(args.file)))
     config.kicad_variant = args.kicad_variant
 
     parser = get_parser_by_extension(
