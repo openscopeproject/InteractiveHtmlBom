@@ -1,531 +1,509 @@
+"""KiCad IPC API parser.
+
+Talks to a running KiCad instance through the IPC API using the kipy
+(kicad-python) bindings instead of the legacy SWIG pcbnew module.
+Produces the same pcbdata structure as the legacy PcbnewParser so the
+rest of iBOM (and the html renderer) is unaffected.
+
+Requires KiCad 9.0.3+ with the API server enabled and kicad-python 0.7+.
+"""
+
+import math
 import os
 from datetime import datetime
 
-import pcbnew
+from kipy import KiCad
+from kipy.board_types import (
+    ArcTrack,
+    BoardArc,
+    BoardBezier,
+    BoardCircle,
+    BoardPolygon,
+    BoardRectangle,
+    BoardSegment,
+    BoardText,
+    BoardTextBox,
+    Field,
+    Track,
+    Via,
+)
+from kipy.proto.board import board_types_pb2
 
 from .common import EcadParser, Component, ExtraFieldData
 from .kicad_extra import find_latest_schematic_data, parse_schematic_data
 from .svgpath import create_path
-from ..core import ibom
-from ..core.config import Config
-from ..core.fontparser import FontParser
+
+BL = board_types_pb2.BoardLayer
+PAD_TYPE = board_types_pb2.PadType
+PAD_STACK_TYPE = board_types_pb2.PadStackType
+PAD_STACK_SHAPE = board_types_pb2.PadStackShape
+DRILL_SHAPE = board_types_pb2.DrillShape
+ULR = board_types_pb2.UnconnectedLayerRemoval
+ZONE_TYPE = board_types_pb2.ZoneType
+
+OUTER_COPPER_LAYERS = [(BL.BL_F_Cu, "F"), (BL.BL_B_Cu, "B")]
+
+# Bitmask values matching pcbnew's RECT_CHAMFER_POSITIONS, which is what
+# the html renderer expects in the "chamfpos" field.
+CHAMFER_TOP_LEFT = 1
+CHAMFER_TOP_RIGHT = 2
+CHAMFER_BOTTOM_LEFT = 4
+CHAMFER_BOTTOM_RIGHT = 8
 
 
-KICAD_VERSION = [5, 1, 0]
+class IpcApiParser(EcadParser):
 
-if hasattr(pcbnew, 'Version'):
-    version = pcbnew.Version().split('.')
-    try:
-        for i in range(len(version)):
-            version[i] = int(version[i].split('-')[0])
-    except ValueError:
-        pass
-    KICAD_VERSION = version
-
-
-class PcbnewParser(EcadParser):
-
-    def __init__(self, file_name, config, logger, board=None):
-        super(PcbnewParser, self).__init__(file_name, config, logger)
-        self.board = board
-        if self.board is None:
-            self.board = pcbnew.LoadBoard(self.file_name)  # type: pcbnew.BOARD
-            if not self.board:
-                raise Exception('Failed to load board file')
-            if hasattr(self.board, "SetCurrentVariant"):
-                self.board.SetCurrentVariant(config.kicad_variant)
-        if hasattr(self.board, 'GetModules'):
-            # type: list[pcbnew.MODULE]
-            self.footprints = list(self.board.GetModules())
-        else:
-            # type: list[pcbnew.FOOTPRINT]
-            self.footprints = list(self.board.GetFootprints())
-        self.font_parser = FontParser()
-
-    def get_extra_field_data(self, file_name):
-        if os.path.abspath(file_name) == os.path.abspath(self.file_name):
-            return self.parse_extra_data_from_pcb()
-        if os.path.splitext(file_name)[1] == '.kicad_pcb':
-            return None
-
-        data = parse_schematic_data(file_name)
-
-        return ExtraFieldData(data[0], data[1])
-
-    def get_footprint_fields(self, f):
-        # type: (pcbnew.FOOTPRINT) -> dict
-        props = {}
-        if hasattr(f, "GetProperties"):
-            props = f.GetProperties()
-        if hasattr(f, "GetFields"):
-            props = f.GetFieldsShownText()
-        if "dnp" in props and props["dnp"] == "":
-            del props["dnp"]
-            props["kicad_dnp"] = "DNP"
-        if hasattr(f, "IsDNP"):
-            if f.IsDNP():
-                props["kicad_dnp"] = "DNP"
-        if hasattr(f, 'GetVariant'):
-            variant = f.GetVariant(self.config.kicad_variant)
-            if variant:
-                var_fields = variant.GetFields()
-                for k in var_fields.keys():
-                    props[str(k)] = str(f.GetFieldShownText(str(k)))
-                props["kicad_dnp"] = "DNP" if variant.GetDNP() else ""
-
-        return props
-
-    def parse_extra_data_from_pcb(self):
-        field_set = set()
-        by_ref = {}
-        by_index = {}
-
-        for (i, f) in enumerate(self.footprints):
-            props = self.get_footprint_fields(f)
-            by_index[i] = props
-            ref = f.GetReference()
-            ref_fields = by_ref.setdefault(ref, {})
-
-            for k, v in props.items():
-                field_set.add(k)
-                ref_fields[k] = v
-
-        return ExtraFieldData(list(field_set), by_ref, by_index)
-
-    def latest_extra_data(self, extra_dirs=None):
-        base_name = os.path.splitext(os.path.basename(self.file_name))[0]
-        extra_dirs.append(self.board.GetPlotOptions().GetOutputDirectory())
-        file_dir_name = os.path.dirname(self.file_name)
-        directories = [file_dir_name]
-        for dir in extra_dirs:
-            if not os.path.isabs(dir):
-                dir = os.path.join(file_dir_name, dir)
-            if os.path.exists(dir):
-                directories.append(dir)
-        return find_latest_schematic_data(base_name, directories)
-
-    def extra_data_file_filter(self):
-        if hasattr(self.board, 'GetModules'):
-            return "Netlist and xml files (*.net; *.xml)|*.net;*.xml"
-        else:
-            return ("Netlist, xml and pcb files (*.net; *.xml; *.kicad_pcb)|"
-                    "*.net;*.xml;*.kicad_pcb")
+    def __init__(self, file_name, config, logger, kicad=None, board=None):
+        self.kicad = kicad if kicad is not None else KiCad()
+        self.board = board if board is not None else self.kicad.get_board()
+        if not file_name:
+            project = self.board.get_project()
+            file_name = os.path.join(project.path, self.board.name)
+        super(IpcApiParser, self).__init__(file_name, config, logger)
+        self.footprints = list(self.board.get_footprints())
+        self._text_render_cache = {}
 
     @staticmethod
     def normalize(point):
         return [point.x * 1e-6, point.y * 1e-6]
 
     @staticmethod
-    def normalize_angle(angle):
-        if isinstance(angle, int) or isinstance(angle, float):
-            return angle * 0.1
-        else:
-            return angle.AsDegrees()
+    def rotate(point, center, angle_degrees):
+        # Rotation in kicad's coordinate system (y axis down,
+        # positive angle is counterclockwise).
+        a = -math.radians(angle_degrees)
+        dx = point[0] - center[0]
+        dy = point[1] - center[1]
+        return [center[0] + dx * math.cos(a) - dy * math.sin(a),
+                center[1] + dx * math.sin(a) + dy * math.cos(a)]
 
-    def get_arc_angles(self, d):
-        # type: (pcbnew.PCB_SHAPE) -> tuple
-        a1 = self.normalize_angle(d.GetArcAngleStart())
-        if hasattr(d, "GetAngle"):
-            a2 = a1 + self.normalize_angle(d.GetAngle())
+    @staticmethod
+    def layer_letter(layer):
+        return {BL.BL_F_Cu: "F", BL.BL_B_Cu: "B"}.get(layer)
+
+    def parse_poly_line(self, poly_line):
+        # type: (...) -> list
+        # PolyLine nodes are either points or arcs. Arcs are approximated
+        # with their start/mid/end points; filled polygons coming from
+        # KiCad are already flattened so this is rarely hit.
+        result = []
+        for node in poly_line.nodes:
+            if node.has_point:
+                result.append(self.normalize(node.point))
+            elif node.has_arc:
+                arc = node.arc
+                result.append(self.normalize(arc.start))
+                result.append(self.normalize(arc.mid))
+                result.append(self.normalize(arc.end))
+        return result
+
+    def parse_polygons(self, polygons_with_holes):
+        # Holes are not supported by the legacy data format either:
+        # SWIG parser warned about them and used outlines only.
+        result = []
+        for poly in polygons_with_holes:
+            if poly.holes:
+                self.logger.warn('Detected holes in polygon, ignoring them')
+            result.append(self.parse_poly_line(poly.outline))
+        return result
+
+    @staticmethod
+    def arc_angles_degrees(shape):
+        """Computes (startangle, endangle) the way the legacy parser did.
+
+        Angles are in kicad's screen coordinate system (y axis down,
+        angles grow clockwise on screen). kipy's start_angle()/end_angle()
+        use the math convention (y up) so we compute from the arc's
+        start/mid/end points directly.
+        """
+        center = shape.center()
+        if center is None:
+            return 0, 0
+
+        def angle_to(p):
+            return math.degrees(math.atan2(p.y - center.y, p.x - center.x))
+
+        a1 = angle_to(shape.start)
+        am = angle_to(shape.mid)
+        a2 = angle_to(shape.end)
+        if a1 >= 180 - 1e-3:
+            a1 -= 360  # match pcbnew's (-180, 180] -> [-180, 180) edge
+        # Determine sweep direction: the mid point must lie on the arc.
+        ccw_mid = (am - a1) % 360
+        ccw_end = (a2 - a1) % 360
+        if ccw_mid <= ccw_end:
+            sweep = ccw_end
         else:
-            a2 = a1 + self.normalize_angle(d.GetArcAngle())
+            sweep = ccw_end - 360
+        a2 = a1 + sweep
         if a2 < a1:
             a1, a2 = a2, a1
         return round(a1, 2), round(a2, 2)
 
     def parse_shape(self, d):
-        # type: (pcbnew.PCB_SHAPE) -> dict | None
-        shape = {
-            pcbnew.S_SEGMENT: "segment",
-            pcbnew.S_CIRCLE: "circle",
-            pcbnew.S_ARC: "arc",
-            pcbnew.S_POLYGON: "polygon",
-            pcbnew.S_CURVE: "curve",
-            pcbnew.S_RECT: "rect",
-        }.get(d.GetShape(), "")
-        if shape == "":
-            self.logger.info("Unsupported shape %s, skipping", d.GetShape())
-            return None
-        start = self.normalize(d.GetStart())
-        end = self.normalize(d.GetEnd())
-        if shape == "segment":
+        if isinstance(d, BoardSegment):
             return {
-                "type": shape,
-                "start": start,
-                "end": end,
-                "width": d.GetWidth() * 1e-6
+                "type": "segment",
+                "start": self.normalize(d.start),
+                "end": self.normalize(d.end),
+                "width": d.attributes.stroke.width * 1e-6,
             }
-
-        if shape == "rect":
-            if hasattr(d, "GetRectCorners"):
-                points = list(map(self.normalize, d.GetRectCorners()))
-            else:
-                points = [
-                    start,
-                    [end[0], start[1]],
-                    end,
-                    [start[0], end[1]]
-                ]
-            shape_dict = {
+        if isinstance(d, BoardRectangle):
+            start = self.normalize(d.top_left)
+            end = self.normalize(d.bottom_right)
+            return {
                 "type": "polygon",
                 "pos": [0, 0],
                 "angle": 0,
-                "polygons": [points],
-                "width": d.GetWidth() * 1e-6,
-                "filled": 0
+                "polygons": [[
+                    start,
+                    [end[0], start[1]],
+                    end,
+                    [start[0], end[1]],
+                ]],
+                "width": d.attributes.stroke.width * 1e-6,
+                "filled": 1 if d.attributes.fill.filled else 0,
             }
-            if hasattr(d, "IsFilled") and d.IsFilled():
-                shape_dict["filled"] = 1
-            return shape_dict
-
-        if shape == "circle":
+        if isinstance(d, BoardCircle):
+            radius = (d.radius_point - d.center).length()
             shape_dict = {
-                "type": shape,
-                "start": start,
-                "radius": d.GetRadius() * 1e-6,
-                "width": d.GetWidth() * 1e-6
+                "type": "circle",
+                "start": self.normalize(d.center),
+                "radius": radius * 1e-6,
+                "width": d.attributes.stroke.width * 1e-6,
             }
-            if hasattr(d, "IsFilled") and d.IsFilled():
+            if d.attributes.fill.filled:
                 shape_dict["filled"] = 1
             return shape_dict
-
-        if shape == "arc":
-            a1, a2 = self.get_arc_angles(d)
-            if hasattr(d, "GetCenter"):
-                start = self.normalize(d.GetCenter())
+        if isinstance(d, BoardArc):
+            a1, a2 = self.arc_angles_degrees(d)
+            center = d.center()
+            if center is None:
+                # Degenerate arc, draw as segment.
+                return {
+                    "type": "segment",
+                    "start": self.normalize(d.start),
+                    "end": self.normalize(d.end),
+                    "width": d.attributes.stroke.width * 1e-6,
+                }
             return {
-                "type": shape,
-                "start": start,
-                "radius": d.GetRadius() * 1e-6,
+                "type": "arc",
+                "start": self.normalize(center),
+                "radius": d.radius() * 1e-6,
                 "startangle": a1,
                 "endangle": a2,
-                "width": d.GetWidth() * 1e-6
+                "width": d.attributes.stroke.width * 1e-6,
             }
-
-        if shape == "polygon":
-            if hasattr(d, "GetPolyShape"):
-                polygons = self.parse_poly_set(d.GetPolyShape())
-            else:
-                self.logger.info(
-                    "Polygons not supported for KiCad 4, skipping")
-                return None
-            angle = 0
-            if hasattr(d, 'GetParentModule'):
-                parent_footprint = d.GetParentModule()
-            else:
-                parent_footprint = d.GetParentFootprint()
-            if parent_footprint is not None and KICAD_VERSION[0] < 8:
-                angle = self.normalize_angle(parent_footprint.GetOrientation())
+        if isinstance(d, BoardPolygon):
             shape_dict = {
-                "type": shape,
-                "pos": start,
-                "angle": angle,
-                "polygons": polygons
+                "type": "polygon",
+                "pos": [0.0, 0.0],
+                "angle": 0,
+                "polygons": self.parse_polygons(d.polygons),
             }
-            if ((hasattr(d, "IsFilled") and not d.IsFilled()) or
-                    (hasattr(d, "IsSolidFill") and not d.IsSolidFill())):
+            if not d.attributes.fill.filled:
                 shape_dict["filled"] = 0
-                shape_dict["width"] = d.GetWidth() * 1e-6
+                shape_dict["width"] = d.attributes.stroke.width * 1e-6
             return shape_dict
-        if shape == "curve":
-            if hasattr(d, "GetBezierC1"):
-                c1 = self.normalize(d.GetBezierC1())
-                c2 = self.normalize(d.GetBezierC2())
-            else:
-                c1 = self.normalize(d.GetBezControl1())
-                c2 = self.normalize(d.GetBezControl2())
+        if isinstance(d, BoardBezier):
             return {
-                "type": shape,
-                "start": start,
-                "cpa": c1,
-                "cpb": c2,
-                "end": end,
-                "width": d.GetWidth() * 1e-6
+                "type": "curve",
+                "start": self.normalize(d.start),
+                "cpa": self.normalize(d.control1),
+                "cpb": self.normalize(d.control2),
+                "end": self.normalize(d.end),
+                "width": d.attributes.stroke.width * 1e-6,
             }
+        self.logger.info("Unsupported shape %s, skipping", type(d).__name__)
+        return None
 
-    def parse_line_chain(self, shape):
-        # type: (pcbnew.SHAPE_LINE_CHAIN) -> list
-        result = []
-        if not hasattr(shape, "PointCount"):
-            self.logger.warn("No PointCount method on outline object. "
-                             "Unpatched kicad version?")
-            return result
+    def _resolve_text_value(self, value, footprint):
+        """Expands text variables. Footprint-context variables are
+        substituted locally, the rest is expanded by KiCad."""
+        if '${' not in value:
+            return value
+        if footprint is not None:
+            subs = {
+                'REFERENCE': footprint.reference_field.text.value,
+                'VALUE': footprint.value_field.text.value,
+                'FOOTPRINT_NAME': footprint.definition.id.name,
+                'FOOTPRINT_LIBRARY': footprint.definition.id.library,
+            }
+            for key, sub in subs.items():
+                value = value.replace('${%s}' % key, sub)
+        if '${' in value:
+            value = self.board.expand_text_variables(value)
+        return value
 
-        for point_index in range(shape.PointCount()):
-            result.append(
-                self.normalize(shape.CPoint(point_index)))
+    def _as_common_text(self, d, footprint=None):
+        from kipy.common_types import Text
 
-        return result
-
-    def parse_poly_set(self, poly):
-        # type: (pcbnew.SHAPE_POLY_SET) -> list
-        result = []
-
-        for i in range(poly.OutlineCount()):
-            result.append(self.parse_line_chain(poly.Outline(i)))
-
-        return result
-
-    def parse_text(self, d):
-        # type: (pcbnew.PCB_TEXT) -> dict
-        if not d.IsVisible() and d.GetClass() not in ["PTEXT", "PCB_TEXT"]:
-            return None
-        pos = self.normalize(d.GetPosition())
-        if hasattr(d, "GetTextThickness"):
-            thickness = d.GetTextThickness() * 1e-6
+        if isinstance(d, Field):
+            text = d.text.as_text()
+        elif isinstance(d, BoardText):
+            text = d.as_text()
+        elif isinstance(d, BoardTextBox):
+            return d.as_textbox()
         else:
-            thickness = d.GetThickness() * 1e-6
-        if hasattr(d, 'TransformToSegmentList'):
-            segments = [self.normalize(p) for p in d.TransformToSegmentList()]
-            lines = []
-            for i in range(0, len(segments), 2):
-                if i == 0 or segments[i - 1] != segments[i]:
-                    lines.append([segments[i]])
-                lines[-1].append(segments[i + 1])
+            text = d  # already a common Text (e.g. dimension text)
+
+        modified = False
+
+        # GetTextAsShapes renders the stored string as-is, with text
+        # variables like ${REFERENCE} unexpanded. Resolve them first.
+        value = self._resolve_text_value(text.value, footprint)
+        if value != text.value:
+            text = Text(text.proto)  # copy, do not mutate the board
+            text.value = value
+            modified = True
+
+        # GetTextAsShapes renders the stored angle as-is, but pcbnew
+        # draws keep-upright text rotated back into readable orientation
+        # (see EDA_TEXT::GetDrawRotation). Replicate that here, otherwise
+        # left/right justified text on rotated footprints renders on the
+        # wrong side of its anchor.
+        attrs = text.proto.attributes
+        if attrs.keep_upright:
+            angle = attrs.angle.value_degrees % 360
+            if 90 < angle <= 270:
+                if not modified:
+                    text = Text(text.proto)
+                text.proto.attributes.angle.value_degrees = angle - 180
+        return text
+
+    def prerender_text_items(self, items):
+        """Renders all text items in one IPC round trip.
+
+        KiCad renders text to polygonal shapes server side, which replaces
+        the SWIG GetEffectiveTextShape() call. Results are cached keyed by
+        the text item's python object id.
+
+        :param items: list of (text_item, parent_footprint_or_None)
+        """
+        items = [(t, f) for (t, f) in items
+                 if id(t) not in self._text_render_cache]
+        if not items:
+            return
+        shapes = self.kicad.get_text_as_shapes(
+            [self._as_common_text(t, f) for (t, f) in items])
+        for (item, _), compound in zip(items, shapes):
+            self._text_render_cache[id(item)] = compound
+
+    def parse_text(self, d, footprint=None):
+        common_text = self._as_common_text(d, footprint)
+        thickness = common_text.attributes.stroke_width * 1e-6
+        compound = self._text_render_cache.get(id(d))
+        if compound is None:
+            compound = self.kicad.get_text_as_shapes(common_text)[0]
+        segments = []
+        polygons = []
+        from kipy.common_types import Segment, Polygon
+        for s in compound.shapes:
+            if isinstance(s, Segment):
+                segments.append(
+                    [self.normalize(s.start), self.normalize(s.end)])
+            elif isinstance(s, Polygon):
+                polygons.extend(self.parse_polygons(s.polygons))
+            else:
+                self.logger.warn(
+                    "Unsupported subshape in text: %s" % type(s).__name__)
+        if segments:
             return {
                 "thickness": thickness,
-                "svgpath": create_path(lines)
+                "svgpath": create_path(segments)
             }
-        elif hasattr(d, 'GetEffectiveTextShape'):
-            # type: pcbnew.SHAPE_COMPOUND
-            shape = d.GetEffectiveTextShape(False)
-            segments = []
-            polygons = []
-            for s in shape.GetSubshapes():
-                if s.Type() == pcbnew.SH_LINE_CHAIN:
-                    polygons.append(self.parse_line_chain(s))
-                elif s.Type() == pcbnew.SH_SEGMENT:
-                    seg = s.GetSeg()
-                    segments.append(
-                        [self.normalize(seg.A), self.normalize(seg.B)])
-                else:
-                    self.logger.warn(
-                        "Unsupported subshape in text: %s" % s.Type())
-            if segments:
-                return {
-                    "thickness": thickness,
-                    "svgpath": create_path(segments)
-                }
-            else:
-                return {
-                    "polygons": polygons
-                }
-
-        if d.GetClass() == "MTEXT":
-            angle = self.normalize_angle(d.GetDrawRotation())
         else:
-            if hasattr(d, "GetTextAngle"):
-                angle = self.normalize_angle(d.GetTextAngle())
-            else:
-                angle = self.normalize_angle(d.GetOrientation())
-        if hasattr(d, "GetTextHeight"):
-            height = d.GetTextHeight() * 1e-6
-            width = d.GetTextWidth() * 1e-6
-        else:
-            height = d.GetHeight() * 1e-6
-            width = d.GetWidth() * 1e-6
-        if hasattr(d, "GetShownText"):
-            text = d.GetShownText()
-        else:
-            text = d.GetText()
-        self.font_parser.parse_font_for_string(text)
-        attributes = []
-        if d.IsMirrored():
-            attributes.append("mirrored")
-        if d.IsItalic():
-            attributes.append("italic")
-        if d.IsBold():
-            attributes.append("bold")
+            return {
+                "polygons": polygons
+            }
 
-        return {
-            "pos": pos,
-            "text": text,
-            "height": height,
-            "width": width,
-            "justify": [d.GetHorizJustify(), d.GetVertJustify()],
-            "thickness": thickness,
-            "attr": attributes,
-            "angle": angle
-        }
-
-    def parse_dimension(self, d):
-        # type: (pcbnew.PCB_DIMENSION_BASE) -> dict
-        segments = []
-        circles = []
-        for s in d.GetShapes():
-            s = s.Cast()
-            if s.Type() == pcbnew.SH_SEGMENT:
-                seg = s.GetSeg()
-                segments.append(
-                    [self.normalize(seg.A), self.normalize(seg.B)])
-            elif s.Type() == pcbnew.SH_CIRCLE:
-                circles.append(
-                    [self.normalize(s.GetCenter()), s.GetRadius() * 1e-6])
-            else:
-                self.logger.info(
-                    "Unsupported shape type in dimension object: %s", s.Type())
-
-        svgpath = create_path(segments, circles=circles)
-
-        return {
-            "thickness": d.GetLineThickness() * 1e-6,
-            "svgpath": svgpath
-        }
-
-    def parse_drawing(self, d):
-        # type: (pcbnew.BOARD_ITEM) -> list
-        result = []
-        s = None
-        if d.GetClass() in ["DRAWSEGMENT", "MGRAPHIC", "PCB_SHAPE"]:
+    def parse_drawing(self, d, footprint=None):
+        if isinstance(d, (BoardSegment, BoardRectangle, BoardCircle,
+                          BoardArc, BoardPolygon, BoardBezier)):
             s = self.parse_shape(d)
-        elif d.GetClass() in ["PTEXT", "MTEXT", "FP_TEXT", "PCB_TEXT", "PCB_FIELD"]:
-            s = self.parse_text(d)
-        elif (d.GetClass().startswith("PCB_DIM")
-              and hasattr(pcbnew, "VECTOR_SHAPEPTR")):
-            result.append(self.parse_dimension(d))
-            if hasattr(d, "Text"):
-                s = self.parse_text(d.Text())
-            else:
-                s = self.parse_text(d)
-        else:
-            self.logger.info("Unsupported drawing class %s, skipping",
-                             d.GetClass())
-        if s:
-            result.append(s)
-        return result
+            return [s] if s else []
+        if isinstance(d, (BoardText, BoardTextBox, Field)):
+            s = self.parse_text(d, footprint)
+            return [s] if s else []
+        self.logger.info("Unsupported drawing type %s, skipping",
+                         type(d).__name__)
+        return []
 
-    def parse_edges(self, pcb):
-        edges = []
-        drawings = list(pcb.GetDrawings())
-        bbox = None
+    def _field_visible(self, field):
+        # Note: BoardText.attributes.visible is deprecated and always
+        # True over the IPC API; Field.visible is the reliable flag.
+        return field.visible
+
+    def get_all_drawings(self):
+        """Returns a list of (kind, item, parent_footprint) tuples for all
+        silk/fab drawings.
+
+        kind is "ref"/"val" for reference and value fields so they can be
+        tagged in the output, mirroring the SWIG parser.
+        """
+        drawings = []
+        for d in self.board.get_shapes():
+            drawings.append(("shape", d, None))
+        for t in self.board.get_text():
+            if isinstance(t, BoardText) and not t.attributes.visible:
+                continue
+            drawings.append(("text", t, None))
         for f in self.footprints:
-            for g in f.GraphicalItems():
-                drawings.append(g)
-        for d in drawings:
-            if d.GetLayer() == pcbnew.Edge_Cuts:
-                for parsed_drawing in self.parse_drawing(d):
-                    edges.append(parsed_drawing)
-                    if bbox is None:
-                        bbox = d.GetBoundingBox()
-                    else:
-                        bbox.Merge(d.GetBoundingBox())
-        if bbox:
-            bbox.Normalize()
-        return edges, bbox
+            if self._field_visible(f.reference_field):
+                drawings.append(("ref", f.reference_field, f))
+            if self._field_visible(f.value_field):
+                drawings.append(("val", f.value_field, f))
+            for d in f.definition.shapes:
+                drawings.append(("shape", d, f))
+            ref_val_ids = (f.reference_field.field_id,
+                           f.value_field.field_id)
+            for t in f.texts_and_fields:
+                if isinstance(t, Field):
+                    if t.field_id in ref_val_ids:
+                        continue
+                    if not self._field_visible(t):
+                        continue
+                elif isinstance(t, BoardText):
+                    if not t.attributes.visible:
+                        continue
+                drawings.append(("text", t, f))
+        return drawings
 
     def parse_drawings_on_layers(self, drawings, f_layer, b_layer):
         front = []
         back = []
 
-        for d in drawings:
-            if d[1].GetLayer() not in [f_layer, b_layer]:
+        text_items = [(d, f) for (kind, d, f) in drawings
+                      if d.layer in [f_layer, b_layer] and
+                      not isinstance(d, (BoardSegment, BoardRectangle,
+                                         BoardCircle, BoardArc,
+                                         BoardPolygon, BoardBezier))]
+        self.prerender_text_items(text_items)
+
+        for kind, d, f in drawings:
+            if d.layer not in [f_layer, b_layer]:
                 continue
-            for drawing in self.parse_drawing(d[1]):
-                if d[0] in ["ref", "val"]:
-                    drawing[d[0]] = 1
-                if d[1].GetLayer() == f_layer:
+            for drawing in self.parse_drawing(d, f):
+                if kind in ["ref", "val"]:
+                    drawing[kind] = 1
+                if d.layer == f_layer:
                     front.append(drawing)
                 else:
                     back.append(drawing)
 
         return {
             "F": front,
-            "B": back
+            "B": back,
         }
 
-    def get_all_drawings(self):
-        drawings = [(d.GetClass(), d) for d in list(self.board.GetDrawings())]
+    def _shape_points_with_extents(self, d):
+        """Returns points describing the extents of a shape, used for
+        bounding box computation on the client side."""
+        width = d.attributes.stroke.width
+        points = []
+        if isinstance(d, BoardSegment):
+            points = [d.start, d.end]
+        elif isinstance(d, BoardRectangle):
+            points = [d.top_left, d.bottom_right]
+        elif isinstance(d, (BoardCircle, BoardArc, BoardPolygon,
+                            BoardBezier)):
+            try:
+                box = d.bounding_box()
+            except Exception:
+                return []
+            points = [box.pos,
+                      type(box.pos).from_xy(box.pos.x + box.size.x,
+                                            box.pos.y + box.size.y)]
+        result = []
+        for p in points:
+            x, y = p.x, p.y
+            result.append([(x - width / 2) * 1e-6, (y - width / 2) * 1e-6])
+            result.append([(x + width / 2) * 1e-6, (y + width / 2) * 1e-6])
+        return result
+
+    def parse_edges(self):
+        edges = []
+        bbox = None  # [minx, miny, maxx, maxy] in mm
+
+        items = list(self.board.get_shapes())
         for f in self.footprints:
-            drawings.append(("ref", f.Reference()))
-            drawings.append(("val", f.Value()))
-            for d in f.GraphicalItems():
-                drawings.append((d.GetClass(), d))
-            if hasattr(f, "GetFields"):
-                fields = f.GetFields()  # type: list[pcbnew.PCB_FIELD]
-                for field in fields:
-                    if field.IsReference() or field.IsValue():
-                        continue
-                    drawings.append((field.GetClass(), field))
+            items.extend(f.definition.shapes)
 
-        return drawings
+        for d in items:
+            if d.layer != BL.BL_Edge_Cuts:
+                continue
+            for parsed_drawing in self.parse_drawing(d):
+                edges.append(parsed_drawing)
+            for p in self._shape_points_with_extents(d):
+                if bbox is None:
+                    bbox = [p[0], p[1], p[0], p[1]]
+                else:
+                    bbox = [min(bbox[0], p[0]), min(bbox[1], p[1]),
+                            max(bbox[2], p[0]), max(bbox[3], p[1])]
+        return edges, bbox
 
-    @staticmethod
-    def _pad_is_through_hole(pad):
-        # type: (pcbnew.PAD) -> bool
-        if hasattr(pcbnew, 'PAD_ATTRIB_PTH'):
-            through_hole_attributes = [pcbnew.PAD_ATTRIB_PTH,
-                                       pcbnew.PAD_ATTRIB_NPTH]
-        else:
-            through_hole_attributes = [pcbnew.PAD_ATTRIB_STANDARD,
-                                       pcbnew.PAD_ATTRIB_HOLE_NOT_PLATED]
-        return pad.GetAttribute() in through_hole_attributes
+    def _pad_is_through_hole(self, pad):
+        return pad.pad_type in [PAD_TYPE.PT_PTH, PAD_TYPE.PT_NPTH]
 
     def parse_pad(self, pad):
-        # type: (pcbnew.PAD) -> list[dict]
-        custom_padstack = False
-        outer_layers = [(pcbnew.F_Cu, "F"), (pcbnew.B_Cu, "B")]
-        if hasattr(pad, 'Padstack'):
-            padstack = pad.Padstack()  # type: pcbnew.PADSTACK
-            layers_set = list(padstack.LayerSet().Seq())
-            if hasattr(pcbnew, "UNCONNECTED_LAYER_MODE_REMOVE_ALL"):
-                ULMRA = pcbnew.UNCONNECTED_LAYER_MODE_REMOVE_ALL
-            else:
-                ULMRA = padstack.UNCONNECTED_LAYER_MODE_REMOVE_ALL
-            custom_padstack = (
-                padstack.Mode() != padstack.MODE_NORMAL or
-                padstack.UnconnectedLayerMode() == ULMRA
-            )
-        else:
-            layers_set = list(pad.GetLayerSet().Seq())
+        padstack = pad.padstack
+        layers_set = list(padstack.layers)
         layers = []
-        for layer, letter in outer_layers:
+        for layer, letter in OUTER_COPPER_LAYERS:
             if layer in layers_set:
                 layers.append(letter)
         if not layers and not self._pad_is_through_hole(pad):
             return []
 
+        custom_padstack = (
+            padstack.type != PAD_STACK_TYPE.PST_NORMAL or
+            padstack.unconnected_layer_removal != ULR.ULR_KEEP
+        )
+
         if custom_padstack:
+            presence = self.board.check_padstack_presence_on_layers(
+                pad, [layer for layer, _ in OUTER_COPPER_LAYERS])
+            presence = presence.get(pad, {})
             pads = []
-            for layer, letter in outer_layers:
-                if layer in layers_set and pad.FlashLayer(layer):
+            for layer, letter in OUTER_COPPER_LAYERS:
+                if layer in layers_set and presence.get(layer, True):
                     pad_dict = self.parse_pad_layer(pad, layer)
-                    pad_dict["layers"] = [letter]
-                    pads.append(pad_dict)
+                    if pad_dict is not None:
+                        pad_dict["layers"] = [letter]
+                        pads.append(pad_dict)
             return pads
         else:
-            pad_layer = layers_set[0] if layers_set else pcbnew.F_Cu
+            pad_layer = layers_set[0] if layers_set else BL.BL_F_Cu
             pad_dict = self.parse_pad_layer(pad, pad_layer)
+            if pad_dict is None:
+                return []
             pad_dict["layers"] = layers
             return [pad_dict]
 
     def parse_pad_layer(self, pad, layer):
-        # type: (pcbnew.PAD, int) -> dict | None
-        pos = self.normalize(pad.GetPosition())
-        try:
-            size = self.normalize(pad.GetSize(layer))
-        except TypeError:
-            size = self.normalize(pad.GetSize())
-        angle = self.normalize_angle(pad.GetOrientation())
-        shape_lookup = {
-            pcbnew.PAD_SHAPE_RECT: "rect",
-            pcbnew.PAD_SHAPE_OVAL: "oval",
-            pcbnew.PAD_SHAPE_CIRCLE: "circle",
-        }
-        if hasattr(pcbnew, "PAD_SHAPE_TRAPEZOID"):
-            shape_lookup[pcbnew.PAD_SHAPE_TRAPEZOID] = "trapezoid"
-        if hasattr(pcbnew, "PAD_SHAPE_ROUNDRECT"):
-            shape_lookup[pcbnew.PAD_SHAPE_ROUNDRECT] = "roundrect"
-        if hasattr(pcbnew, "PAD_SHAPE_CUSTOM"):
-            shape_lookup[pcbnew.PAD_SHAPE_CUSTOM] = "custom"
-        if hasattr(pcbnew, "PAD_SHAPE_CHAMFERED_RECT"):
-            shape_lookup[pcbnew.PAD_SHAPE_CHAMFERED_RECT] = "chamfrect"
-        try:
-            pad_shape = pad.GetShape(layer)
-        except TypeError:
-            pad_shape = pad.GetShape()
-        shape = shape_lookup.get(pad_shape, "")
+        padstack = pad.padstack
+        psl = padstack.copper_layer(layer)
+        if psl is None:
+            cls = padstack.copper_layers
+            psl = cls[0] if cls else None
+        if psl is None:
+            self.logger.info("Pad %s has no copper layers, skipping.",
+                             pad.number)
+            return None
+        pos = self.normalize(pad.position)
+        size = self.normalize(psl.size)
+        angle = padstack.angle.degrees
+        shape = {
+            PAD_STACK_SHAPE.PSS_CIRCLE: "circle",
+            PAD_STACK_SHAPE.PSS_RECTANGLE: "rect",
+            PAD_STACK_SHAPE.PSS_OVAL: "oval",
+            PAD_STACK_SHAPE.PSS_TRAPEZOID: "trapezoid",
+            PAD_STACK_SHAPE.PSS_ROUNDRECT: "roundrect",
+            PAD_STACK_SHAPE.PSS_CHAMFEREDRECT: "chamfrect",
+            PAD_STACK_SHAPE.PSS_CUSTOM: "custom",
+        }.get(psl.shape, "")
         if shape == "":
-            self.logger.info("Unsupported pad shape %s, skipping.", pad_shape)
+            self.logger.info("Unsupported pad shape %s, skipping.", psl.shape)
             return None
         pad_dict = {
             "pos": pos,
@@ -534,21 +512,24 @@ class PcbnewParser(EcadParser):
             "shape": shape
         }
         if shape == "custom":
-            polygon_set = pcbnew.SHAPE_POLY_SET()
-            try:
-                pad.MergePrimitivesAsPolygon(layer, polygon_set)
-            except TypeError:
-                pad.MergePrimitivesAsPolygon(polygon_set)
-            if polygon_set.HasHoles():
+            polygon = self.board.get_pad_shapes_as_polygons(pad, layer)
+            if polygon is None:
+                self.logger.info(
+                    "Failed to get polygon for custom pad %s", pad.number)
+                return None
+            # Polygon comes in absolute board coordinates, convert it to
+            # pad-relative coordinates that the renderer expects.
+            points = self.parse_poly_line(polygon.outline)
+            if polygon.holes:
                 self.logger.warn('Detected holes in custom pad polygons')
-            pad_dict["polygons"] = self.parse_poly_set(polygon_set)
+            points = [self.rotate(p, pos, -angle) for p in points]
+            points = [[p[0] - pos[0], p[1] - pos[1]] for p in points]
+            pad_dict["polygons"] = [points]
         if shape == "trapezoid":
             # treat trapezoid as custom shape
             pad_dict["shape"] = "custom"
-            try:
-                delta = self.normalize(pad.GetDelta(layer))
-            except TypeError:
-                delta = self.normalize(pad.GetDelta())
+            delta = self.normalize(psl.trapezoid_delta)
+            size = pad_dict["size"]
             pad_dict["polygons"] = [[
                 [size[0] / 2 + delta[1] / 2, size[1] / 2 - delta[0] / 2],
                 [-size[0] / 2 - delta[1] / 2, size[1] / 2 + delta[0] / 2],
@@ -557,88 +538,109 @@ class PcbnewParser(EcadParser):
             ]]
 
         if shape in ["roundrect", "chamfrect"]:
-            try:
-                pad_dict["radius"] = pad.GetRoundRectCornerRadius(layer) * 1e-6
-            except TypeError:
-                pad_dict["radius"] = pad.GetRoundRectCornerRadius() * 1e-6
+            pad_dict["radius"] = (psl.corner_rounding_ratio *
+                                  min(psl.size.x, psl.size.y) * 1e-6)
         if shape == "chamfrect":
-            try:
-                pad_dict["chamfpos"] = pad.GetChamferPositions(layer)
-                pad_dict["chamfratio"] = pad.GetChamferRectRatio(layer)
-            except TypeError:
-                pad_dict["chamfpos"] = pad.GetChamferPositions()
-                pad_dict["chamfratio"] = pad.GetChamferRectRatio()
+            corners = psl.chamfered_corners
+            chamfpos = 0
+            if corners.top_left:
+                chamfpos |= CHAMFER_TOP_LEFT
+            if corners.top_right:
+                chamfpos |= CHAMFER_TOP_RIGHT
+            if corners.bottom_left:
+                chamfpos |= CHAMFER_BOTTOM_LEFT
+            if corners.bottom_right:
+                chamfpos |= CHAMFER_BOTTOM_RIGHT
+            pad_dict["chamfpos"] = chamfpos
+            pad_dict["chamfratio"] = psl.chamfer_ratio
 
         if self._pad_is_through_hole(pad):
+            drill = padstack.drill
             pad_dict["type"] = "th"
             pad_dict["drillshape"] = {
-                pcbnew.PAD_DRILL_SHAPE_CIRCLE: "circle",
-                pcbnew.PAD_DRILL_SHAPE_OBLONG: "oblong"
-            }.get(pad.GetDrillShape())
-            pad_dict["drillsize"] = self.normalize(pad.GetDrillSize())
+                DRILL_SHAPE.DS_CIRCLE: "circle",
+                DRILL_SHAPE.DS_OBLONG: "oblong",
+            }.get(drill.shape, "circle")
+            pad_dict["drillsize"] = self.normalize(drill.diameter)
         else:
             pad_dict["type"] = "smd"
 
-        if hasattr(pad, "GetOffset"):
-            try:
-                pad_dict["offset"] = self.normalize(pad.GetOffset(layer))
-            except TypeError:
-                pad_dict["offset"] = self.normalize(pad.GetOffset())
+        pad_dict["offset"] = self.normalize(psl.offset)
         if self.config.include_nets:
-            pad_dict["net"] = pad.GetNetname()
+            pad_dict["net"] = pad.net.name
 
         return pad_dict
 
+    def _footprint_bbox(self, f):
+        """Computes the footprint bounding box at orientation 0, relative
+        to the footprint position, like the SWIG parser did by copying the
+        footprint and resetting its orientation.
+        """
+        pos = self.normalize(f.position)
+        angle = f.orientation.degrees
+        points = []
+
+        for d in f.definition.shapes:
+            if d.layer == BL.BL_Edge_Cuts:
+                continue
+            points.extend(self._shape_points_with_extents(d))
+
+        for pad in f.definition.pads:
+            pad_pos = self.normalize(pad.position)
+            psl_list = pad.padstack.copper_layers
+            half_w = half_h = 0
+            for psl in psl_list:
+                half_w = max(half_w, psl.size.x * 1e-6 / 2)
+                half_h = max(half_h, psl.size.y * 1e-6 / 2)
+            drill = pad.padstack.drill
+            half_w = max(half_w, drill.diameter.x * 1e-6 / 2)
+            half_h = max(half_h, drill.diameter.y * 1e-6 / 2)
+            pad_angle = pad.padstack.angle.degrees
+            for sx in (-1, 1):
+                for sy in (-1, 1):
+                    corner = [pad_pos[0] + sx * half_w,
+                              pad_pos[1] + sy * half_h]
+                    points.append(self.rotate(corner, pad_pos, pad_angle))
+
+        if not points:
+            points = [pos]
+
+        # Transform from board coordinates to footprint-local unrotated
+        # coordinates.
+        local = [self.rotate(p, pos, -angle) for p in points]
+        minx = min(p[0] for p in local)
+        miny = min(p[1] for p in local)
+        maxx = max(p[0] for p in local)
+        maxy = max(p[1] for p in local)
+
+        return {
+            "pos": pos,
+            "relpos": [minx - pos[0], miny - pos[1]],
+            "size": [maxx - minx, maxy - miny],
+            "angle": angle,
+        }
+
     def parse_footprints(self):
-        # type: () -> list
         footprints = []
         for f in self.footprints:
-            ref = f.GetReference()
+            ref = f.reference_field.text.value
 
-            # bounding box
-            if hasattr(pcbnew, 'MODULE'):
-                f_copy = pcbnew.MODULE(f)
-            else:
-                f_copy = pcbnew.FOOTPRINT(f)
-            try:
-                f_copy.SetOrientation(0)
-            except TypeError:
-                f_copy.SetOrientation(
-                    pcbnew.EDA_ANGLE(0, pcbnew.TENTHS_OF_A_DEGREE_T))
-            pos = f_copy.GetPosition()
-            pos.x = pos.y = 0
-            f_copy.SetPosition(pos)
-            if hasattr(f_copy, 'GetFootprintRect'):
-                footprint_rect = f_copy.GetFootprintRect()
-            else:
-                try:
-                    footprint_rect = f_copy.GetBoundingBox(False, False)
-                except TypeError:
-                    footprint_rect = f_copy.GetBoundingBox(False)
-            bbox = {
-                "pos": self.normalize(f.GetPosition()),
-                "relpos": self.normalize(footprint_rect.GetPosition()),
-                "size": self.normalize(footprint_rect.GetSize()),
-                "angle": self.normalize_angle(f.GetOrientation()),
-            }
-
-            # graphical drawings
+            # graphical drawings on copper layers
             drawings = []
-            for d in f.GraphicalItems():
-                # we only care about copper ones, silkscreen is taken care of
-                if d.GetLayer() not in [pcbnew.F_Cu, pcbnew.B_Cu]:
+            for d in f.definition.shapes:
+                if d.layer not in [BL.BL_F_Cu, BL.BL_B_Cu]:
                     continue
                 for drawing in self.parse_drawing(d):
                     drawings.append({
-                        "layer": "F" if d.GetLayer() == pcbnew.F_Cu else "B",
+                        "layer": "F" if d.layer == BL.BL_F_Cu else "B",
                         "drawing": drawing,
                     })
 
             # footprint pads
             pads = []
-            for p in f.Pads():
+            for p in f.definition.pads:
                 for pad_dict in self.parse_pad(p):
-                    pads.append((p.GetPadName(), pad_dict))
+                    pads.append((p.number, pad_dict))
 
             if pads:
                 # Try to guess first pin name.
@@ -657,144 +659,162 @@ class PcbnewParser(EcadParser):
 
             pads = [p[1] for p in pads]
 
-            # add footprint
             footprints.append({
                 "ref": ref,
-                "bbox": bbox,
+                "bbox": self._footprint_bbox(f),
                 "pads": pads,
                 "drawings": drawings,
-                "layer": {
-                    pcbnew.F_Cu: "F",
-                    pcbnew.B_Cu: "B"
-                }.get(f.GetLayer())
+                "layer": self.layer_letter(f.layer),
             })
 
         return footprints
 
-    def parse_tracks(self, tracks):
-        tent_vias = True
-        if hasattr(self.board, "GetTentVias"):
-            tent_vias = self.board.GetTentVias()
-        result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
-        for track in tracks:
-            if track.GetClass() in ["VIA", "PCB_VIA"]:
+    def parse_tracks(self, tracks_and_vias):
+        result = {BL.BL_F_Cu: [], BL.BL_B_Cu: []}
+        for track in tracks_and_vias:
+            if isinstance(track, Via):
                 track_dict = {
-                    "start": self.normalize(track.GetStart()),
-                    "end": self.normalize(track.GetEnd()),
-                    "width": track.GetWidth() * 1e-6,
-                    "net": track.GetNetname(),
+                    "start": self.normalize(track.position),
+                    "end": self.normalize(track.position),
+                    "width": track.diameter * 1e-6,
+                    "net": track.net.name,
                 }
-                if not tent_vias:
-                    track_dict["drillsize"] = track.GetDrillValue() * 1e-6
-                for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
-                    if track.IsOnLayer(layer):
+                for layer, _ in OUTER_COPPER_LAYERS:
+                    if layer in track.padstack.layers:
                         result[layer].append(track_dict)
             else:
-                if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
-                    if track.GetClass() in ["ARC", "PCB_ARC"]:
-                        a1, a2 = self.get_arc_angles(track)
+                if track.layer in [BL.BL_F_Cu, BL.BL_B_Cu]:
+                    if isinstance(track, ArcTrack):
+                        a1, a2 = self.arc_angles_degrees(track)
+                        center = track.center()
+                        if center is None:
+                            continue
                         track_dict = {
-                            "center": self.normalize(track.GetCenter()),
+                            "center": self.normalize(center),
                             "startangle": a1,
                             "endangle": a2,
-                            "radius": track.GetRadius() * 1e-6,
-                            "width": track.GetWidth() * 1e-6,
+                            "radius": track.radius() * 1e-6,
+                            "width": track.width * 1e-6,
                         }
                     else:
                         track_dict = {
-                            "start": self.normalize(track.GetStart()),
-                            "end": self.normalize(track.GetEnd()),
-                            "width": track.GetWidth() * 1e-6,
+                            "start": self.normalize(track.start),
+                            "end": self.normalize(track.end),
+                            "width": track.width * 1e-6,
                         }
                     if self.config.include_nets:
-                        track_dict["net"] = track.GetNetname()
-                    result[track.GetLayer()].append(track_dict)
+                        track_dict["net"] = track.net.name
+                    result[track.layer].append(track_dict)
 
         return {
-            'F': result.get(pcbnew.F_Cu),
-            'B': result.get(pcbnew.B_Cu)
+            'F': result[BL.BL_F_Cu],
+            'B': result[BL.BL_B_Cu],
         }
 
     def parse_zones(self, zones):
-        # type: (list[pcbnew.ZONE]) -> dict
-        result = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
+        result = {BL.BL_F_Cu: [], BL.BL_B_Cu: []}
         for zone in zones:
-            if (not zone.IsFilled() or
-                    hasattr(zone, 'GetIsKeepout') and zone.GetIsKeepout() or
-                    hasattr(zone, 'GetIsRuleArea') and zone.GetIsRuleArea()):
+            if not zone.filled or zone.is_rule_area():
                 continue
-            layers = [layer for layer in list(zone.GetLayerSet().Seq())
-                      if layer in [pcbnew.F_Cu, pcbnew.B_Cu]]
-            for layer in layers:
-                try:
-                    # kicad 5.1 and earlier
-                    poly_set = zone.GetFilledPolysList()
-                except TypeError:
-                    poly_set = zone.GetFilledPolysList(layer)
-                width = zone.GetMinThickness() * 1e-6
-                if (hasattr(zone, 'GetFilledPolysUseThickness') and
-                        not zone.GetFilledPolysUseThickness()):
-                    width = 0
-                if KICAD_VERSION[0] >= 7:
-                    width = 0
+            filled = zone.filled_polygons
+            for layer, polys in filled.items():
+                if layer not in result:
+                    continue
                 zone_dict = {
-                    "polygons": self.parse_poly_set(poly_set),
-                    "width": width,
+                    "polygons": self.parse_polygons(polys),
+                    "width": 0,
                 }
                 if self.config.include_nets:
-                    zone_dict["net"] = zone.GetNetname()
+                    net = getattr(zone, 'net', None)
+                    zone_dict["net"] = net.name if net is not None else ""
                 result[layer].append(zone_dict)
 
         return {
-            'F': result.get(pcbnew.F_Cu),
-            'B': result.get(pcbnew.B_Cu)
+            'F': result[BL.BL_F_Cu],
+            'B': result[BL.BL_B_Cu],
         }
 
-    @staticmethod
-    def parse_netlist(net_info):
-        # type: (pcbnew.NETINFO_LIST) -> list
-        nets = net_info.NetsByName().asdict().keys()
-        nets = sorted([str(s) for s in nets])
-        return nets
+    def parse_netlist(self):
+        nets = [n.name for n in self.board.get_nets()]
+        return sorted(nets)
+
+    def get_footprint_fields(self, f):
+        props = {}
+        for t in f.texts_and_fields:
+            if isinstance(t, Field):
+                value = t.text.value
+                props[t.name] = value
+        # Reference/value/etc are Fields too, keep parity with
+        # GetFieldsShownText which includes them.
+        expanded = self.board.expand_text_variables(list(props.values()))
+        props = dict(zip(props.keys(), expanded))
+        if "dnp" in props and props["dnp"] == "":
+            del props["dnp"]
+            props["kicad_dnp"] = "DNP"
+        if f.attributes.do_not_populate:
+            props["kicad_dnp"] = "DNP"
+        return props
+
+    def parse_extra_data_from_pcb(self):
+        field_set = set()
+        by_ref = {}
+        by_index = {}
+
+        for (i, f) in enumerate(self.footprints):
+            props = self.get_footprint_fields(f)
+            by_index[i] = props
+            ref = f.reference_field.text.value
+            ref_fields = by_ref.setdefault(ref, {})
+
+            for k, v in props.items():
+                field_set.add(k)
+                ref_fields[k] = v
+
+        return ExtraFieldData(list(field_set), by_ref, by_index)
+
+    def get_extra_field_data(self, file_name):
+        if os.path.abspath(file_name) == os.path.abspath(self.file_name):
+            return self.parse_extra_data_from_pcb()
+        if os.path.splitext(file_name)[1] == '.kicad_pcb':
+            return None
+
+        data = parse_schematic_data(file_name)
+
+        return ExtraFieldData(data[0], data[1])
+
+    def latest_extra_data(self, extra_dirs=None):
+        base_name = os.path.splitext(os.path.basename(self.file_name))[0]
+        file_dir_name = os.path.dirname(self.file_name)
+        directories = [file_dir_name]
+        for dir in (extra_dirs or []):
+            if not os.path.isabs(dir):
+                dir = os.path.join(file_dir_name, dir)
+            if os.path.exists(dir):
+                directories.append(dir)
+        return find_latest_schematic_data(base_name, directories)
+
+    def extra_data_file_filter(self):
+        return ("Netlist, xml and pcb files (*.net; *.xml; *.kicad_pcb)|"
+                "*.net;*.xml;*.kicad_pcb")
 
     def footprint_to_component(self, footprint, extra_fields):
-        # type: (pcbnew.FOOTPRINT, list) -> Component
-        try:
-            footprint_name = str(footprint.GetFPID().GetFootprintName())
-        except AttributeError:
-            footprint_name = str(footprint.GetFPID().GetLibItemName())
+        footprint_name = str(footprint.definition.id.name)
 
-        value = footprint.GetValue()
-        if hasattr(footprint, 'GetFieldValueForVariant'):
-            value = footprint.GetFieldValueForVariant(
-                self.config.kicad_variant, 'Value')
         attr = 'Normal'
-        if hasattr(pcbnew, 'FP_EXCLUDE_FROM_BOM'):
-            if hasattr(footprint, 'GetExcludedFromBOMForVariant'):
-                if footprint.GetExcludedFromBOMForVariant(
-                        self.config.kicad_variant):
-                    attr = 'Virtual'
-            elif footprint.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_BOM:
-                attr = 'Virtual'
-        elif hasattr(pcbnew, 'MOD_VIRTUAL'):
-            if footprint.GetAttributes() == pcbnew.MOD_VIRTUAL:
-                attr = 'Virtual'
-        layer = {
-            pcbnew.F_Cu: 'F',
-            pcbnew.B_Cu: 'B',
-        }.get(footprint.GetLayer())
+        if footprint.attributes.exclude_from_bill_of_materials:
+            attr = 'Virtual'
 
-        return Component(footprint.GetReference(),
-                         value,
+        return Component(footprint.reference_field.text.value,
+                         footprint.value_field.text.value,
                          footprint_name,
-                         layer,
+                         self.layer_letter(footprint.layer),
                          attr,
                          extra_fields)
 
     def parse(self):
         from ..errors import ParsingException
 
-        # Get extra field data from netlist
+        # Get extra field data
         field_set = set(self.config.show_fields)
         field_set.discard("Value")
         field_set.discard("Footprint")
@@ -818,18 +838,14 @@ class PcbnewParser(EcadParser):
             raise ParsingException(
                 'Failed parsing %s' % self.config.extra_data_file)
 
-        title_block = self.board.GetTitleBlock()
-        title = title_block.GetTitle()
-        revision = title_block.GetRevision()
-        company = title_block.GetCompany()
-        file_date = title_block.GetDate()
-        if (hasattr(self.board, "GetProject") and
-                hasattr(pcbnew, "ExpandTextVars")):
-            project = self.board.GetProject()
-            title = pcbnew.ExpandTextVars(title, project)
-            revision = pcbnew.ExpandTextVars(revision, project)
-            company = pcbnew.ExpandTextVars(company, project)
-            file_date = pcbnew.ExpandTextVars(file_date, project)
+        title_block = self.board.get_title_block_info()
+        texts = self.board.expand_text_variables([
+            title_block.title,
+            title_block.revision,
+            title_block.company,
+            title_block.date,
+        ])
+        title, revision, company, file_date = texts
 
         if not file_date:
             file_mtime = os.path.getmtime(self.file_name)
@@ -839,17 +855,18 @@ class PcbnewParser(EcadParser):
         if not title:
             # remove .kicad_pcb extension
             title = os.path.splitext(pcb_file_name)[0]
-        edges, bbox = self.parse_edges(self.board)
+
+        edges, bbox = self.parse_edges()
         if bbox is None:
             self.logger.error('Please draw pcb outline on the edges '
                               'layer on sheet or any footprint before '
                               'generating BOM.')
             return None, None
         bbox = {
-            "minx": bbox.GetPosition().x * 1e-6,
-            "miny": bbox.GetPosition().y * 1e-6,
-            "maxx": bbox.GetRight() * 1e-6,
-            "maxy": bbox.GetBottom() * 1e-6,
+            "minx": bbox[0],
+            "miny": bbox[1],
+            "maxx": bbox[2],
+            "maxy": bbox[3],
         }
 
         drawings = self.get_all_drawings()
@@ -859,9 +876,9 @@ class PcbnewParser(EcadParser):
             "edges": edges,
             "drawings": {
                 "silkscreen": self.parse_drawings_on_layers(
-                    drawings, pcbnew.F_SilkS, pcbnew.B_SilkS),
+                    drawings, BL.BL_F_SilkS, BL.BL_B_SilkS),
                 "fabrication": self.parse_drawings_on_layers(
-                    drawings, pcbnew.F_Fab, pcbnew.B_Fab),
+                    drawings, BL.BL_F_Fab, BL.BL_B_Fab),
             },
             "footprints": self.parse_footprints(),
             "metadata": {
@@ -869,20 +886,18 @@ class PcbnewParser(EcadParser):
                 "revision": revision,
                 "company": company,
                 "date": file_date,
-                "variant": self.config.kicad_variant,
+                "variant": getattr(self.config, 'kicad_variant', ''),
             },
             "bom": {},
-            "font_data": self.font_parser.get_parsed_font()
+            "font_data": {}
         }
         if self.config.include_tracks:
-            pcbdata["tracks"] = self.parse_tracks(self.board.GetTracks())
-            if hasattr(self.board, "Zones"):
-                pcbdata["zones"] = self.parse_zones(self.board.Zones())
-            else:
-                self.logger.info("Zones not supported for KiCad 4, skipping")
-                pcbdata["zones"] = {'F': [], 'B': []}
-        if self.config.include_nets and hasattr(self.board, "GetNetInfo"):
-            pcbdata["nets"] = self.parse_netlist(self.board.GetNetInfo())
+            tracks_and_vias = (list(self.board.get_tracks()) +
+                               list(self.board.get_vias()))
+            pcbdata["tracks"] = self.parse_tracks(tracks_and_vias)
+            pcbdata["zones"] = self.parse_zones(self.board.get_zones())
+        if self.config.include_nets:
+            pcbdata["nets"] = self.parse_netlist()
 
         if extra_field_data and need_extra_fields:
             extra_fields = extra_field_data.fields_by_index
@@ -895,13 +910,15 @@ class PcbnewParser(EcadParser):
                 warning_shown = False
 
                 for f in self.footprints:
-                    extra_fields.append(field_map.get(f.GetReference(), {}))
-                    if f.GetReference() not in field_map:
-                        # Some components are on pcb but not in schematic data.
-                        # Show a warning about outdated extra data file.
+                    ref = f.reference_field.text.value
+                    extra_fields.append(field_map.get(ref, {}))
+                    if ref not in field_map:
+                        # Some components are on pcb but not in schematic
+                        # data. Show a warning about outdated extra data
+                        # file.
                         self.logger.warn(
                             'Component %s is missing from schematic data.'
-                            % f.GetReference())
+                            % ref)
                         warning_shown = True
 
                 if warning_shown:
@@ -913,43 +930,3 @@ class PcbnewParser(EcadParser):
                       for (f, e) in zip(self.footprints, extra_fields)]
 
         return pcbdata, components
-
-
-class InteractiveHtmlBomPlugin(pcbnew.ActionPlugin, object):
-
-    def __init__(self):
-        super(InteractiveHtmlBomPlugin, self).__init__()
-        self.name = "Generate Interactive HTML BOM"
-        self.category = "Read PCB"
-        self.pcbnew_icon_support = hasattr(self, "show_toolbar_button")
-        self.show_toolbar_button = True
-        icon_dir = os.path.dirname(os.path.dirname(__file__))
-        self.icon_file_name = os.path.join(icon_dir, 'icon.png')
-        self.description = "Generate interactive HTML page with BOM " \
-                           "table and pcb drawing."
-
-    def defaults(self):
-        pass
-
-    def Run(self):
-        from ..version import version
-        from ..errors import ParsingException
-
-        logger = ibom.Logger()
-        board = pcbnew.GetBoard()  # type: pcbnew.BOARD
-        pcb_file_name = board.GetFileName()
-
-        if not pcb_file_name:
-            logger.error('Please save the board file before generating BOM.')
-            return
-
-        config = Config(version, os.path.dirname(pcb_file_name))
-        if hasattr(board, 'GetCurrentVariant'):
-            config.kicad_variant = board.GetCurrentVariant()
-
-        parser = PcbnewParser(pcb_file_name, config, logger, board)
-
-        try:
-            ibom.run_with_dialog(parser, config, logger)
-        except ParsingException as e:
-            logger.error(str(e))

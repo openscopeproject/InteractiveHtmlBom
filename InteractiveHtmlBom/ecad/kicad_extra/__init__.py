@@ -1,5 +1,4 @@
 import os
-import pcbnew
 
 from .xmlparser import XmlParser
 from .netlistparser import NetlistParser
@@ -10,7 +9,15 @@ PARSERS = {
 }
 
 
-if hasattr(pcbnew, 'FOOTPRINT'):
+try:
+    import pcbnew
+    _pcb_fields_supported = hasattr(pcbnew, 'FOOTPRINT')
+except ImportError:
+    # IPC API parser reads fields from the board itself,
+    # no pcbnew module required.
+    _pcb_fields_supported = True
+
+if _pcb_fields_supported:
     PARSERS['.kicad_pcb'] = None
 
 
