@@ -478,21 +478,32 @@ function createColumnHeader(name, cls, comparator, is_checkbox = false) {
   return th;
 }
 
-function populateBomHeader(placeHolderColumn = null, placeHolderElements = null) {
-  while (bomhead.firstChild) {
-    bomhead.removeChild(bomhead.firstChild);
+// Cached across populateBomHeader() calls so toggling a column's visibility
+// doesn't recreate this element - a fresh element never has the browser's
+// :hover state applied to it, so the CSS-only dropdown would instantly
+// close after every click.
+var visMenuElement = null;
+
+function getVisMenu() {
+  if (!visMenuElement) {
+    visMenuElement = document.createElement("div");
+    visMenuElement.id = "vismenu";
+    visMenuElement.classList.add("menu");
+
+    var visbutton = document.createElement("div");
+    visbutton.classList.add("visbtn");
+    visbutton.classList.add("hideonprint");
+    visMenuElement.appendChild(visbutton);
   }
-  var tr = document.createElement("TR");
-  var th = document.createElement("TH");
-  th.classList.add("numCol");
 
-  var vismenu = document.createElement("div");
-  vismenu.id = "vismenu";
-  vismenu.classList.add("menu");
-
-  var visbutton = document.createElement("div");
-  visbutton.classList.add("visbtn");
-  visbutton.classList.add("hideonprint");
+  // Query within visMenuElement itself (not document.getElementById): by the
+  // time this runs, the header row that used to hold this element has
+  // already been detached from the document, so a document-wide lookup
+  // would miss it and leave stale content behind.
+  var oldContent = visMenuElement.querySelector("#vismenu-content");
+  if (oldContent) {
+    visMenuElement.removeChild(oldContent);
+  }
 
   var viscontent = document.createElement("div");
   viscontent.classList.add("menu-content");
@@ -528,11 +539,22 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
 
   viscontent.childNodes[0].classList.add("menu-label-top");
 
-  vismenu.appendChild(visbutton);
   if (settings.bommode != "netlist") {
-    vismenu.appendChild(viscontent);
-    th.appendChild(vismenu);
+    visMenuElement.appendChild(viscontent);
   }
+
+  return visMenuElement;
+}
+
+function populateBomHeader(placeHolderColumn = null, placeHolderElements = null) {
+  while (bomhead.firstChild) {
+    bomhead.removeChild(bomhead.firstChild);
+  }
+  var tr = document.createElement("TR");
+  var th = document.createElement("TH");
+  th.classList.add("numCol");
+
+  th.appendChild(getVisMenu());
   tr.appendChild(th);
 
   var checkboxCompareClosure = function (checkbox) {
