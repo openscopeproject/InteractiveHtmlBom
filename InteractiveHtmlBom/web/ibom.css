@@ -250,6 +250,9 @@ canvas:active {
 
 .bom .numCol {
   width: 30px;
+  /* Pinned so a re-wrapped header label, which changes the row height, cannot
+     shift the open column visibility dropdown. */
+  vertical-align: top;
 }
 
 .bom .value {
