@@ -11,6 +11,12 @@ from ..core.config import Config
 from ..core.fontparser import FontParser
 
 
+# sneaky monkeypatch to work around
+# https://gitlab.com/kicad/code/kicad/-/work_items/25423
+if not hasattr(pcbnew.SwigPyIterator, 'next'):
+    setattr(pcbnew.SwigPyIterator, 'next', lambda o: next(o))
+
+
 KICAD_VERSION = [5, 1, 0]
 
 if hasattr(pcbnew, 'Version'):
