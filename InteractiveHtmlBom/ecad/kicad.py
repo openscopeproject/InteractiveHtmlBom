@@ -378,6 +378,21 @@ class PcbnewParser(EcadParser):
             "svgpath": svgpath
         }
 
+    def parse_barcode(self, d):
+        # type: (pcbnew.BOARD_ITEM) -> dict
+        if hasattr(d, "GetPolyShape"):
+            polygons = self.parse_poly_set(d.GetPolyShape())
+            if not polygons:
+                return None
+            return {
+                "type": "polygon",
+                "pos": [0, 0],
+                "angle": 0,
+                "polygons": polygons,
+                "filled": 1,
+            }
+        return None
+
     def parse_drawing(self, d):
         # type: (pcbnew.BOARD_ITEM) -> list
         result = []
@@ -393,6 +408,8 @@ class PcbnewParser(EcadParser):
                 s = self.parse_text(d.Text())
             else:
                 s = self.parse_text(d)
+        elif d.GetClass() in ["BARCODE", "PCB_BARCODE"]:
+            s = self.parse_barcode(d)
         else:
             self.logger.info("Unsupported drawing class %s, skipping",
                              d.GetClass())
