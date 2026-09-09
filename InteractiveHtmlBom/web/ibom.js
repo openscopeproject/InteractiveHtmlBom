@@ -623,6 +623,15 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
         tr.appendChild(createColumnHeader("Quantity", "quantity", (a, b) => {
           return a.length - b.length;
         }));
+      } else if (column === "Position X") {
+        tr.appendChild(createColumnHeader(
+          "Position X", "position_x", ""));
+      } else if (column === "Position Y") {
+        tr.appendChild(createColumnHeader(
+          "Position Y", "position_y", ""));
+      } else if (column === "Rotation") {
+        tr.appendChild(createColumnHeader(
+          "Rotation", "rotation", ""));
       } else {
         // Other fields
         var i = config.fields.indexOf(column);
@@ -727,6 +736,24 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           // Quantity
           td = document.createElement("TD");
           td.textContent = references.length;
+          tr.appendChild(td);
+        } else if (column === "Position X" && settings.bommode != "grouped") {
+          td = document.createElement("TD");
+          var position_refname = references.map(r => r[0]).join(", ");
+          var position_value = pcbdata.footprints.find((element) => element.ref == position_refname);
+          td.textContent = position_value.bbox.pos[0];
+          tr.appendChild(td);
+        } else if (column === "Position Y" && settings.bommode != "grouped") {
+          td = document.createElement("TD");
+          var position_refname = references.map(r => r[0]).join(", ");
+          var position_value = pcbdata.footprints.find((element) => element.ref == position_refname);
+          td.textContent = position_value.bbox.pos[1];
+          tr.appendChild(td);
+        } else if (column === "Rotation" && settings.bommode != "grouped") {
+          td = document.createElement("TD");
+          var position_refname = references.map(r => r[0]).join(", ");
+          var position_value = pcbdata.footprints.find((element) => element.ref == position_refname);
+          td.textContent = position_value.bbox.angle;
           tr.appendChild(td);
         } else {
           // All the other fields
