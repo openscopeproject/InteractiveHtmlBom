@@ -269,6 +269,9 @@ class PcbnewParser(EcadParser):
 
         for i in range(poly.OutlineCount()):
             result.append(self.parse_line_chain(poly.Outline(i)))
+            if hasattr(poly, "HoleCount"):
+                for j in range(poly.HoleCount(i)):
+                    result.append(self.parse_line_chain(poly.Hole(i, j)))
 
         return result
 
@@ -276,6 +279,17 @@ class PcbnewParser(EcadParser):
         # type: (pcbnew.PCB_TEXT) -> dict
         if not d.IsVisible() and d.GetClass() not in ["PTEXT", "PCB_TEXT"]:
             return None
+        if (hasattr(d, "IsKnockout") and d.IsKnockout()
+                and hasattr(d, "GetEffectiveShape")):
+            shape = d.GetEffectiveShape()
+            if (shape and hasattr(shape, "Cast")
+                    and hasattr(pcbnew, "SH_POLY_SET")
+                    and shape.Type() == pcbnew.SH_POLY_SET):
+                polygons = self.parse_poly_set(shape.Cast())
+                if polygons:
+                    return {
+                        "polygons": polygons
+                    }
         pos = self.normalize(d.GetPosition())
         if hasattr(d, "GetTextThickness"):
             thickness = d.GetTextThickness() * 1e-6
