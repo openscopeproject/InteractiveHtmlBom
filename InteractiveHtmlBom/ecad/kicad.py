@@ -282,7 +282,8 @@ class PcbnewParser(EcadParser):
         if (hasattr(d, "IsKnockout") and d.IsKnockout()
                 and hasattr(d, "GetEffectiveShape")):
             shape = d.GetEffectiveShape()
-            if (shape and hasattr(pcbnew, "SH_POLY_SET")
+            if (shape and hasattr(shape, "Cast")
+                    and hasattr(pcbnew, "SH_POLY_SET")
                     and shape.Type() == pcbnew.SH_POLY_SET):
                 polygons = self.parse_poly_set(shape.Cast())
                 if polygons:
