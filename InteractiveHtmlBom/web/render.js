@@ -347,7 +347,7 @@ function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, ou
       drawDrawing(ctx, scalefactor, drawing.drawing, colors.pad);
     }
   }
-  ctx.lineWidth = 3 / scalefactor;
+  ctx.lineWidth = (outline ? 1 : 3) / scalefactor;
   // draw pads
   if (settings.renderPads) {
     for (var pad of footprint.pads) {
