@@ -671,6 +671,13 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
       netname = bomentry;
       td = document.createElement("TD");
       td.innerHTML = highlightFilter(netname ? netname : "&lt;no net&gt;");
+      
+      // Add copy button for net names in netlist mode
+      if (settings.bommode === "netlist") {
+        var copyButton = createCopyButton("net", netname);
+        td.appendChild(copyButton);
+      }
+      
       tr.appendChild(td);
       var color = settings.netColors[netname] || defaultNetColor;
       td = document.createElement("TD");
@@ -721,7 +728,16 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
           }
         } else if (column === "References") {
           td = document.createElement("TD");
-          td.innerHTML = highlightFilter(references.map(r => r[0]).join(", "));
+          var refHtml = highlightFilter(references.map(r => r[0]).join(", "));
+		  td.innerHTML = refHtml;
+          
+          // Add copy button for component references in ungrouped mode
+          if (settings.bommode === "ungrouped") {
+            var copyButton = createCopyButton("ref", references[0][0]);
+            td.appendChild(copyButton);
+          }
+          
+          
           tr.appendChild(td);
         } else if (column === "Quantity" && settings.bommode == "grouped") {
           // Quantity
@@ -781,6 +797,231 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
     checkboxes: settings.checkboxes,
     bommode: settings.bommode,
   });
+}
+
+function createCopyButton(type, value) {
+  var copyButton = document.createElement("button");
+  copyButton.className = "copy-link-button";
+  copyButton.title = "Copy deep-link URL";
+  copyButton.innerHTML = "🔗";
+
+  // status box for visual feedback
+  var statusBox = document.createElement("span");
+  statusBox.className = "copy-status";
+  statusBox.textContent = "Copied!";
+
+  // Cache footprint references for faster lookups (only build if needed)
+  var footprintRefCache = null;
+  
+  function buildUrl() {
+    var url = new URL(window.location.href);
+	url.search = "";
+
+    if (type === "net") {
+      url.searchParams.set("net", value);
+    } else if (type === "ref") {
+      // For reference links, also include the ID to make it more robust
+      url.searchParams.set("ref", value);
+      
+      // Try to find the corresponding ID for this reference
+      var id = null;
+      if (pcbdata && pcbdata.footprints) {
+        // Build cache if needed
+        if (!footprintRefCache) {
+          footprintRefCache = {};
+          for (var i = 0; i < pcbdata.footprints.length; i++) {
+            footprintRefCache[pcbdata.footprints[i].ref] = i;
+          }
+        }
+        
+        // Use the cache to get ID quickly
+        if (footprintRefCache[value] !== undefined) {
+          id = footprintRefCache[value];
+        }
+      }
+      if (id !== null) {
+        url.searchParams.set("id", id);
+      }
+    }
+
+    return url.toString();
+  }
+
+  // Left-click -> copy
+  copyButton.addEventListener("click", function (e) {
+    e.stopPropagation();
+
+    var url = buildUrl();
+    copyToClipboard(url);
+
+    statusBox.classList.add("visible");
+
+    clearTimeout(statusBox.hideTimer);
+
+    statusBox.hideTimer = setTimeout(function () {
+        statusBox.classList.remove("visible");
+    }, 2000);
+  });
+
+  // Right-click -> open in new window
+  copyButton.addEventListener("mousedown", function (e) {
+    if (e.button === 1) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      window.open(buildUrl(), "_blank");
+    }
+  });
+
+  // return with a wrapper
+  var wrapper = document.createElement("span");
+  wrapper.appendChild(copyButton);
+  wrapper.appendChild(statusBox);
+
+  return wrapper;
+}
+
+function validateReferenceForId(ref, id) {
+  // Validate that the reference corresponds to the given ID in pcbdata
+  if (!pcbdata || !pcbdata.footprints || id >= pcbdata.footprints.length) {
+    return false;
+  }
+  
+  // Check if the footprint at the specified ID has the correct reference
+  return pcbdata.footprints[id].ref === ref;
+}
+
+function showReferenceMismatchWarning(ref, id) {
+  // Ha már van ilyen figyelmeztetés, töröljük
+  document
+    .querySelectorAll(".reference-warning-toast")
+    .forEach(el => el.remove());
+
+  const toast = document.createElement("div");
+  toast.className = "reference-warning-toast";
+
+  toast.innerHTML = `
+    <div class="toast-header">
+      <span class="toast-icon">⚠️</span>
+      <span class="toast-title">Designator mismatch</span>
+      <button class="toast-close" title="Close">&times;</button>
+    </div>
+
+    <div class="toast-body">
+      <p>
+        Designator <strong>${escapeHtml(ref)}</strong> does not match the
+        expected reference for Unique ID <strong>${id}</strong>.
+      </p>
+
+      <p class="toast-note">
+        This link may be stale. Choose which value to use.
+      </p>
+    </div>
+
+    <div class="toast-actions">
+      <button class="btn btn-primary">
+        Use Designator
+      </button>
+
+      <button class="btn btn-secondary">
+        Use Unique ID
+      </button>
+    </div>
+  `;
+
+  toast.querySelector(".toast-close").addEventListener("click", () => {
+    toast.remove();
+  });
+
+  toast.querySelector(".btn-primary").addEventListener("click", () => {
+    toast.remove();
+    selectComponentByReference(ref);
+  });
+
+  toast.querySelector(".btn-secondary").addEventListener("click", () => {
+    toast.remove();
+    selectComponentById(id);
+  });
+
+  //const root = document.querySelector(".topmostdiv") || document.body;
+  topmostdiv.appendChild(toast);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function selectComponentByReference(ref) {
+  // Find the footprint with matching reference
+  var footprintIndex = -1;
+  if (pcbdata && pcbdata.footprints) {
+    for (var i = 0; i < pcbdata.footprints.length; i++) {
+      if (pcbdata.footprints[i].ref === ref) {
+        footprintIndex = i;
+        break;
+      }
+    }
+  }
+  
+  // If we found the component, select it
+  if (footprintIndex !== -1) {
+    // Use the existing footprintIndexToHandler to trigger selection
+    if (footprintIndex in footprintIndexToHandler) {
+      footprintIndexToHandler[footprintIndex]();
+      // Scroll to the selected row to center it on screen
+      if (currentHighlightedRowId) {
+        smoothScrollToRow(currentHighlightedRowId);
+      }
+    } else {
+      // If no handler exists, try to find the row manually
+      for (var i = 0; i < highlightHandlers.length; i++) {
+        var handlerInfo = highlightHandlers[i];
+        if (handlerInfo.handler && handlerInfo.handler.refs) {
+          // Check if any of the references in this row match our target ref
+          for (var j = 0; j < handlerInfo.handler.refs.length; j++) {
+            if (handlerInfo.handler.refs[j][0] === ref) {
+              handlerInfo.handler();
+              if (currentHighlightedRowId) {
+                smoothScrollToRow(currentHighlightedRowId);
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  // If component not found, do nothing (preserve existing behavior)
+}
+
+function copyToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  textArea.className = "clipboard-temp";
+  textArea.value = text;
+  document.body.appendChild(textArea);
+  textArea.select();
+  try {
+    var successful = document.execCommand('copy');
+    if (!successful) {
+      // Fallback for browsers that don't support execCommand
+      navigator.clipboard.writeText(text).catch(function(err) {
+        console.error('Could not copy text: ', err);
+      });
+    }
+  } catch (err) {
+    console.error('Could not copy text: ', err);
+    // Fallback to navigator.clipboard if execCommand fails
+    try {
+      navigator.clipboard.writeText(text).catch(function(err) {
+        console.error('Could not copy text with clipboard API: ', err);
+      });
+    } catch (clipboardErr) {
+      console.error('Clipboard API also failed: ', clipboardErr);
+    }
+  }
+  document.body.removeChild(textArea);
 }
 
 function highlightPreviousRow() {
@@ -1194,6 +1435,14 @@ function updateCheckboxStats(checkbox) {
   td.lastChild.innerHTML = checked + "/" + total + " (" + Math.round(percent) + "%)";
 }
 
+function selectComponentById(id) {
+  // Find the footprint with matching ID 
+  if (pcbdata && pcbdata.footprints && id < pcbdata.footprints.length) {
+    var ref = pcbdata.footprints[id].ref;
+    selectComponentByReference(ref);
+  }
+}
+
 function constrain(number, min, max) {
   return Math.min(Math.max(parseInt(number), min), max);
 }
@@ -1319,6 +1568,51 @@ window.onload = function (e) {
   setBomCheckboxes(document.getElementById("bomCheckboxes").value);
   // Triggers render
   changeBomLayout(settings.bomlayout);
+
+  // Parse URL parameters for deep-linking
+  var urlParams = new URLSearchParams(window.location.search);
+  var refParam = urlParams.get('ref') || urlParams.get('component');
+  var idParam = urlParams.get('id');
+  
+  if (refParam) {
+    // Change layout to ungrouped
+    changeBomMode('ungrouped');
+    // Extract the value from the "" or the '' string
+    refParam = refParam.replace(/^["']|["']$/g, "");
+
+    // If we have both ref and id parameters, validate them together
+    if (idParam !== null) {
+      var id = parseInt(idParam);
+      if (!isNaN(id)) {
+        if (validateReferenceForId(refParam, id)) {
+          // Both parameters are valid, select the component
+          selectComponentByReference(refParam);
+        } else {
+          // Parameters don't match, show warning
+          showReferenceMismatchWarning(refParam, id);
+          // Fallback to selecting by reference
+          selectComponentByReference(refParam);
+        }
+      } else {
+        // Invalid ID, fallback to selecting by reference only
+        selectComponentByReference(refParam);
+      }
+    } else {
+      // Only ref parameter is provided, select by reference
+      selectComponentByReference(refParam);
+    }
+  }
+  
+  // Handle net parameter for deep-linking to nets
+  var netParam = urlParams.get('net');
+  if (netParam && "nets" in pcbdata) {
+    // Change layout to netlist
+    changeBomMode('netlist');
+    // Extract the value from the "" or the '' string
+    netParam = netParam.replace(/^["']|["']$/g, "");
+    // Try to find and select the net
+    netClicked(netParam);
+  }
 
   // Users may leave fullscreen without touching the checkbox. Uncheck.
   document.addEventListener('fullscreenchange', () => {
