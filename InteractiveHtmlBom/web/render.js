@@ -430,12 +430,10 @@ function drawTracks(canvas, layer, defaultColor, highlight) {
     track.start[0] == track.end[0] &&
     track.start[1] == track.end[1]);
 
-  var isVia = (track) => track.via || hasHole(track);
-
-  // First draw ordinary tracks
+  // First draw tracks and tented vias
   for (var track of pcbdata.tracks[layer]) {
     if (highlight && highlightedNet != track.net) continue;
-    if (!isVia(track)) {
+    if (!hasHole(track)) {
       ctx.strokeStyle = highlight ? defaultColor : settings.netColors[track.net] || defaultColor;
       ctx.lineWidth = track.width;
       ctx.beginPath();
@@ -445,6 +443,13 @@ function drawTracks(canvas, layer, defaultColor, highlight) {
           track.radius,
           deg2rad(track.startangle),
           deg2rad(track.endangle));
+      } else if (track.start[0] == track.end[0] &&
+                 track.start[1] == track.end[1]) {
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.arc(track.start[0], track.start[1], track.width / 2,
+                0, 2 * Math.PI);
+        ctx.fill();
+        continue;
       } else {
         ctx.moveTo(...track.start);
         ctx.lineTo(...track.end);
@@ -452,28 +457,23 @@ function drawTracks(canvas, layer, defaultColor, highlight) {
       ctx.stroke();
     }
   }
-  // Second pass to draw all vias over tracks
+  // Second pass to draw untented vias
   var style = getComputedStyle(topmostdiv);
   var holeColor = style.getPropertyValue('--pad-hole-color')
 
   for (var track of pcbdata.tracks[layer]) {
     if (highlight && highlightedNet != track.net) continue;
-    if (isVia(track)) {
-      ctx.fillStyle = highlight
-        ? defaultColor
-        : settings.netColors[track.net] || defaultColor;
+    if (hasHole(track)) {
+      ctx.fillStyle = highlight ? defaultColor : settings.netColors[track.net] || defaultColor;
       ctx.beginPath();
       ctx.arc(track.start[0], track.start[1], track.width / 2,
               0, 2 * Math.PI);
       ctx.fill();
-
-      if ('drillsize' in track) {
-        ctx.fillStyle = holeColor;
-        ctx.beginPath();
-        ctx.arc(track.start[0], track.start[1], track.drillsize / 2,
-                0, 2 * Math.PI);
-        ctx.fill();
-      }
+      ctx.fillStyle = holeColor;
+      ctx.beginPath();
+      ctx.arc(track.start[0], track.start[1], track.drillsize / 2,
+              0, 2 * Math.PI);
+      ctx.fill();
     }
   }
 }

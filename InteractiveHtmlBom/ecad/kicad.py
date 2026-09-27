@@ -723,7 +723,6 @@ class PcbnewParser(EcadParser):
                 for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     if track.IsOnLayer(layer):
                         via_dict = track_dict.copy()
-                        via_dict["via"] = True
                         try:
                             via_dict["width"] = track.GetWidth(layer) * 1e-6
                         except TypeError:
