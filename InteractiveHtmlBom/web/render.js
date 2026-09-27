@@ -430,10 +430,12 @@ function drawTracks(canvas, layer, defaultColor, highlight) {
     track.start[0] == track.end[0] &&
     track.start[1] == track.end[1]);
 
-  // First draw tracks and tented vias
+  var isVia = (track) => track.via || hasHole(track);
+
+  // First draw ordinary tracks
   for (var track of pcbdata.tracks[layer]) {
     if (highlight && highlightedNet != track.net) continue;
-    if (!hasHole(track)) {
+    if (!isVia(track)) {
       ctx.strokeStyle = highlight ? defaultColor : settings.netColors[track.net] || defaultColor;
       ctx.lineWidth = track.width;
       ctx.beginPath();
@@ -450,23 +452,28 @@ function drawTracks(canvas, layer, defaultColor, highlight) {
       ctx.stroke();
     }
   }
-  // Second pass to draw untented vias
+  // Second pass to draw all vias over tracks
   var style = getComputedStyle(topmostdiv);
   var holeColor = style.getPropertyValue('--pad-hole-color')
 
   for (var track of pcbdata.tracks[layer]) {
     if (highlight && highlightedNet != track.net) continue;
-    if (hasHole(track)) {
-      ctx.strokeStyle = highlight ? defaultColor : settings.netColors[track.net] || defaultColor;
-      ctx.lineWidth = track.width;
+    if (isVia(track)) {
+      ctx.fillStyle = highlight
+        ? defaultColor
+        : settings.netColors[track.net] || defaultColor;
       ctx.beginPath();
-      ctx.moveTo(...track.start);
-      ctx.lineTo(...track.end);
-      ctx.stroke();
-      ctx.strokeStyle = holeColor;
-      ctx.lineWidth = track.drillsize;
-      ctx.lineTo(...track.end);
-      ctx.stroke();
+      ctx.arc(track.start[0], track.start[1], track.width / 2,
+              0, 2 * Math.PI);
+      ctx.fill();
+
+      if ('drillsize' in track) {
+        ctx.fillStyle = holeColor;
+        ctx.beginPath();
+        ctx.arc(track.start[0], track.start[1], track.drillsize / 2,
+                0, 2 * Math.PI);
+        ctx.fill();
+      }
     }
   }
 }
