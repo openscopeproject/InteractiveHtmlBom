@@ -17,6 +17,8 @@ def get_parser_by_extension(file_name, config, logger):
             return get_easyeda_parser(file_name, config, logger)
     elif ext in ['.fbrd', '.brd']:
         return get_fusion_eagle_parser(file_name, config, logger)
+    elif ext.lower() in ['.dip', '.dipxml']:
+        return get_diptrace_parser(file_name, config, logger)
     else:
         return None
 
@@ -39,3 +41,8 @@ def get_generic_json_parser(file_name, config, logger):
 def get_fusion_eagle_parser(file_name, config, logger):
     from .fusion_eagle import FusionEagleParser
     return FusionEagleParser(file_name, config, logger)
+
+
+def get_diptrace_parser(file_name, config, logger):
+    from .diptrace import DipTraceParser
+    return DipTraceParser(file_name, config, logger)
