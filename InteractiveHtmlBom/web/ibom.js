@@ -896,6 +896,13 @@ function populateMetadata() {
   document.getElementById("revision").innerHTML = "Rev: " + pcbdata.metadata.revision;
   document.getElementById("company").innerHTML = pcbdata.metadata.company;
   document.getElementById("filedate").innerHTML = pcbdata.metadata.date;
+  var variant = pcbdata.metadata.variant;
+  var variantElement = document.getElementById("variant");
+  var hasVariant = typeof variant === "string";
+  variantElement.textContent = hasVariant ? "Variant: " + (variant || "Default") : "";
+  variantElement.title = variantElement.textContent;
+  variantElement.hidden = !hasVariant;
+  document.getElementById("fileinfodiv").classList.toggle("has-variant", hasVariant);
   if (pcbdata.metadata.title != "") {
     document.title = pcbdata.metadata.title + " BOM";
   }

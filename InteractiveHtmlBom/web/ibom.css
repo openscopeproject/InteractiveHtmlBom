@@ -174,7 +174,16 @@ canvas:active {
   padding: 3px;
 }
 
-.fileinfo .title {
+.fileinfo #title {
+  width: 70%;
+}
+
+.fileinfo #revision {
+  width: 30%;
+}
+
+.fileinfo .title,
+#variant {
   font-size: 20pt;
   font-weight: bold;
 }
@@ -662,6 +671,33 @@ mark.highlight {
 #fileinfodiv {
   flex: 20rem 1 0;
   overflow: auto;
+}
+
+#fileinfodiv.has-variant {
+  display: flex;
+  align-items: flex-start;
+}
+
+#fileinfodiv.has-variant .fileinfo {
+  flex: 2 1 40rem;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+#fileinfodiv.has-variant #title,
+#fileinfodiv.has-variant #revision {
+  width: 50%;
+}
+
+#variant {
+  flex: 1 1 20rem;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 #bomcontrols {
