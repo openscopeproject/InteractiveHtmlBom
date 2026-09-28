@@ -718,14 +718,31 @@ class PcbnewParser(EcadParser):
                 track_dict = {
                     "start": self.normalize(track.GetStart()),
                     "end": self.normalize(track.GetEnd()),
-                    "width": track.GetWidth() * 1e-6,
                     "net": track.GetNetname(),
                 }
-                if not tent_vias:
-                    track_dict["drillsize"] = track.GetDrillValue() * 1e-6
                 for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     if track.IsOnLayer(layer):
-                        result[layer].append(track_dict)
+                        via_dict = track_dict.copy()
+                        try:
+                            via_dict["width"] = track.GetWidth(layer) * 1e-6
+                        except TypeError:
+                            # Older KiCad versions only support GetWidth().
+                            via_dict["width"] = track.GetWidth() * 1e-6
+
+                        if hasattr(track, "IsTented"):
+                            try:
+                                untented = not track.IsTented(layer)
+                            except TypeError:
+                                # KiCad 8 and earlier use IsTented() without a side.
+                                untented = not track.IsTented()
+                        else:
+                            # Compatibility with older KiCad versions.
+                            untented = not tent_vias
+
+                        if untented:
+                            via_dict["drillsize"] = track.GetDrillValue() * 1e-6
+
+                        result[layer].append(via_dict)
             else:
                 if track.GetLayer() in [pcbnew.F_Cu, pcbnew.B_Cu]:
                     if track.GetClass() in ["ARC", "PCB_ARC"]:
