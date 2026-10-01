@@ -2808,7 +2808,7 @@
                 <property name="style"></property>
                 <property name="subclass">; ; forward_declare</property>
                 <property name="toolbar_pane">0</property>
-                <property name="tooltip"></property>
+                <property name="tooltip">Blacklist virtual components. For KiCad, this excludes footprints marked 'Exclude from BOM' in the PCB editor, or with the legacy 'Virtual' attribute in older versions. The 'Unspecified' footprint type alone is not excluded.</property>
                 <property name="validator_data_type"></property>
                 <property name="validator_style">wxFILTER_NONE</property>
                 <property name="validator_type">wxDefaultValidator</property>

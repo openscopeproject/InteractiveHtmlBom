@@ -344,6 +344,7 @@ class GeneralSettingsPanelBase ( wx.Panel ):
 
         self.blacklistVirtualCheckbox = wx.CheckBox( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"Blacklist virtual components", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.blacklistVirtualCheckbox.SetValue(True)
+        self.blacklistVirtualCheckbox.SetToolTip( u"Blacklist virtual components. For KiCad, this excludes footprints marked 'Exclude from BOM' in the PCB editor, or with the legacy 'Virtual' attribute in older versions. The 'Unspecified' footprint type alone is not excluded." )
         blacklistSizer.Add( self.blacklistVirtualCheckbox, 0, wx.ALL, 5 )
 
         self.blacklistEmptyValCheckbox = wx.CheckBox( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"Blacklist components with empty value", wx.DefaultPosition, wx.DefaultSize, 0 )
