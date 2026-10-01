@@ -168,18 +168,22 @@ canvas:active {
 }
 
 .fileinfo {
+  display: block;
   width: 100%;
-  max-width: 1000px;
   border: none;
-  padding: 3px;
+  padding: 6px;
+  box-sizing: border-box;
 }
 
-.fileinfo #title {
-  width: 70%;
+.fileinfo tbody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.2rem 2rem;
 }
 
-.fileinfo #revision {
-  width: 30%;
+.fileinfo tr {
+  display: contents;
 }
 
 .fileinfo .title {
@@ -188,11 +192,28 @@ canvas:active {
 }
 
 .fileinfo td {
+  display: block;
+  /* Wrap at a usable column width, independently of the metadata text length. */
+  flex: 1 1 16rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+}
+
+.fileinfo .metadata-field {
   overflow: hidden;
   white-space: nowrap;
-  max-width: 1px;
-  width: 50%;
   text-overflow: ellipsis;
+}
+
+.fileinfo [hidden] {
+  display: none;
+}
+
+@container (max-width: 52rem) {
+  .fileinfo .title {
+    font-size: 18pt;
+  }
 }
 
 .bom {
@@ -624,7 +645,7 @@ mark.highlight {
 #top {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
 }
 
@@ -670,15 +691,7 @@ mark.highlight {
 #fileinfodiv {
   flex: 20rem 1 0;
   overflow: auto;
-}
-
-#fileinfodiv.has-variant .fileinfo {
-  max-width: none;
-  table-layout: fixed;
-}
-
-#fileinfodiv.has-variant .fileinfo td {
-  width: 33.333333%;
+  container-type: inline-size;
 }
 
 #bomcontrols {
