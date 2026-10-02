@@ -444,17 +444,25 @@ class Config:
                             help='List of comma separated blacklisted '
                                  'components or prefixes with *. '
                                  'E.g. "X1,MH*"')
+        parser.add_argument('--no-filter-excluded', dest='no_blacklist_virtual',
+                            action='store_true',
+                            help='Do not filter components marked '
+                                 "'Exclude from BOM' in KiCad. For older "
+                                 'KiCad versions and other parsers, exclusion '
+                                 "is determined by the 'Virtual' attribute "
+                                 'instead.')
+        parser.add_argument('--filter-excluded', dest='no_blacklist_virtual',
+                            action='store_false', default=False,
+                            help='Filter components marked '
+                                 "'Exclude from BOM' in KiCad. For older "
+                                 'KiCad versions and other parsers, exclusion '
+                                 "is determined by the 'Virtual' attribute "
+                                 'instead.')
         parser.add_argument('--no-blacklist-virtual', action='store_true',
-                            help='Do not blacklist virtual components. '
-                                 'For KiCad, disable filtering by '
-                                 "'Exclude from BOM' or the legacy "
-                                 "'Virtual' attribute.")
+                            help='(Deprecated) Use --no-filter-excluded instead.')
         parser.add_argument('--blacklist-virtual', dest='no_blacklist_virtual',
                             action='store_false', default=False,
-                            help='Blacklist virtual components. '
-                                 'For KiCad, this excludes footprints '
-                                 "marked 'Exclude from BOM' or with the "
-                                 "legacy 'Virtual' attribute.")
+                            help='(Deprecated) Use --filter-excluded instead.')
         parser.add_argument('--blacklist-empty-val', action='store_true',
                             help='Blacklist components with empty value.')
         parser.add_argument('--no-blacklist-empty-val',
