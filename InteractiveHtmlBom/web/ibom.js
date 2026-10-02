@@ -896,6 +896,22 @@ function populateMetadata() {
   document.getElementById("revision").innerHTML = "Rev: " + pcbdata.metadata.revision;
   document.getElementById("company").innerHTML = pcbdata.metadata.company;
   document.getElementById("filedate").innerHTML = pcbdata.metadata.date;
+  ["title", "revision", "company", "date"].forEach(function(field) {
+    var element = document.getElementById(field === "date" ? "filedate" : field);
+    var value = pcbdata.metadata[field];
+    element.hidden = typeof value !== "string" || value.trim() === "";
+    element.title = element.textContent;
+  });
+  document.getElementById("board-info").hidden =
+      document.getElementById("title").hidden && document.getElementById("company").hidden;
+  document.getElementById("revision-info").hidden =
+      document.getElementById("revision").hidden && document.getElementById("filedate").hidden;
+  var variant = pcbdata.metadata.variant;
+  var variantElement = document.getElementById("variant");
+  var hasVariant = typeof variant === "string" && variant.trim() !== "";
+  variantElement.textContent = hasVariant ? "Variant: " + variant : "";
+  variantElement.title = variantElement.textContent;
+  variantElement.hidden = !hasVariant;
   if (pcbdata.metadata.title != "") {
     document.title = pcbdata.metadata.title + " BOM";
   }
