@@ -380,6 +380,20 @@ function drawEdgeCuts(canvas, scalefactor) {
   var ctx = canvas.getContext("2d");
   var edgecolor = getComputedStyle(topmostdiv).getPropertyValue('--pcb-edge-color');
   ctx.save();
+  if (pcbdata.board_clip && pcbdata.edge_drills) {
+    // The clipped perimeter includes the new edges along castellated drills.
+    // Use one consistent width, preserving the widest geometric Edge.Cuts
+    // stroke and the minimum one-pixel width at any zoom.
+    ctx.lineWidth = pcbdata.edges.reduce((width, edge) =>
+      ["segment", "arc", "circle", "curve", "rect", "polygon"].includes(edge.type)
+        ? Math.max(width, edge.width || 0) : width, 1 / scalefactor);
+    ctx.strokeStyle = edgecolor;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.stroke(getPolygonsPath(pcbdata.board_clip));
+    ctx.restore();
+    return;
+  }
   if (pcbdata.edge_drills) {
     // Exclude drill openings without clipping away the outside half of the
     // edge stroke. The bounds include the minimum one-pixel stroke at any zoom.
