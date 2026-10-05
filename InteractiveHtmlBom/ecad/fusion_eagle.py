@@ -487,7 +487,7 @@ class FusionEagleParser(EcadParser):
                 elif el.attrib['layer'] in [self.TOP_DOCU_LAYER,
                                             self.BOT_DOCU_LAYER]:
                     if not populate:
-                        return
+                        continue
                     dwg_layer = self.pcbdata['drawings']['fabrication']
                     top = el.attrib['layer'] == self.TOP_DOCU_LAYER
                 elif el.tag == 'wire' and \
