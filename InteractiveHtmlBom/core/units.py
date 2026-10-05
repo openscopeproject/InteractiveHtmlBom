@@ -102,7 +102,7 @@ def compMatch(component):
     e.g. compMatch("10R2") returns (1000, R)
     e.g. compMatch("3.3mOhm") returns (0.0033, R)
     """
-    component = component.strip().lower()
+    component = component.strip()
     if decimal_separator == ',':
         # replace separator with dot
         component = component.replace(",", ".")
@@ -110,7 +110,7 @@ def compMatch(component):
         # remove thousands separator
         component = component.replace(",", "")
 
-    result = VALUE_REGEX.match(component)
+    result = VALUE_REGEX.match(component.lower())
 
     if not result:
         return None
@@ -119,6 +119,10 @@ def compMatch(component):
         return None
 
     value, prefix, units, post = result.groups()
+
+    # lowercase "m" is milli but uppercase "M" is mega, e.g. "1M" or "4M7"
+    if prefix == "m" and component[result.start(2)] == "M":
+        prefix = "meg"
 
     # special case where units is in the middle of the string
     # e.g. "0R05" for 0.05Ohm
