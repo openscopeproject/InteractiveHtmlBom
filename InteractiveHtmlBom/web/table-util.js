@@ -317,6 +317,27 @@ function resizableGrid(tablehead) {
   function setListeners(div) {
     var startX, curCol, nxtCol, curColWidth, nxtColWidth, rowWidth;
 
+    const mouseMoveHandler = function(e) {
+      var diffX = e.pageX - startX;
+      diffX = -Math.min(-diffX, curColWidth - 20);
+      diffX = Math.min(diffX, nxtColWidth - 20);
+
+      curCol.style.width = ((curColWidth + diffX) * 100 / rowWidth) + '%';
+      nxtCol.style.width = ((nxtColWidth - diffX) * 100 / rowWidth) + '%';
+    };
+
+    const mouseUpHandler = function(e) {
+      curCol = undefined;
+      nxtCol = undefined;
+      startX = undefined;
+      nxtColWidth = undefined;
+      curColWidth = undefined;
+
+      // Only listen for document events while resizing
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
     div.addEventListener('mousedown', function(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -330,26 +351,9 @@ function resizableGrid(tablehead) {
       rowWidth = curCol.parentElement.offsetWidth;
       curColWidth = curCol.clientWidth - padding;
       nxtColWidth = nxtCol.clientWidth - padding;
-    });
 
-    document.addEventListener('mousemove', function(e) {
-      if (startX) {
-        var diffX = e.pageX - startX;
-        diffX = -Math.min(-diffX, curColWidth - 20);
-        diffX = Math.min(diffX, nxtColWidth - 20);
-
-        curCol.style.width = ((curColWidth + diffX) * 100 / rowWidth) + '%';
-        nxtCol.style.width = ((nxtColWidth - diffX) * 100 / rowWidth) + '%';
-        console.log(`${curColWidth + nxtColWidth} ${(curColWidth + diffX) * 100 / rowWidth + (nxtColWidth - diffX) * 100 / rowWidth}`);
-      }
-    });
-
-    document.addEventListener('mouseup', function(e) {
-      curCol = undefined;
-      nxtCol = undefined;
-      startX = undefined;
-      nxtColWidth = undefined;
-      curColWidth = undefined
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
     });
   }
 
