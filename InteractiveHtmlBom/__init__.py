@@ -43,8 +43,11 @@ def check_for_bom_button():
             top_tb.Realize()
 
 
+# sys.argv[0] is '-m' while this package is imported by
+# "python -m InteractiveHtmlBom.generate_interactive_bom"
 if (not os.environ.get('INTERACTIVE_HTML_BOM_CLI_MODE', False) and
-    not os.path.basename(sys.argv[0]).startswith('generate_interactive_bom')):
+    not os.path.basename(sys.argv[0]).startswith('generate_interactive_bom') and
+    sys.argv[0] != '-m'):
     from .ecad.kicad import InteractiveHtmlBomPlugin
 
     plugin = InteractiveHtmlBomPlugin()
