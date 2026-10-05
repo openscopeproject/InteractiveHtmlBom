@@ -725,12 +725,12 @@ class FusionEagleParser(EcadParser):
         p = [el.attrib['value'] for el in root.iter('param') if
               el.attrib['name'] == name]
         if len(p) == 0:
-            self.logger.warning("{0} not found, defaulting to {1}"
-                                .format(name, default))
+            self.logger.warn("{0} not found, defaulting to {1}"
+                             .format(name, default))
             return default
         else:
             if len(p) > 1:
-                self.logger.warning(
+                self.logger.warn(
                     "Multiple {0} found, using first occurrence".format(name))
             p = p[0]
             p_val = float(''.join(d for d in p if d in string.digits + '.'))
