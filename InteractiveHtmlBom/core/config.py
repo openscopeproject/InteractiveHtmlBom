@@ -278,7 +278,7 @@ class Config:
         if self.highlight_pin1 in self.highlight_pin1_choices:
             dlg.html.highlightPin1.Selection = \
                 self.highlight_pin1_choices.index(self.highlight_pin1)
-        dlg.html.continuousRedrawCheckbox.value = self.redraw_on_drag
+        dlg.html.continuousRedrawCheckbox.Value = self.redraw_on_drag
         dlg.html.boardRotationSlider.Value = self.board_rotation
         dlg.html.offsetBackRotationCheckbox.Value = self.offset_back_rotation
         dlg.html.bomCheckboxesCtrl.Value = self.checkboxes
