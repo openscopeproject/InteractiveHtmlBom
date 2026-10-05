@@ -451,8 +451,9 @@ class FusionEagleParser(EcadParser):
                         pad['shape'] = 'rect'
                     else:
                         pad['shape'] = 'roundrect'
+                        # Roundness is relative to the shorter side
                         pad['radius'] = (float(el.attrib['roundness']) / 100) \
-                            * float(el.attrib['dy']) / 2
+                            * min(pad['size']) / 2
 
                     if self.config.include_nets and \
                             element_pad_nets is not None:
