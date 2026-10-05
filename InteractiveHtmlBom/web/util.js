@@ -590,6 +590,7 @@ function initDefaults() {
     hcols = [];
   }
   settings.hiddenColumns = hcols.filter(e => fields.includes(e));
+  document.getElementById("reflookup").disabled = settings.hiddenColumns.includes("References");
 
   var cord = JSON.parse(readStorage("columnOrder"));
   if (cord === null) {
