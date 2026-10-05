@@ -600,8 +600,6 @@ class Config:
 
     def set_from_args(self, args):
         # type: (argparse.Namespace) -> None
-        import math
-
         self.kicad_variant = args.kicad_variant
 
         # Html
@@ -611,7 +609,10 @@ class Config:
         self.show_silkscreen = not args.hide_silkscreen
         self.highlight_pin1 = args.highlight_pin1
         self.redraw_on_drag = not args.no_redraw_on_drag
-        self.board_rotation = math.fmod(args.board_rotation // 5, 37)
+        # Stored in 5 degree steps, wrap to -180..180 range
+        self.board_rotation = args.board_rotation // 5
+        if not -36 <= self.board_rotation <= 36:
+            self.board_rotation = (self.board_rotation + 36) % 72 - 36
         self.offset_back_rotation = args.offset_back_rotation
         self.checkboxes = args.checkboxes
         self.mark_when_checked = args.mark_when_checked
