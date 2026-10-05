@@ -352,7 +352,8 @@ function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, ou
   if (settings.renderPads) {
     for (var pad of footprint.pads) {
       if (pad.layers.includes(layer)) {
-        drawPad(ctx, pad, colors.pad, outline);
+        var padColor = highlight ? colors.pad : settings.netColors[pad.net] || colors.pad;
+        drawPad(ctx, pad, padColor, outline);
         if (pad.pin1 &&
           (settings.highlightpin1 == "all" ||
             settings.highlightpin1 == "selected" && highlight)) {
