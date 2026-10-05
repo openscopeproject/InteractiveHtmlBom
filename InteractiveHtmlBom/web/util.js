@@ -71,7 +71,7 @@ function saveBomTable(output) {
   for (var node of bomhead.childNodes[0].childNodes) {
     if (node.firstChild) {
       var name = node.firstChild.nodeValue ?? "";
-      text += (output == 'csv' ? `"${name}"` : name);
+      text += (output == 'csv' ? `"${name.replace(/\"/g, '\"\"')}"` : name);
     }
     if (node != bomhead.childNodes[0].lastChild) {
       text += (output == 'csv' ? ',' : '\t');
@@ -86,16 +86,15 @@ function saveBomTable(output) {
           if (node.checked) {
             val += '✓';
           }
-        } else if ((node.nodeName == "MARK") || (node.nodeName == "A")) {
-          val += node.firstChild.nodeValue;
         } else {
-          val += node.nodeValue;
+          // Text, highlight marks and links (which may contain marks)
+          val += node.textContent;
         }
       }
       if (output == 'csv') {
         val = val.replace(/\"/g, '\"\"'); // pair of double-quote characters
-        if (isNumeric(val)) {
-          val = +val;                     // use number
+        if (isNumeric(val) && String(+val) === val) {
+          val = +val;                     // use number if it is lossless
         } else {
           val = `"${val}"`;               // enclosed within double-quote
         }
