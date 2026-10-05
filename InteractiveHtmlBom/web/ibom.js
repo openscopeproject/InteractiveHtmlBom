@@ -77,7 +77,7 @@ function setDarkMode(value) {
 }
 
 function setShowBOMColumn(field, value) {
-  if (field === "references") {
+  if (field === "References") {
     var rl = document.getElementById("reflookup");
     rl.disabled = !value;
     if (!value) {
