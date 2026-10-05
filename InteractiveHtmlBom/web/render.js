@@ -748,7 +748,7 @@ function pointWithinDistanceToArc(x, y, xc, yc, radius, startangle, endangle, d)
 
   var angle = modulo(Math.atan2(dy, dx), 2 * Math.PI);
   if (angle1 > angle2)
-    return (angle >= angle2 || angle <= angle1);
+    return (angle >= angle1 || angle <= angle2);
   else
     return (angle >= angle1 && angle <= angle2);
 }
