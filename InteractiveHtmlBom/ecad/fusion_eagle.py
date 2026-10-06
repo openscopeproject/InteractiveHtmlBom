@@ -907,14 +907,16 @@ class FusionEagleParser(EcadParser):
 
         title = os.path.basename(self.file_name)
 
-        variant = [a.attrib['name'] for a in root.iter('variantdef') if
-                   a.get('current') == 'yes']
-        variant = '' if not variant else variant[0]
-
         date = datetime.fromtimestamp(
             os.path.getmtime(self.file_name)).strftime('%Y-%m-%d %H:%M:%S')
         self.pcbdata['metadata'] = {'title': title, 'revision': rev,
-                                    'company': company, 'date': date,
-                                    'variant': variant}
+                                    'company': company, 'date': date}
+
+        # Variants always have a name, the default assembly variant is
+        # implicit and not stored, so only set variant when one is current
+        variant = [a.attrib['name'] for a in root.iter('variantdef') if
+                   a.get('current') == 'yes']
+        if variant:
+            self.pcbdata['metadata']['variant'] = variant[0]
 
         return self.pcbdata, self.components
