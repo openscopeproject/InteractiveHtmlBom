@@ -478,62 +478,137 @@ function createColumnHeader(name, cls, comparator, is_checkbox = false) {
   return th;
 }
 
-function populateBomHeader(placeHolderColumn = null, placeHolderElements = null) {
-  while (bomhead.firstChild) {
-    bomhead.removeChild(bomhead.firstChild);
-  }
-  var tr = document.createElement("TR");
-  var th = document.createElement("TH");
-  th.classList.add("numCol");
+// The dropdown is opened by CSS (`.menu:hover .menu-content`) and :hover is lost
+// when an element leaves the document, so the header row, its numCol cell and the
+// menu are kept across rebuilds instead of being recreated. See issue #254.
+var bomHeaderRow = null;
+var visMenu = null;
+var visMenuContent = null;
+var visMenuColumns = null;
 
-  var vismenu = document.createElement("div");
-  vismenu.id = "vismenu";
-  vismenu.classList.add("menu");
-
-  var visbutton = document.createElement("div");
-  visbutton.classList.add("visbtn");
-  visbutton.classList.add("hideonprint");
-
-  var viscontent = document.createElement("div");
-  viscontent.classList.add("menu-content");
-  viscontent.id = "vismenu-content";
-
-  settings.columnOrder.forEach(column => {
+function getVisMenuColumns() {
+  return settings.columnOrder.filter(column => {
     if (typeof column !== "string")
-      return;
+      return false;
 
     // Skip empty columns
     if (column === "checkboxes" && settings.checkboxes.length == 0)
-      return;
+      return false;
     else if (column === "Quantity" && settings.bommode == "ungrouped")
-      return;
+      return false;
 
-    var label = document.createElement("label");
-    label.classList.add("menu-label");
+    return true;
+  });
+}
 
-    var input = document.createElement("input");
-    input.classList.add("visibility_checkbox");
-    input.type = "checkbox";
-    input.onchange = function (e) {
-      setShowBOMColumn(column, e.target.checked)
-    };
-    input.checked = !(settings.hiddenColumns.includes(column));
+function createVisMenuLabel(column) {
+  var label = document.createElement("label");
+  label.classList.add("menu-label");
 
-    label.appendChild(input);
-    if (column.length > 0)
-      label.append(column[0].toUpperCase() + column.slice(1));
+  var input = document.createElement("input");
+  input.classList.add("visibility_checkbox");
+  input.type = "checkbox";
+  input.onchange = function (e) {
+    setShowBOMColumn(column, e.target.checked)
+  };
+  input.checked = !(settings.hiddenColumns.includes(column));
+  // Set explicitly because changeBomMode() cannot re-enable these once the menu
+  // has been detached.
+  input.disabled = false;
 
-    viscontent.appendChild(label);
+  label.appendChild(input);
+  if (column.length > 0)
+    label.append(column[0].toUpperCase() + column.slice(1));
+
+  return label;
+}
+
+function populateVisMenu() {
+  var columns = getVisMenuColumns();
+  var sameColumns = visMenuColumns !== null &&
+    visMenuColumns.length == columns.length &&
+    visMenuColumns.every((column, i) => column === columns[i]);
+
+  if (sameColumns) {
+    // Leave the DOM alone so the element under the cursor stays alive.
+    columns.forEach((column, i) => {
+      var input = visMenuContent.children[i].firstChild;
+      input.checked = !(settings.hiddenColumns.includes(column));
+      input.disabled = false;
+    });
+    return;
+  }
+
+  while (visMenuContent.firstChild) {
+    visMenuContent.removeChild(visMenuContent.firstChild);
+  }
+  columns.forEach(column => {
+    visMenuContent.appendChild(createVisMenuLabel(column));
+  });
+  if (visMenuContent.firstChild) {
+    visMenuContent.firstChild.classList.add("menu-label-top");
+  }
+  visMenuColumns = columns;
+}
+
+function getBomHeaderRow() {
+  if (bomHeaderRow === null) {
+    bomHeaderRow = document.createElement("TR");
+
+    var th = document.createElement("TH");
+    th.classList.add("numCol");
+    bomHeaderRow.appendChild(th);
+
+    visMenu = document.createElement("div");
+    visMenu.id = "vismenu";
+    visMenu.classList.add("menu");
+
+    var visbutton = document.createElement("div");
+    visbutton.classList.add("visbtn");
+    visbutton.classList.add("hideonprint");
+    visMenu.appendChild(visbutton);
+
+    visMenuContent = document.createElement("div");
+    visMenuContent.classList.add("menu-content");
+    visMenuContent.id = "vismenu-content";
+    visMenu.appendChild(visMenuContent);
+  }
+
+  // The row has to be bomhead's only child, because saveBomTable() reads the
+  // header names out of bomhead.childNodes[0].
+  Array.from(bomhead.childNodes).forEach(node => {
+    if (node !== bomHeaderRow)
+      bomhead.removeChild(node);
   });
 
-  viscontent.childNodes[0].classList.add("menu-label-top");
-
-  vismenu.appendChild(visbutton);
-  if (settings.bommode != "netlist") {
-    vismenu.appendChild(viscontent);
-    th.appendChild(vismenu);
+  // Guarded because reattaching an attached node detaches it first.
+  if (bomHeaderRow.parentElement !== bomhead) {
+    bomhead.appendChild(bomHeaderRow);
   }
-  tr.appendChild(th);
+
+  // Drop the column headers, keeping the numCol cell and the menu it holds.
+  while (bomHeaderRow.children.length > 1) {
+    bomHeaderRow.removeChild(bomHeaderRow.lastChild);
+  }
+
+  var numCol = bomHeaderRow.firstElementChild;
+  if (settings.bommode == "netlist") {
+    // Netlist mode has no configurable columns, so there is no menu to show.
+    if (visMenu.parentElement === numCol) {
+      numCol.removeChild(visMenu);
+    }
+  } else {
+    populateVisMenu();
+    if (visMenu.parentElement !== numCol) {
+      numCol.appendChild(visMenu);
+    }
+  }
+
+  return bomHeaderRow;
+}
+
+function populateBomHeader(placeHolderColumn = null, placeHolderElements = null) {
+  var tr = getBomHeaderRow();
 
   var checkboxCompareClosure = function (checkbox) {
     return (a, b) => {
@@ -595,7 +670,7 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
         return;
       } else if (column === "checkboxes") {
         for (var checkbox of settings.checkboxes) {
-          th = createColumnHeader(
+          var th = createColumnHeader(
             checkbox, "bom-checkbox", checkboxCompareClosure(checkbox), true);
           tr.appendChild(th);
         }
@@ -633,7 +708,6 @@ function populateBomHeader(placeHolderColumn = null, placeHolderElements = null)
       }
     });
   }
-  bomhead.appendChild(tr);
 }
 
 function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
