@@ -34,10 +34,8 @@ jobs:
       - name: Set up build environment
         shell: bash
         run: |
-          apt update && apt install -y python3-venv
-          python3 -m venv /opt/hatch
-          /opt/hatch/bin/pip install --upgrade hatch
-          echo "/opt/hatch/bin" >> "$GITHUB_PATH"
+          apt update && apt install -y python3-pip
+          python3 -m pip install --break-system-packages --upgrade hatch
 
       - name: Test
         run: hatch -v run pytest -vv tests
