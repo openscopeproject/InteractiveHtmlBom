@@ -458,12 +458,29 @@ class PcbnewParser(EcadParser):
         else:
             operation(*polygons)
 
+    def _clipping_methods_available(self, obj, *names):
+        missing = [name for name in names
+                   if not callable(getattr(obj, name, None))]
+        if missing:
+            self.logger.warn("Board clipping unavailable: missing API %s" %
+                             ", ".join(missing))
+        return not missing
+
     def parse_board_clip(self):
-        """Export a board interior and edge drill openings for canvas clipping."""
-        if not hasattr(self.board, "GetBoardPolygonOutlines"):
+        """Export the physical board perimeter for clipping and edge drawing."""
+        if not self._clipping_methods_available(
+                self.board, "GetBoardPolygonOutlines"):
+            return {}
+        if not self._clipping_methods_available(
+                pcbnew, "SHAPE_POLY_SET", "FromMM"):
             return {}
         try:
             board = pcbnew.SHAPE_POLY_SET()
+            if not self._clipping_methods_available(
+                    board, "OutlineCount", "Outline", "HoleCount", "Hole",
+                    "Area", "BooleanIntersection", "BooleanSubtract",
+                    "BooleanAdd"):
+                return {}
             if KICAD_VERSION[0] >= 10:
                 valid = self.board.GetBoardPolygonOutlines(board, False)
             else:
@@ -472,14 +489,17 @@ class PcbnewParser(EcadParser):
                 self.logger.warn("Invalid board outline; copper clipping disabled")
                 return {}
 
-            # Work in native integer coordinates. Tessellate drills to 1 um,
-            # independently of the board's (usually coarser) zone-fill setting.
-            error = pcbnew.FromMM(0.001)
+            # 0.01 mm keeps 0.3 mm drills smooth without the excessive vertex
+            # count of 0.001 mm. Work in KiCad's native integer coordinates.
+            error = pcbnew.FromMM(0.01)
             edge_drills = pcbnew.SHAPE_POLY_SET()
             for footprint in self.footprints:
                 for pad in footprint.Pads():
                     if not self._pad_is_through_hole(pad):
                         continue
+                    if not self._clipping_methods_available(
+                            pad, "TransformHoleToPolygon"):
+                        return {}
                     drill = pcbnew.SHAPE_POLY_SET()
                     if not pad.TransformHoleToPolygon(drill, 0, error):
                         continue
@@ -495,13 +515,9 @@ class PcbnewParser(EcadParser):
                         self._polygon_operation(edge_drills.BooleanAdd, drill)
 
             # Union first: overlapping holes must not cancel under even-odd fill.
-            result = {}
             if edge_drills.OutlineCount():
                 self._polygon_operation(board.BooleanSubtract, edge_drills)
-                result["edge_drills"] = {
-                    "polygons": self.parse_poly_set(edge_drills)}
-            result["board_clip"] = {"polygons": self.parse_poly_set(board)}
-            return result
+            return {"board_clip": {"polygons": self.parse_poly_set(board)}}
         except (AttributeError, TypeError, RuntimeError) as e:
             # Optional geometry must not prevent generation on older bindings.
             self.logger.warn("Board clipping unavailable: %s" % e)

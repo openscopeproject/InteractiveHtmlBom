@@ -17,8 +17,10 @@ jobs:
         os:
           - Ubuntu
         kicad-version:
+          - "7.0"
           - "8.0"
           - "9.0"
+          - "10.0"
 
     runs-on: ${{ matrix.os }}-latest
     container:
@@ -32,8 +34,10 @@ jobs:
       - name: Set up build environment
         shell: bash
         run: |
-          apt update && apt install -y python3-pip
-          python3 -m pip install --break-system-packages --upgrade hatch
+          apt update && apt install -y python3-venv
+          python3 -m venv /opt/hatch
+          /opt/hatch/bin/pip install --upgrade hatch
+          echo "/opt/hatch/bin" >> "$GITHUB_PATH"
 
       - name: Test
         run: hatch -v run pytest -vv tests

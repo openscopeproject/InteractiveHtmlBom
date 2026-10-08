@@ -70,9 +70,6 @@
                 "board_clip": {
                     "$ref": "#/definitions/ClippingRegion"
                 },
-                "edge_drills": {
-                    "$ref": "#/definitions/ClippingRegion"
-                },
                 "drawings": {
                     "$ref": "#/definitions/LayerDrawings"
                 },

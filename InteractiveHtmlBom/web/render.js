@@ -380,7 +380,7 @@ function drawEdgeCuts(canvas, scalefactor) {
   var ctx = canvas.getContext("2d");
   var edgecolor = getComputedStyle(topmostdiv).getPropertyValue('--pcb-edge-color');
   ctx.save();
-  if (pcbdata.board_clip && pcbdata.edge_drills) {
+  if (pcbdata.board_clip) {
     // The clipped perimeter includes the new edges along castellated drills.
     // Use one consistent width, preserving the widest geometric Edge.Cuts
     // stroke and the minimum one-pixel width at any zoom.
@@ -393,16 +393,6 @@ function drawEdgeCuts(canvas, scalefactor) {
     ctx.stroke(getPolygonsPath(pcbdata.board_clip));
     ctx.restore();
     return;
-  }
-  if (pcbdata.edge_drills) {
-    // Exclude drill openings without clipping away the outside half of the
-    // edge stroke. The bounds include the minimum one-pixel stroke at any zoom.
-    var path = new Path2D(getPolygonsPath(pcbdata.edge_drills));
-    var bbox = pcbdata.edges_bbox;
-    var margin = 1 + 1 / scalefactor;
-    path.rect(bbox.minx - margin, bbox.miny - margin,
-      bbox.maxx - bbox.minx + 2 * margin, bbox.maxy - bbox.miny + 2 * margin);
-    ctx.clip(path, "evenodd");
   }
   for (var edge of pcbdata.edges) {
     drawDrawing(ctx, scalefactor, edge, edgecolor);
@@ -446,6 +436,10 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
 
 function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonColor, textColor) {
   var ctx = canvas.getContext("2d");
+  ctx.save();
+  if (layername === "silkscreen") {
+    clipBoard(ctx);
+  }
   for (var d of pcbdata.drawings[layername][layer]) {
     if (["segment", "arc", "circle", "curve", "rect"].includes(d.type)) {
       drawedge(ctx, scalefactor, d, edgeColor);
@@ -455,6 +449,7 @@ function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonCo
       drawText(ctx, d, textColor);
     }
   }
+  ctx.restore();
 }
 
 function drawTracks(canvas, layer, defaultColor, highlight) {
