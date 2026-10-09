@@ -360,15 +360,13 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
             self.boardVariantWhitelist.Clear()
             self.boardVariantBlacklist.Clear()
             return
-        normalize = self.normalizeCaseCheckbox.Value
-        if normalize:
+        if self.normalizeCaseCheckbox.Value:
             # extra field names are lowercased when normalizing case
             selection = selection.lower()
         variant_set = set()
         for _, field_dict in self.extra_field_data.fields_by_ref.items():
-            # empty values are dropped when normalizing case
-            if selection in field_dict or normalize:
-                v = field_dict.get(selection, "")
+            if selection in field_dict:
+                v = field_dict[selection]
                 if v == "":
                     v = self.EMPTY_STRING
                 variant_set.add(v)
