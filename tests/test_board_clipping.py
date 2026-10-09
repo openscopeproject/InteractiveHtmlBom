@@ -195,9 +195,17 @@ class BoardClippingTests(unittest.TestCase):
         add_drill(self.board, 0, 5)
         data.update(parse_clip(self.board))
         jsonschema.validate(data, schema)
-        data['board_clip']['polygons'] = 'invalid'
-        with self.assertRaises(jsonschema.ValidationError):
-            jsonschema.validate(data, schema)
+        polygons = data['board_clip']['polygons']
+        svgpath = 'M0 0H20V10H0Z M5 5A1 1 0 1 0 7 5A1 1 0 1 0 5 5Z'
+        for region in [{'svgpath': svgpath},
+                       {'svgpath': svgpath, 'polygons': polygons}]:
+            with self.subTest(region=region):
+                jsonschema.validate({'board_clip': region}, schema)
+        for region in [{}, {'polygons': 'invalid'}, {'svgpath': 42},
+                       {'svgpath': svgpath, 'unexpected': True}]:
+            with self.subTest(invalid=region):
+                with self.assertRaises(jsonschema.ValidationError):
+                    jsonschema.validate({'board_clip': region}, schema)
 
     def test_bezier_outline_cutout_and_crossing_drill(self):
         clip = parse_clip(curved_board())

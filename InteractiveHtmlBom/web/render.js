@@ -382,11 +382,12 @@ function drawEdgeCuts(canvas, scalefactor) {
   ctx.save();
   if (pcbdata.board_clip) {
     // The clipped perimeter includes the new edges along castellated drills.
-    // Use one consistent width, preserving the widest geometric Edge.Cuts
-    // stroke and the minimum one-pixel width at any zoom.
-    ctx.lineWidth = pcbdata.edges.reduce((width, edge) =>
+    // Use the thinnest geometric Edge.Cuts stroke: older KiCad boards may
+    // use thick edges for zone clearance. Keep at least one pixel at any zoom.
+    var width = pcbdata.edges.reduce((width, edge) =>
       ["segment", "arc", "circle", "curve", "rect", "polygon"].includes(edge.type)
-        ? Math.max(width, edge.width || 0) : width, 1 / scalefactor);
+        ? Math.min(width, edge.width || 0) : width, Infinity);
+    ctx.lineWidth = Math.max(Number.isFinite(width) ? width : 0, 1 / scalefactor);
     ctx.strokeStyle = edgecolor;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";

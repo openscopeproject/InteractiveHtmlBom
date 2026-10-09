@@ -607,9 +607,13 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
+                "svgpath": { "type": "string" },
                 "polygons": { "$ref": "#/definitions/Polygons" }
             },
-            "required": ["polygons"]
+            "anyOf": [
+                { "required": [ "svgpath" ] },
+                { "required": [ "polygons" ] }
+            ]
         },
         "Polygons": {
             "type": "array",
