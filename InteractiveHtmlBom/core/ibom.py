@@ -64,23 +64,30 @@ def skip_component(m, config):
     if config.blacklist_virtual and m.attr == 'Virtual':
         return True
 
+    dnp_field = config.dnp_field
+    variant_field = config.board_variant_field
+    if config.normalize_field_case:
+        # extra field names are lowercased when normalizing case
+        dnp_field = dnp_field and dnp_field.lower()
+        variant_field = variant_field and variant_field.lower()
+
     # skip components with dnp field not empty
-    if config.dnp_field \
-            and config.dnp_field in m.extra_fields \
-            and m.extra_fields[config.dnp_field]:
+    if dnp_field \
+            and dnp_field in m.extra_fields \
+            and m.extra_fields[dnp_field]:
         return True
 
     # skip components with wrong variant field
     empty_str = '<empty>'
-    if config.board_variant_field and config.board_variant_whitelist:
-        ref_variant = m.extra_fields.get(config.board_variant_field, '')
+    if variant_field and config.board_variant_whitelist:
+        ref_variant = m.extra_fields.get(variant_field, '')
         if ref_variant == '':
             ref_variant = empty_str
         if ref_variant not in config.board_variant_whitelist:
             return True
 
-    if config.board_variant_field and config.board_variant_blacklist:
-        ref_variant = m.extra_fields.get(config.board_variant_field, '')
+    if variant_field and config.board_variant_blacklist:
+        ref_variant = m.extra_fields.get(variant_field, '')
         if ref_variant == '':
             ref_variant = empty_str
         if ref_variant != empty_str and ref_variant in config.board_variant_blacklist:

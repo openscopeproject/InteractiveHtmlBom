@@ -360,6 +360,9 @@ class FieldsPanel(dialog_base.FieldsPanelBase):
             self.boardVariantWhitelist.Clear()
             self.boardVariantBlacklist.Clear()
             return
+        if self.normalizeCaseCheckbox.Value:
+            # extra field names are lowercased when normalizing case
+            selection = selection.lower()
         variant_set = set()
         for _, field_dict in self.extra_field_data.fields_by_ref.items():
             if selection in field_dict:
