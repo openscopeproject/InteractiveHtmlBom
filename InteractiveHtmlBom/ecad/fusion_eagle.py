@@ -859,7 +859,7 @@ class FusionEagleParser(EcadParser):
             has_smd = package.find('smd') is not None
             comp.extra_fields['Montage'] = (
                 'THT+SMD' if has_th and has_smd else
-                'THT' if has_th else 'SMD' if has_smd else '')
+                'THT' if has_th else 'SMD' if has_smd else 'MECH')
 
             elx = float(el.attrib['x'])
             ely = float(el.attrib['y'])
