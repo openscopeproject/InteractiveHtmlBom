@@ -23,6 +23,24 @@ pcbdata = {
   // Describes all edge cut drawings including ones in footprints.
   // See drawing structure description below.
   "edges": [drawing1, drawing2, ...],
+  // Optional physical board region in board coordinates, using the same
+  // units as edges. Includes cutouts and boundary-crossing drill notches.
+  // Used for copper/silkscreen clipping, net hit testing and perimeter
+  // drawing, independently of pad visibility. Fabrication is not clipped.
+  // Omit this field when valid geometry is unavailable to preserve the
+  // original rendering. At least one of svgpath or polygons is required.
+  "board_clip": {
+    // SVG path 'd' string. Supports native arcs and curves; each contour
+    // should be closed with Z. Takes precedence over polygons if both exist.
+    "svgpath": svgpath,
+    // Closed contours; the last point connects back to the first.
+    // Even-odd filling applies to both representations: nested contours
+    // form cutouts, and separate outer contours form board islands.
+    "polygons": [
+      [[point1x, point1y], [point2x, point2y], ...],
+      ...
+    ],
+  },
   "drawings": {
     // Contains all drawings + reference + value texts on silkscreen
     // layer grouped by front and back.

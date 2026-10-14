@@ -323,6 +323,12 @@ function drawPadHole(ctx, pad, padHoleColor) {
   ctx.restore();
 }
 
+function clipBoard(ctx) {
+  if (pcbdata.board_clip) {
+    ctx.clip(getPolygonsPath(pcbdata.board_clip), "evenodd");
+  }
+}
+
 function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, outline) {
   if (highlight) {
     // draw bounding box
@@ -341,6 +347,8 @@ function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, ou
       ctx.restore();
     }
   }
+  ctx.save();
+  clipBoard(ctx);
   // draw drawings
   for (var drawing of footprint.drawings) {
     if (drawing.layer == layer) {
@@ -365,14 +373,32 @@ function drawFootprint(ctx, layer, scalefactor, footprint, colors, highlight, ou
       drawPadHole(ctx, pad, colors.padHole);
     }
   }
+  ctx.restore();
 }
 
 function drawEdgeCuts(canvas, scalefactor) {
   var ctx = canvas.getContext("2d");
   var edgecolor = getComputedStyle(topmostdiv).getPropertyValue('--pcb-edge-color');
+  ctx.save();
+  if (pcbdata.board_clip) {
+    // The clipped perimeter includes the new edges along castellated drills.
+    // Use the thinnest geometric Edge.Cuts stroke: older KiCad boards may
+    // use thick edges for zone clearance. Keep at least one pixel at any zoom.
+    var width = pcbdata.edges.reduce((width, edge) =>
+      ["segment", "arc", "circle", "curve", "rect", "polygon"].includes(edge.type)
+        ? Math.min(width, edge.width || 0) : width, Infinity);
+    ctx.lineWidth = Math.max(Number.isFinite(width) ? width : 0, 1 / scalefactor);
+    ctx.strokeStyle = edgecolor;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.stroke(getPolygonsPath(pcbdata.board_clip));
+    ctx.restore();
+    return;
+  }
   for (var edge of pcbdata.edges) {
     drawDrawing(ctx, scalefactor, edge, edgecolor);
   }
+  ctx.restore();
 }
 
 function drawFootprints(canvas, layer, scalefactor, highlight) {
@@ -411,6 +437,10 @@ function drawFootprints(canvas, layer, scalefactor, highlight) {
 
 function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonColor, textColor) {
   var ctx = canvas.getContext("2d");
+  ctx.save();
+  if (layername === "silkscreen") {
+    clipBoard(ctx);
+  }
   for (var d of pcbdata.drawings[layername][layer]) {
     if (["segment", "arc", "circle", "curve", "rect"].includes(d.type)) {
       drawedge(ctx, scalefactor, d, edgeColor);
@@ -420,6 +450,7 @@ function drawBgLayer(layername, canvas, layer, scalefactor, edgeColor, polygonCo
       drawText(ctx, d, textColor);
     }
   }
+  ctx.restore();
 }
 
 function drawTracks(canvas, layer, defaultColor, highlight) {
@@ -512,6 +543,9 @@ function clearCanvas(canvas, color = null) {
 }
 
 function drawNets(canvas, layer, highlight) {
+  var ctx = canvas.getContext("2d");
+  ctx.save();
+  clipBoard(ctx);
   var style = getComputedStyle(topmostdiv);
   if (settings.renderZones) {
     var zoneColor = style.getPropertyValue(highlight ? '--zone-color-highlight' : '--zone-color');
@@ -524,7 +558,6 @@ function drawNets(canvas, layer, highlight) {
   if (highlight && settings.renderPads) {
     var padColor = style.getPropertyValue('--pad-color-highlight');
     var padHoleColor = style.getPropertyValue('--pad-hole-color');
-    var ctx = canvas.getContext("2d");
     for (var footprint of pcbdata.footprints) {
       // draw pads
       var padDrawn = false;
@@ -543,6 +576,7 @@ function drawNets(canvas, layer, highlight) {
       }
     }
   }
+  ctx.restore();
 }
 
 function drawHighlightsOnLayer(canvasdict, clear = true) {
@@ -765,6 +799,10 @@ function pointWithinPad(x, y, pad) {
 }
 
 function netHitScan(layer, x, y) {
+  if (pcbdata.board_clip && !emptyContext2d.isPointInPath(
+      getPolygonsPath(pcbdata.board_clip), x, y, "evenodd")) {
+    return null;
+  }
   // Check track segments
   if (settings.renderTracks && pcbdata.tracks) {
     for (var track of pcbdata.tracks[layer]) {

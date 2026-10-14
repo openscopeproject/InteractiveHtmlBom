@@ -450,6 +450,79 @@ class PcbnewParser(EcadParser):
             bbox.Normalize()
         return edges, bbox
 
+    @staticmethod
+    def _polygon_operation(operation, *polygons):
+        # KiCad 8 and earlier require the polygon mode argument.
+        if hasattr(pcbnew.SHAPE_POLY_SET, "PM_STRICTLY_SIMPLE"):
+            operation(*polygons, pcbnew.SHAPE_POLY_SET.PM_STRICTLY_SIMPLE)
+        else:
+            operation(*polygons)
+
+    def _clipping_methods_available(self, obj, *names):
+        missing = [name for name in names
+                   if not callable(getattr(obj, name, None))]
+        if missing:
+            self.logger.warn("Board clipping unavailable: missing API %s" %
+                             ", ".join(missing))
+        return not missing
+
+    def parse_board_clip(self):
+        """Export the physical board perimeter for clipping and edge drawing."""
+        if not self._clipping_methods_available(
+                self.board, "GetBoardPolygonOutlines"):
+            return {}
+        if not self._clipping_methods_available(
+                pcbnew, "SHAPE_POLY_SET", "FromMM"):
+            return {}
+        try:
+            board = pcbnew.SHAPE_POLY_SET()
+            if not self._clipping_methods_available(
+                    board, "OutlineCount", "Outline", "HoleCount", "Hole",
+                    "Area", "BooleanIntersection", "BooleanSubtract",
+                    "BooleanAdd"):
+                return {}
+            if KICAD_VERSION[0] >= 10:
+                valid = self.board.GetBoardPolygonOutlines(board, False)
+            else:
+                valid = self.board.GetBoardPolygonOutlines(board)
+            if not valid or board.OutlineCount() == 0:
+                self.logger.warn("Invalid board outline; copper clipping disabled")
+                return {}
+
+            # 0.01 mm keeps 0.3 mm drills smooth without the excessive vertex
+            # count of 0.001 mm. Work in KiCad's native integer coordinates.
+            error = pcbnew.FromMM(0.01)
+            edge_drills = pcbnew.SHAPE_POLY_SET()
+            for footprint in self.footprints:
+                for pad in footprint.Pads():
+                    if not self._pad_is_through_hole(pad):
+                        continue
+                    if not self._clipping_methods_available(
+                            pad, "TransformHoleToPolygon"):
+                        return {}
+                    drill = pcbnew.SHAPE_POLY_SET()
+                    if not pad.TransformHoleToPolygon(drill, 0, error):
+                        continue
+                    inside = pcbnew.SHAPE_POLY_SET()
+                    self._polygon_operation(
+                        inside.BooleanIntersection, drill, board)
+                    if inside.Area() <= 0:
+                        continue
+                    outside = pcbnew.SHAPE_POLY_SET()
+                    self._polygon_operation(
+                        outside.BooleanSubtract, drill, board)
+                    if outside.Area() > 0:
+                        self._polygon_operation(edge_drills.BooleanAdd, drill)
+
+            # Union first: overlapping holes must not cancel under even-odd fill.
+            if edge_drills.OutlineCount():
+                self._polygon_operation(board.BooleanSubtract, edge_drills)
+            return {"board_clip": {"polygons": self.parse_poly_set(board)}}
+        except (AttributeError, TypeError, RuntimeError) as e:
+            # Optional geometry must not prevent generation on older bindings.
+            self.logger.warn("Board clipping unavailable: %s" % e)
+            return {}
+
     def parse_drawings_on_layers(self, drawings, f_layer, b_layer):
         front = []
         back = []
@@ -928,6 +1001,7 @@ class PcbnewParser(EcadParser):
             "bom": {},
             "font_data": self.font_parser.get_parsed_font()
         }
+        pcbdata.update(self.parse_board_clip())
         if self.config.include_tracks:
             pcbdata["tracks"] = self.parse_tracks(self.board.GetTracks())
             if hasattr(self.board, "Zones"):

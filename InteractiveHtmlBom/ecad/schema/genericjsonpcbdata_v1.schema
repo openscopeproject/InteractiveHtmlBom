@@ -67,6 +67,9 @@
                 "edges": {
                     "$ref": "#/definitions/DrawingArray"
                 },
+                "board_clip": {
+                    "$ref": "#/definitions/ClippingRegion"
+                },
                 "drawings": {
                     "$ref": "#/definitions/LayerDrawings"
                 },
@@ -598,6 +601,19 @@
                 { "required": [ "polygons" ] }
             ],
             "title": "Zone"
+        },
+        "ClippingRegion": {
+            "description": "Board-coordinate contours, filled with the even-odd rule.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "svgpath": { "type": "string" },
+                "polygons": { "$ref": "#/definitions/Polygons" }
+            },
+            "anyOf": [
+                { "required": [ "svgpath" ] },
+                { "required": [ "polygons" ] }
+            ]
         },
         "Polygons": {
             "type": "array",
