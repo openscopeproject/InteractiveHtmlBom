@@ -337,6 +337,7 @@ def main(parser, config, logger):
 
     pcbdata["bom"] = generate_bom(components, config)
     pcbdata["ibom_version"] = config.version
+    pcbdata["metadata"]["header_lines"] = list(config.header_lines)
 
     # build BOM
     bom_file = generate_file(pcb_file_dir, pcb_file_name, pcbdata, config)
