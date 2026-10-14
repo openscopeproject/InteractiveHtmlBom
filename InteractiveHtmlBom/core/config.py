@@ -457,6 +457,10 @@ class Config:
                             help='Do not blacklist components with empty value.')
 
         # Fields section
+        parser.add_argument('--header-line', dest='header_lines',
+                    action='append', default=[], metavar='TEXT',
+                    help='Additional line shown in the BOM header. '
+                         'Can be given multiple times.')
         parser.add_argument('--netlist-file',
                             help='(Deprecated) Path to netlist or xml file.')
         parser.add_argument('--extra-data-file',
