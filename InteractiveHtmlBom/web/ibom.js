@@ -895,6 +895,13 @@ function populateMetadata() {
   document.getElementById("title").innerHTML = pcbdata.metadata.title;
   document.getElementById("revision").innerHTML = "Rev: " + pcbdata.metadata.revision;
   document.getElementById("company").innerHTML = pcbdata.metadata.company;
+  var container = document.getElementById("header-lines");
+  (pcbdata.metadata.header_lines || []).forEach(function (line) {
+    var div = document.createElement("div");
+    div.textContent = line;
+    container.appendChild(div);
+  });
+
   document.getElementById("filedate").innerHTML = pcbdata.metadata.date;
   ["title", "revision", "company", "date"].forEach(function(field) {
     var element = document.getElementById(field === "date" ? "filedate" : field);
