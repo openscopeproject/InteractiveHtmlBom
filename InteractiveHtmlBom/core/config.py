@@ -73,6 +73,7 @@ class Config:
     kicad_text_formatting = True
 
     # Extra fields section
+    header_lines = []
     extra_data_file = None
     netlist_initial_directory = ''  # This is relative to pcb file directory
     show_fields = default_show_group_fields
@@ -636,6 +637,7 @@ class Config:
         self.include_nets = args.include_nets
 
         # Fields
+        self.header_lines = args.header_lines
         self.extra_data_file = args.extra_data_file or args.netlist_file
         if args.extra_fields is not None:
             self.show_fields = self.default_show_group_fields + \
