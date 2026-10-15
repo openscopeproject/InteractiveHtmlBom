@@ -39,7 +39,7 @@ class Config:
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
         'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'checkboxes',
         'bom_view', 'layer_view', 'offset_back_rotation',
-        'kicad_text_formatting', 'mark_when_checked', 'custom_metadata_field'
+        'kicad_text_formatting', 'mark_when_checked', 'custom_metadata'
     ]
     default_show_group_fields = ["Value", "Footprint"]
 
@@ -649,7 +649,7 @@ class Config:
         self.board_variant_whitelist = self._split(args.variants_whitelist)
         self.board_variant_blacklist = self._split(args.variants_blacklist)
         self.dnp_field = args.dnp_field
-        self.custom_metadata_field = args.custom_metadata
+        self.custom_metadata = args.custom_metadata
 
     def get_html_config(self):
         import json

@@ -7,9 +7,9 @@ EventHandler.registerCallback(IBOM_EVENT_TYPES.ALL, (e) => console.log(e));
 window.addEventListener("load", function () {
   var meta = {};
   try {
-    console.log(typeof config.custom_metadata_field);
-    console.log(JSON.stringify(config.custom_metadata_field));
-    meta = JSON.parse(config.custom_metadata_field || "{}");
+    console.log(typeof config.custom_metadata);
+    console.log(JSON.stringify(config.custom_metadata));
+    meta = JSON.parse(config.custom_metadata || "{}");
   } catch (e) {
     console.error("custom_metadata is no valid JSON string:", e);
   }
