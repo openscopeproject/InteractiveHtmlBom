@@ -495,8 +495,8 @@ class Config:
                                  'do not populate status. Components with '
                                  'this field not empty will be excluded.')
         parser.add_argument('--custom-metadata', default='',
-                            help='Custom metadata as a JSON string. Gets '
-                                 'attached to the BOM and can be accessed in '
+                            help='Custom metadata. Gets attached to '
+                                 'the BOM and can be accessed in '
                                  'the user customization files.')
 
     def get_ini_defaults(self):
