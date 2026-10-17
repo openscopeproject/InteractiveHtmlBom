@@ -2787,7 +2787,7 @@
                 <property name="gripper">0</property>
                 <property name="hidden">0</property>
                 <property name="id">wxID_ANY</property>
-                <property name="label">Blacklist virtual components</property>
+                <property name="label">Filter excluded components</property>
                 <property name="max_size"></property>
                 <property name="maximize_button">0</property>
                 <property name="maximum_size"></property>
@@ -2808,7 +2808,7 @@
                 <property name="style"></property>
                 <property name="subclass">; ; forward_declare</property>
                 <property name="toolbar_pane">0</property>
-                <property name="tooltip"></property>
+                <property name="tooltip">Filter components marked 'Exclude from BOM' in KiCad. For older KiCad versions and other parsers, exclusion is determined by the 'Virtual' attribute instead. Previously called 'Blacklist virtual components'. The 'Unspecified' footprint type alone is not excluded.</property>
                 <property name="validator_data_type"></property>
                 <property name="validator_style">wxFILTER_NONE</property>
                 <property name="validator_type">wxDefaultValidator</property>
