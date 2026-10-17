@@ -854,6 +854,16 @@ class FusionEagleParser(EcadParser):
                                      "found".format(el.attrib['package'],
                                                     el.attrib['library']))
 
+            # Local patch: derive THT/SMD from the footprint pads
+            has_th = package.find('pad') is not None
+            has_smd = package.find('smd') is not None
+            mount_key = 'Montage'
+            if self.config.normalize_field_case:
+                mount_key = mount_key.lower()
+            comp.extra_fields[mount_key] = (
+                'THT+SMD' if has_th and has_smd else
+                'THT' if has_th else 'SMD' if has_smd else 'MECH')
+
             elx = float(el.attrib['x'])
             ely = float(el.attrib['y'])
             refdes = el.attrib['name']
