@@ -37,7 +37,8 @@ class Config:
     default_checkboxes = ['Sourced', 'Placed']
     html_config_fields = [
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
-        'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'checkboxes',
+        'highlight_pin1', 'highlight_row_on_click', 'redraw_on_drag',
+        'board_rotation', 'checkboxes',
         'bom_view', 'layer_view', 'offset_back_rotation',
         'kicad_text_formatting', 'mark_when_checked', 'custom_metadata'
     ]
@@ -51,6 +52,7 @@ class Config:
     show_fabrication = False
     show_silkscreen = True
     redraw_on_drag = True
+    highlight_row_on_click = False
     highlight_pin1 = highlight_pin1_choices[0]
     board_rotation = 0
     offset_back_rotation = False
@@ -374,6 +376,9 @@ class Config:
                             choices=cls.highlight_pin1_choices,
                             nargs='?',
                             help='Highlight first pin.')
+        parser.add_argument('--highlight-row-on-click',
+                            help='Highlight BOM rows on click by default.',
+                            action='store_true')
         parser.add_argument('--no-redraw-on-drag',
                             help='Do not redraw pcb on drag by default.',
                             action='store_true')
@@ -612,6 +617,7 @@ class Config:
         self.show_fabrication = args.show_fabrication
         self.show_silkscreen = not args.hide_silkscreen
         self.highlight_pin1 = args.highlight_pin1
+        self.highlight_row_on_click = args.highlight_row_on_click
         self.redraw_on_drag = not args.no_redraw_on_drag
         # Stored in 5 degree steps, wrap to -180..180 range
         self.board_rotation = args.board_rotation // 5
