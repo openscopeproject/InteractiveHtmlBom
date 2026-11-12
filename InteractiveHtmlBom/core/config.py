@@ -71,6 +71,7 @@ class Config:
     include_tracks = False
     include_nets = False
     kicad_text_formatting = True
+    custom_metadata = ''
 
     # Extra fields section
     extra_data_file = None
