@@ -35,7 +35,7 @@ jobs:
         shell: bash
         run: |
           apt update && apt install -y python3-pip
-          python3 -m pip install --break-system-packages --upgrade hatch
+          python3 -m pip install --break-system-packages --ignore-installed --upgrade hatch
 
       - name: Test
         run: hatch -v run pytest -vv tests
