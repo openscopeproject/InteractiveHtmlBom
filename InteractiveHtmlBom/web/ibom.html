@@ -297,6 +297,9 @@
                oninput="updateRefLookup(this.value)">
         <input id="filter" class="textbox searchbox filter hideonprint" type="text" placeholder="Filter"
                oninput="updateFilter(this.value)">
+        <input id="qty-multiplier" class="textbox searchbox qty-multiplier hideonprint" type="number" min="1" step="1" value="1"
+               autocomplete="off" title="Quantity multiplier (number of boards)"
+               oninput="updateQtyMultiplier(this.value)">
         <div class="button-container hideonprint" style="float: left; margin: 0;">
           <button id="copy" title="Copy bom table to clipboard"
                onclick="saveBomTable('clipboard')"></button>

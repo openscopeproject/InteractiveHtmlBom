@@ -14,6 +14,7 @@ var markedFootprints = new Set();
 var highlightedFootprints = [];
 var highlightedNet = null;
 var lastClicked;
+var qtyMultiplier = 1;
 
 function dbg(html) {
   dbgdiv.innerHTML = html;
@@ -726,7 +727,7 @@ function populateBomBody(placeholderColumn = null, placeHolderElements = null) {
         } else if (column === "Quantity" && settings.bommode == "grouped") {
           // Quantity
           td = document.createElement("TD");
-          td.textContent = references.length;
+          td.textContent = references.length * qtyMultiplier;
           tr.appendChild(td);
         } else {
           // All the other fields
@@ -854,6 +855,12 @@ function netClicked(net) {
 
 function updateFilter(input) {
   filter = input.toLowerCase();
+  populateBomTable();
+}
+
+function updateQtyMultiplier(input) {
+  var value = parseInt(input);
+  qtyMultiplier = value > 0 ? value : 1;
   populateBomTable();
 }
 
