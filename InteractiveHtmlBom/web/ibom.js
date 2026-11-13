@@ -821,9 +821,29 @@ function highlightNextRow() {
   smoothScrollToRow(currentHighlightedRowId);
 }
 
+function updateBomFilterWarning() {
+  var reasons = [];
+  var front = settings.canvaslayout == "F";
+  // Only warn about the side when the other side has components
+  if (settings.bommode != "netlist" && settings.canvaslayout != "FB" &&
+    pcbdata.bom[front ? "B" : "F"].length > 0) {
+    reasons.push(front ? "front side only" : "back side only");
+  }
+  if (filter) {
+    reasons.push("filter");
+  }
+  if (reflookup && settings.bommode != "netlist") {
+    reasons.push("ref lookup");
+  }
+  var warning = document.getElementById("bom-filter-warning");
+  warning.textContent = "Table is filtered (" + reasons.join(", ") + "), saved file will not contain all rows";
+  warning.style.display = reasons.length ? "" : "none";
+}
+
 function populateBomTable() {
   populateBomHeader();
   populateBomBody();
+  updateBomFilterWarning();
   setBomHandlers();
   resizableGrid(bomhead);
 }

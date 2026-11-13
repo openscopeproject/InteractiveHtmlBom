@@ -603,6 +603,15 @@ mark.highlight {
   border-top: 1px solid #ccc;
 }
 
+.menu-warning {
+  margin: 5px 5px 0 5px;
+  color: #c00;
+}
+
+.dark .menu-warning {
+  color: #f66;
+}
+
 .menu-textbox {
   float: left;
   height: 24px;
