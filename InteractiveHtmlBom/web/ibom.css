@@ -423,15 +423,15 @@ canvas:active {
 }
 
 .filter {
-  width: calc(60% - 128px);
+  width: calc(60% - 104px);
 }
 
 .reflookup {
-  width: calc(40% - 20px);
+  width: calc(40% - 60px);
 }
 
 .qty-multiplier {
-  width: 60px;
+  width: 80px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 2l8 8M10 2l-8 8' stroke='%23888' stroke-width='2'/%3E%3C/svg%3E");
   background-position: 8px center;
   padding: 0 4px 0 24px;
