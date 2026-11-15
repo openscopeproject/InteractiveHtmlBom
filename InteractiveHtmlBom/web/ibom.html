@@ -292,12 +292,15 @@
   </div>
   <div id="bot" class="split" style="flex: 1 1">
     <div id="bomdiv" class="split split-horizontal">
-      <div style="width: 100%">
+      <div class="search-row">
         <input id="reflookup" class="textbox searchbox reflookup hideonprint" type="text" placeholder="Ref lookup"
                oninput="updateRefLookup(this.value)">
         <input id="filter" class="textbox searchbox filter hideonprint" type="text" placeholder="Filter"
                oninput="updateFilter(this.value)">
-        <div class="button-container hideonprint" style="float: left; margin: 0;">
+        <input id="qty-multiplier" class="textbox searchbox qty-multiplier hideonprint" type="number" min="1" step="1" value="1"
+               autocomplete="off" title="Quantity multiplier (number of boards)"
+               oninput="updateQtyMultiplier(this.value)">
+        <div class="button-container hideonprint" style="margin: 0;">
           <button id="copy" title="Copy bom table to clipboard"
                onclick="saveBomTable('clipboard')"></button>
         </div>
