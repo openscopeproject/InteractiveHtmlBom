@@ -1069,6 +1069,8 @@ function changeBomMode(mode) {
       }
   }
 
+  document.getElementById("qty-multiplier").hidden = mode != "grouped";
+
   writeStorage("bommode", mode);
   if (mode != settings.bommode) {
     settings.bommode = mode;
