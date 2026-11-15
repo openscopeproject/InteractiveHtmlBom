@@ -393,6 +393,7 @@ canvas:active {
 
 .searchbox {
   float: left;
+  min-width: 80px;
   height: 40px;
   margin: 10px 5px;
   padding: 12px 32px;
@@ -422,15 +423,22 @@ canvas:active {
   color: #666;
 }
 
+.search-row {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
 .filter {
-  width: calc(60% - 104px);
+  flex: 3 1 0;
 }
 
 .reflookup {
-  width: calc(40% - 60px);
+  flex: 2 1 0;
 }
 
 .qty-multiplier {
+  flex: none;
   width: 80px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 2l8 8M10 2l-8 8' stroke='%23888' stroke-width='2'/%3E%3C/svg%3E");
   background-position: 8px center;
