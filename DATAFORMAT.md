@@ -397,6 +397,7 @@ config = {
   "show_silkscreen": bool,
   "highlight_pin1": "none" | "all" | "selected",
   "redraw_on_drag": bool,
+  "highlight_row_on_click": bool,
   "board_rotation": int,
   "checkboxes": "checkbox1,checkbox2,...",
   "bom_view": "bom-only" | "left-right" | "top-bottom",
