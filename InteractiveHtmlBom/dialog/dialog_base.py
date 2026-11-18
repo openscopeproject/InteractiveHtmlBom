@@ -153,6 +153,9 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         self.offsetBackRotationCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Offset back rotation", wx.DefaultPosition, wx.DefaultSize, 0 )
         b_sizer.Add( self.offsetBackRotationCheckbox, 0, wx.ALL, 5 )
 
+        self.highlightRowOnClickCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Highlight row on click", wx.DefaultPosition, wx.DefaultSize, 0 )
+        b_sizer.Add( self.highlightRowOnClickCheckbox, 0, wx.ALL, 5 )
+
         sbSizer31 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Checkboxes" ), wx.HORIZONTAL )
 
         self.bomCheckboxesCtrl = wx.TextCtrl( sbSizer31.GetStaticBox(), wx.ID_ANY, u"Sourced,Placed", wx.DefaultPosition, wx.DefaultSize, 0 )
