@@ -37,7 +37,8 @@ class Config:
     default_checkboxes = ['Sourced', 'Placed']
     html_config_fields = [
         'dark_mode', 'show_pads', 'show_fabrication', 'show_silkscreen',
-        'highlight_pin1', 'redraw_on_drag', 'board_rotation', 'checkboxes',
+        'highlight_pin1', 'redraw_on_drag', 'highlight_row_on_click',
+        'board_rotation', 'checkboxes',
         'bom_view', 'layer_view', 'offset_back_rotation',
         'kicad_text_formatting', 'mark_when_checked', 'custom_metadata'
     ]
@@ -51,6 +52,7 @@ class Config:
     show_fabrication = False
     show_silkscreen = True
     redraw_on_drag = True
+    highlight_row_on_click = False
     highlight_pin1 = highlight_pin1_choices[0]
     board_rotation = 0
     offset_back_rotation = False
@@ -121,6 +123,8 @@ class Config:
         self.show_silkscreen = f.ReadBool(
             'show_silkscreen', self.show_silkscreen)
         self.redraw_on_drag = f.ReadBool('redraw_on_drag', self.redraw_on_drag)
+        self.highlight_row_on_click = f.ReadBool(
+            'highlight_row_on_click', self.highlight_row_on_click)
         self.highlight_pin1 = f.Read('highlight_pin1', self.highlight_pin1)
         self.board_rotation = f.ReadInt('board_rotation', self.board_rotation)
         self.offset_back_rotation = f.ReadBool(
@@ -182,6 +186,7 @@ class Config:
         f.WriteBool('show_fabrication', self.show_fabrication)
         f.WriteBool('show_silkscreen', self.show_silkscreen)
         f.WriteBool('redraw_on_drag', self.redraw_on_drag)
+        f.WriteBool('highlight_row_on_click', self.highlight_row_on_click)
         f.Write('highlight_pin1', self.highlight_pin1)
         f.WriteInt('board_rotation', self.board_rotation)
         f.WriteBool('offset_back_rotation', self.offset_back_rotation)
@@ -228,6 +233,8 @@ class Config:
         self.show_fabrication = dlg.html.showFabricationCheckbox.IsChecked()
         self.show_silkscreen = dlg.html.showSilkscreenCheckbox.IsChecked()
         self.redraw_on_drag = dlg.html.continuousRedrawCheckbox.IsChecked()
+        self.highlight_row_on_click = \
+            dlg.html.highlightRowOnClickCheckbox.IsChecked()
         self.highlight_pin1 = self.highlight_pin1_choices[dlg.html.highlightPin1.Selection]
         self.board_rotation = dlg.html.boardRotationSlider.Value
         self.offset_back_rotation = \
@@ -280,6 +287,8 @@ class Config:
             dlg.html.highlightPin1.Selection = \
                 self.highlight_pin1_choices.index(self.highlight_pin1)
         dlg.html.continuousRedrawCheckbox.Value = self.redraw_on_drag
+        dlg.html.highlightRowOnClickCheckbox.Value = \
+            self.highlight_row_on_click
         dlg.html.boardRotationSlider.Value = self.board_rotation
         dlg.html.offsetBackRotationCheckbox.Value = self.offset_back_rotation
         dlg.html.bomCheckboxesCtrl.Value = self.checkboxes
@@ -380,6 +389,13 @@ class Config:
                             action='store_true')
         parser.add_argument('--redraw-on-drag', dest='no_redraw_on_drag',
                             help='Redraw pcb on drag by default.',
+                            action='store_false', default=False)
+        parser.add_argument('--highlight-row-on-click',
+                            help='Highlight row on click by default.',
+                            action='store_true')
+        parser.add_argument('--no-highlight-row-on-click',
+                            dest='highlight_row_on_click',
+                            help='Do not highlight row on click by default.',
                             action='store_false', default=False)
         parser.add_argument('--board-rotation', type=int,
                             default=cls.board_rotation * 5,
@@ -546,6 +562,8 @@ class Config:
             ('html_defaults', 'show_silkscreen', 'hide_silkscreen', 'not'),
             ('html_defaults', 'highlight_pin1', 'highlight_pin1', 'str'),
             ('html_defaults', 'redraw_on_drag', 'no_redraw_on_drag', 'not'),
+            ('html_defaults', 'highlight_row_on_click',
+             'highlight_row_on_click', 'bool'),
             ('html_defaults', 'offset_back_rotation', 'offset_back_rotation',
              'bool'),
             ('html_defaults', 'checkboxes', 'checkboxes', 'str'),
@@ -614,6 +632,7 @@ class Config:
         self.show_silkscreen = not args.hide_silkscreen
         self.highlight_pin1 = args.highlight_pin1
         self.redraw_on_drag = not args.no_redraw_on_drag
+        self.highlight_row_on_click = args.highlight_row_on_click
         # Stored in 5 degree steps, wrap to -180..180 range
         self.board_rotation = args.board_rotation // 5
         if not -36 <= self.board_rotation <= 36:
